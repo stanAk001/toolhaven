@@ -1,0 +1,15 @@
+# Spin up Postgres for local dev:  docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: toolhaven
+      POSTGRES_PASSWORD: toolhaven
+      POSTGRES_DB: toolhaven
+    ports:
+      - "5432:5432"
+    volumes:
+      - toolhaven_pgdata:/var/lib/postgresql/data
+volumes:
+  toolhaven_pgdata:

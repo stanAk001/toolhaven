@@ -1,0 +1,203 @@
+// Prisma schema for Toolhaven
+// Run: npx prisma migrate dev --name init  &&  npm run seed
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id           Int       @id @default(autoincrement())
+  slug         String    @unique
+  name         String
+  description  String?
+  iconKey      String?   // maps to a lucide icon name on the frontend
+  colorPrimary String    @default("#7C3AED")
+  colorAccent  String    @default("#00F5FF")
+  orderDisplay Int       @default(0)
+  createdAt    DateTime  @default(now())
+
+  tools         Tool[]
+  subcategories Subcategory[]
+  blogPosts     BlogPost[]
+  clicks        AffiliateClick[]
+}
+
+model Subcategory {
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  name       String
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tools      Tool[]
+  createdAt  DateTime @default(now())
+}
+
+model Tool {
+  id              Int      @id @default(autoincrement())
+  slug            String   @unique
+  name            String
+  description     String   // short, 1-2 sentences
+  fullDescription String?  // the persuasive pitch
+  bestFor         String?
+  caveat          String?
+  logoMono        String?  // monogram fallback for the logo tile
+  websiteUrl      String?
+  affiliateLink   String?
+  affiliateNetwork String?
+  priceMin        Float    @default(0)
+  priceMax        Float    @default(0)
+  priceType       String   @default("freemium") // free | freemium | paid | subscription
+  freeTrial       Boolean  @default(false)
+  freeTier        Boolean  @default(false)
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  popularity      Int      @default(0)
+  isFeatured      Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  categoryId    Int
+  category      Category     @relation(fields: [categoryId], references: [id])
+  subcategoryId Int?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+
+  features     ToolFeature[]
+  reviews      ToolReview[]
+  testimonials Testimonial[]
+  pros         ToolPro[]
+  clicks       AffiliateClick[]
+  blogMentions BlogPostTool[]
+}
+
+model ToolPro {
+  id     Int    @id @default(autoincrement())
+  toolId Int
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  text   String
+}
+
+model ToolFeature {
+  id          Int    @id @default(autoincrement())
+  toolId      Int
+  tool        Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  featureName String
+  description String?
+}
+
+model ToolReview {
+  id         Int      @id @default(autoincrement())
+  toolId     Int
+  tool       Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  authorName String?  // reader's display name (optional)
+  title      String
+  content    String
+  rating     Float
+  useCase    String?
+  helpful    Int      @default(0)        // "was this helpful?" tally
+  status     String   @default("approved") // approved | pending — reader reviews come in pending
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  toolId    Int?
+  tool      Tool?    @relation(fields: [toolId], references: [id], onDelete: SetNull)
+  userName  String
+  userTitle String?
+  content   String
+  rating    Float    @default(5)
+  createdAt DateTime @default(now())
+}
+
+model BlogPost {
+  id            Int      @id @default(autoincrement())
+  slug          String   @unique
+  title         String
+  excerpt       String
+  content       String   // markdown
+  featuredImage String?
+  author        String   @default("Toolhaven")
+  readTime      Int      @default(5)
+  isPublished   Boolean  @default(true)
+  publishedAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  toolLinks  BlogPostTool[]
+}
+
+model BlogPostTool {
+  id           Int      @id @default(autoincrement())
+  blogPostId   Int
+  blogPost     BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  toolId       Int
+  tool         Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  mentionOrder Int      @default(0)
+}
+
+model AffiliateClick {
+  id           Int      @id @default(autoincrement())
+  toolId       Int
+  tool         Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  categoryId   Int?
+  category     Category? @relation(fields: [categoryId], references: [id])
+  userIp       String?
+  userAgent    String?
+  referrerPage String?
+  createdAt    DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id                 Int       @id @default(autoincrement())
+  email              String    @unique
+  name               String?
+  preferredCategories String[]
+  subscribedAt       DateTime  @default(now())
+  unsubscribedAt     DateTime?
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  subject   String?
+  messageType String  @default("general")
+  message   String
+  createdAt DateTime @default(now())
+}
+
+// Readers sharing the tools they actually use — community social proof.
+model Stack {
+  id         Int      @id @default(autoincrement())
+  authorName String?
+  authorRole String?
+  note       String?  // why this stack / how they use it
+  toolSlugs  String[] // the tools in the stack, by slug
+  status     String   @default("pending") // pending | approved
+  createdAt  DateTime @default(now())
+}
+
+// Vendors submitting their tool to be considered for an (honest) review.
+model ToolSubmission {
+  id               Int      @id @default(autoincrement())
+  toolName         String
+  websiteUrl       String
+  category         String?
+  pricing          String?  // free | freemium | paid | subscription
+  affiliateProgram String?  // PartnerStack | Impact | Other | None
+  contactName      String
+  email            String
+  pitch            String   // one-line pitch
+  details          String?  // longer context
+  status           String   @default("pending") // pending | reviewing | listed | declined
+  createdAt        DateTime @default(now())
+}

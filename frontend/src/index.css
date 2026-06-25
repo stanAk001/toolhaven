@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Theme palettes =====
+   The whole site is themed off these channel variables. The Day edition is the
+   warm printed paper; the Night edition is the same press run in the dark. */
+:root, [data-theme="day"] {
+  color-scheme: light;
+  --paper: 241 234 221;       /* #F1EADD */
+  --paper2: 231 221 203;      /* #E7DDCB */
+  --ink: 28 23 20;            /* #1C1714 */
+  --ink2: 106 95 82;          /* #6A5F52 */
+  --accent: 232 67 31;        /* #E8431F */
+  --accent-deep: 184 54 23;   /* #B83617 */
+  --shadow-cast: #1C1714;     /* the hard offset behind printed tiles */
+  --flap-bg: 28 23 20;        /* split-flap tile face */
+  --flap-fg: 241 234 221;
+}
+[data-theme="night"] {
+  color-scheme: dark;
+  --paper: 24 21 18;          /* warm near-black ground */
+  --paper2: 35 30 26;         /* raised surface */
+  --ink: 240 233 220;         /* light foreground */
+  --ink2: 166 154 137;        /* muted light */
+  --accent: 245 92 56;        /* a touch brighter so it sings on dark */
+  --accent-deep: 248 130 92;
+  --shadow-cast: #000000;     /* black offset reads against the dark ground */
+  --flap-bg: 8 7 6;
+  --flap-fg: 240 233 220;
+}
+html { scroll-behavior: smooth; }
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+  transition: background-color .45s ease, color .45s ease;
+}
+
+/* While toggling editions, let every surface cross-fade its colours for ~half a
+   second instead of snapping. The class is added by the toggle then removed. */
+.theming, .theming * {
+  transition: background-color .45s ease, border-color .45s ease, color .45s ease, box-shadow .45s ease, fill .45s ease !important;
+}
+
+/* Headings clear the sticky header when you jump to an anchor. */
+h1, h2, h3, h4 { scroll-margin-top: 5rem; }
+
+/* One visible, on-brand focus ring for every keyboard user — an inked outline
+   that matches the print aesthetic. Only shows for keyboard focus, not clicks. */
+:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 3px; }
+
+/* Tactile, intentional touch behaviour: no 300ms delay, no grey tap flash. */
+a, button, [role="button"], input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Finishing layer — the details that make it feel printed and considered ===== */
+
+/* Highlight in wet accent ink instead of the browser's default blue. */
+::selection { background: rgb(var(--accent)); color: rgb(var(--paper)); }
+
+/* Body copy: render with kerning and ligatures on, like real typesetting. */
+body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; font-kerning: normal; }
+
+/* Let Fraunces use its optical-size axis so big headlines tighten and refine,
+   and small serif text stays open and legible — the heart of a "set" look. */
+.font-display, h1, h2, h3, h4 { font-optical-sizing: auto; font-feature-settings: "ss01"; }
+
+/* A themed scrollbar so even the chrome belongs to the paper. */
+* { scrollbar-color: rgb(var(--ink)) rgb(var(--paper2)); scrollbar-width: thin; }
+::-webkit-scrollbar { width: 13px; height: 13px; }
+::-webkit-scrollbar-track { background: rgb(var(--paper2)); }
+::-webkit-scrollbar-thumb { background: rgb(var(--ink)); border: 3px solid rgb(var(--paper2)); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #B83617; }
+
+/* A soft, layered drop for elements that want depth without the hard print
+   shadow — used sparingly, where the offset stamp would feel too loud. */
+.shadow-soft { box-shadow: 0 1px 2px rgba(28,23,20,.04), 0 8px 24px -12px rgba(28,23,20,.25); }
+
+/* The reading-progress meter and the back-to-top dial both spring on the same
+   curve as the rest of the press furniture. */
+.lift { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s cubic-bezier(.2,.8,.2,1); }
+.lift:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 rgb(var(--accent)); }
+.lift:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgb(var(--accent)); }
+
+/* Route sweep — a thin accent press-rule wipes across just under the sticky
+   header on navigation, like a roller laying a line on the page. Editorial and
+   quick; disabled under reduced-motion. Sits on the header's bottom edge. */
+.routesweep { top: 62px; height: 2px; overflow: hidden; }
+.routesweep-bar {
+  position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(var(--accent)) 35%, rgb(var(--accent)) 65%, transparent);
+  box-shadow: 0 0 10px rgba(232,67,31,.5);
+  animation: route-sweep .55s cubic-bezier(.7,0,.25,1) forwards;
+}
+@keyframes route-sweep { to { transform: translateX(100%); } }
+
+/* paper grain overlay */
+.grain::before {
+  content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  opacity: .45; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* The rubber-stamp button: it sits proud of the page on a hard shadow, sinks
+   when you press it, and lifts a touch on hover — like a real stamp on a desk. */
+.stamp {
+  @apply inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide
+         bg-accent text-white px-5 py-3 border-2 border-ink transition-transform;
+  box-shadow: 4px 4px 0 var(--shadow-cast);
+}
+.stamp:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-cast); }
+.stamp:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow-cast); }
+
+/* A paper-faced sibling of the stamp, for placing a primary action on top of a
+   coloured banner where the accent-red stamp would clash with the category hue. */
+.stamp-paper {
+  @apply inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide
+         bg-paper text-ink px-5 py-3 border-2 border-ink transition-transform;
+  box-shadow: 4px 4px 0 var(--shadow-cast);
+}
+.stamp-paper:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-cast); }
+.stamp-paper:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow-cast); }
+
+/* Any card or panel that should feel like a printed tile you can pick up.
+   The offset shadow grows as it rises on hover, then it taps back down when
+   pressed. Used by the tool cards, category cards and the CTA band. */
+.tactile {
+  box-shadow: 4px 4px 0 var(--shadow-cast);
+  transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s cubic-bezier(.2,.8,.2,1);
+}
+.tactile:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--shadow-cast); }
+.tactile:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--shadow-cast); }
+.tactile-lg { box-shadow: 6px 6px 0 var(--shadow-cast); }
+.tactile-lg:hover { transform: translate(-3px,-3px); box-shadow: 11px 11px 0 var(--shadow-cast); }
+
+/* Nav links draw an underline in from the left on hover, and hold it open
+   while the page is active. */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: currentColor; transform: scaleX(0); transform-origin: left;
+  transition: transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+
+/* When you've scrolled, the sticky header drops a hard shadow so it reads as a
+   sheet floating above the page rather than part of it. */
+.nav-scrolled { box-shadow: 0 4px 0 var(--shadow-cast); }
+
+/* The hand-drawn underline that sketches itself under the hero's accent words. */
+.draw {
+  position: absolute; left: 0; right: 0; bottom: -.12em; width: 100%; height: .42em;
+  overflow: visible; pointer-events: none;
+}
+.draw path {
+  fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round;
+  stroke-dasharray: 320; stroke-dashoffset: 320;
+}
+
+/* The editorial ticker that slides its words past the edge of the band forever. */
+.marquee { overflow: hidden; }
+.marquee-track { display: inline-flex; white-space: nowrap; will-change: transform; }
+.marquee-item { @apply px-6; }
+
+/* ===== Editorial print primitives =====
+   The furniture that makes the page read like an independent printed review. */
+
+/* Hairline and heavy press rules. */
+.rule { height: 1px; background: rgb(var(--ink)); }
+.rule-2 { height: 2px; background: rgb(var(--ink)); }
+
+/* The oversized opening capital that anchors a lede column, set in the same
+   serif as the headlines and inked in the accent red. */
+.drop-cap::first-letter {
+  font-family: "Fraunces", serif; font-weight: 600; color: rgb(var(--accent));
+  float: left; font-size: 3.3em; line-height: .68; padding: .04em .1em 0 0;
+}
+
+/* The ghosted folio number sitting behind a section title. */
+.folio { font-feature-settings: "ss01"; }
+
+/* Risograph halftone — a field of tiny ink dots that gives flat areas the
+   tooth of something actually run through a press. */
+.halftone {
+  background-image: radial-gradient(rgb(var(--ink) / .18) 1px, transparent 1.5px);
+  background-size: 7px 7px;
+}
+
+/* The "island" CTA: an inked pill with its arrow tucked inside its own disc.
+   The whole thing lifts on its shadow while the disc slides out — physical and
+   kinetic rather than a flat link. */
+.island {
+  @apply inline-flex items-center gap-3 font-mono font-bold text-sm uppercase tracking-wide
+         bg-ink text-paper pl-6 pr-2 py-2 border-2 border-ink transition-transform;
+  box-shadow: 4px 4px 0 var(--shadow-cast);
+}
+.island:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-cast); }
+.island:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow-cast); }
+.island-dot {
+  @apply grid place-items-center w-9 h-9 rounded-full bg-accent text-white;
+  transition: transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.island:hover .island-dot { transform: translate(3px,-3px); }
+
+/* Loading skeletons — placeholder tiles in the next paper-tone up, with a soft
+   sheen that sweeps across while real content is on its way. */
+.skeleton { position: relative; overflow: hidden; background: rgb(var(--paper2)); }
+.skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(var(--paper) / .75), transparent);
+  transform: translateX(-100%);
+}
+
+/* Split-flap board — the honesty ledger rendered as a mechanical departure
+   board. Each figure is a dark tile with a centre seam; digits clatter through
+   on load and land on the real number, like a newsroom display being struck. */
+.flap {
+  position: relative; display: inline-grid; place-items: center;
+  min-width: .74em; padding: .08em .06em; border-radius: 4px;
+  background: rgb(var(--flap-bg)); color: rgb(var(--flap-fg)); line-height: 1; overflow: hidden;
+  perspective: 240px;
+  box-shadow: inset 0 -3px 5px rgba(0,0,0,.5), inset 0 2px 2px rgba(255,255,255,.06);
+}
+.flap-accent { background: rgb(var(--accent)); color: #fff; }
+/* Letters need a touch more room than digits so M/W don't crowd the tile. */
+.flap-wide { min-width: .86em; }
+/* the hinge line across the middle of the tile */
+.flap::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: rgba(0,0,0,.6); z-index: 2;
+}
+.flap-char { display: block; transform-origin: center top; backface-visibility: hidden; }
+
+/* Mobile menu links rise into place one after another. Visible by default so
+   reduced-motion (and no-JS) users always see them; the animation only attaches
+   under the no-preference media query below. */
+.menu-rise { opacity: 1; }
+@keyframes menu-rise { from { opacity: 0; transform: translateY(26px); } }
+
+.fade-in { animation: fade .5s ease both; }
+@keyframes fade { from { opacity: 0; transform: translateY(14px); } }
+@keyframes shimmer { to { transform: translateX(100%); } }
+/* The fold: a tile drops in from its top hinge out of shadow, snaps just past
+   flat, then settles — the tactile clack of a split-flap panel. */
+@keyframes flap {
+  0%   { transform: rotateX(-90deg); filter: brightness(.45); opacity: .2; }
+  55%  { transform: rotateX(10deg);  filter: brightness(1.06); opacity: 1; }
+  78%  { transform: rotateX(-4deg);  filter: brightness(.98); }
+  100% { transform: rotateX(0);      filter: brightness(1); }
+}
+
+/* Motion lives behind this guard, so anyone who asks their OS for reduced
+   motion just gets the static, fully-legible page — nothing hidden, nothing moving. */
+@media (prefers-reduced-motion: no-preference) {
+  /* A single block that fades, rises and sharpens from a soft blur as it
+     scrolls into view — the heavy, cinematic entrance. */
+  .reveal { opacity: 0; transform: translateY(22px); filter: blur(6px); }
+  .reveal.in { animation: reveal-up .7s cubic-bezier(.2,.8,.2,1) forwards; }
+
+  /* Same idea, but the direct children trail one another so a grid deals
+     itself out instead of snapping in all at once. */
+  .stagger > * { opacity: 0; transform: translateY(20px); }
+  .stagger.in > * { animation: reveal-up .55s cubic-bezier(.2,.8,.2,1) both; }
+  .stagger.in > *:nth-child(1) { animation-delay: 0s; }
+  .stagger.in > *:nth-child(2) { animation-delay: .06s; }
+  .stagger.in > *:nth-child(3) { animation-delay: .12s; }
+  .stagger.in > *:nth-child(4) { animation-delay: .18s; }
+  .stagger.in > *:nth-child(5) { animation-delay: .24s; }
+  .stagger.in > *:nth-child(6) { animation-delay: .30s; }
+  .stagger.in > *:nth-child(7) { animation-delay: .36s; }
+  .stagger.in > *:nth-child(8) { animation-delay: .42s; }
+  .stagger.in > *:nth-child(9) { animation-delay: .48s; }
+
+  .draw.in path { animation: draw 1s ease .25s forwards; }
+  .marquee-track { animation: marquee 28s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  .skeleton::after { animation: shimmer 1.4s ease-in-out infinite; }
+  .flap-char { animation: flap .2s cubic-bezier(.3,.7,.4,1.1); }
+  .menu-rise { animation: menu-rise .55s cubic-bezier(.2,.8,.2,1) both; }
+}
+
+@keyframes reveal-up { to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes marquee { to { transform: translateX(-50%); } }

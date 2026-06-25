@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#F1EADD"/>
+  <rect x="3" y="3" width="26" height="26" rx="4.5" fill="none" stroke="#1C1714" stroke-width="2"/>
+  <text x="16" y="23.5" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" text-anchor="middle" fill="#1C1714">T</text>
+  <path d="M25.2 4.8l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" fill="#E8431F"/>
+</svg>

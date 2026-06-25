@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" font-family="Georgia, 'Times New Roman', serif">
+  <!-- paper -->
+  <rect width="1200" height="630" fill="#F1EADD"/>
+  <!-- halftone dot field -->
+  <defs>
+    <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#1C1714" opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+  <!-- press frame -->
+  <rect x="48" y="48" width="1104" height="534" rx="16" fill="none" stroke="#1C1714" stroke-width="4"/>
+
+  <!-- dateline -->
+  <line x1="96" y1="120" x2="1104" y2="120" stroke="#1C1714" stroke-width="3"/>
+  <text x="96" y="160" font-family="'Courier New', monospace" font-size="20" letter-spacing="5" fill="#6A5F52">THE HONEST TOOLS REVIEW</text>
+  <text x="1104" y="160" text-anchor="end" font-family="'Courier New', monospace" font-size="20" letter-spacing="5" fill="#1C1714">ISSUE 06</text>
+  <line x1="96" y1="176" x2="1104" y2="176" stroke="#1C1714" stroke-width="1"/>
+
+  <!-- headline -->
+  <text x="96" y="320" font-size="118" font-weight="700" fill="#1C1714">Toolhaven<tspan fill="#E8431F">.</tspan></text>
+  <text x="100" y="392" font-size="42" font-weight="400" fill="#1C1714">Finding the right tool shouldn't cost you</text>
+  <text x="100" y="446" font-size="42" font-weight="400" fill="#1C1714">a week of <tspan font-style="italic" fill="#E8431F">open tabs.</tspan></text>
+  <!-- the hero's hand-drawn accent underline under "open tabs." -->
+  <path d="M312 460 q 55 -8 112 -3 q 62 5 102 -1" fill="none" stroke="#E8431F" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- footer stamp line -->
+  <line x1="96" y1="506" x2="1104" y2="506" stroke="#1C1714" stroke-width="3"/>
+  <text x="96" y="546" font-family="'Courier New', monospace" font-size="19" letter-spacing="3" fill="#6A5F52">NO SALES THEATRE  ·  DOWNSIDES INCLUDED  ·  THE RIGHT PICK IN TEN MINUTES</text>
+</svg>

@@ -1,0 +1,30 @@
+{
+  "name": "toolhaven-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Express + Prisma API for the Toolhaven affiliate platform",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "freeport": "powershell -Command \"Get-NetTCPConnection -LocalPort 4000 -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\"",
+    "seed": "node prisma/seed.js",
+    "migrate": "prisma migrate dev --name init",
+    "generate": "prisma generate",
+    "studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "nodemailer": "^9.0.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.18.0"
+  }
+}
