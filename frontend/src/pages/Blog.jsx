@@ -18,7 +18,7 @@ export default function Blog() {
   }, [active]);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 fade-in">
+    <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
       <PageHead kicker="The reading room" title={<>Guides &amp; honest takes</>}>
         Comparisons, how-tos and straight talk on the tools worth your time.
       </PageHead>
@@ -30,8 +30,8 @@ export default function Blog() {
         ))}
       </div>
 
-      {loading ? <SkeletonGrid count={6} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" /> : (
-        <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {loading ? <SkeletonGrid count={6} className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" /> : (
+        <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {(data?.items || []).map((p) => <PostCard key={p.slug} post={p} />)}
         </Reveal>
       )}
@@ -42,7 +42,7 @@ export default function Blog() {
 function Tab({ on, color, onClick, children }) {
   return (
     <button onClick={onClick}
-      className={`font-mono text-xs uppercase tracking-wide px-4 py-2 rounded-full border-2 border-ink ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
+      className={`inline-flex items-center font-mono text-xs uppercase tracking-wide px-4 min-h-touch rounded-full border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
       style={on ? { background: color || "#1C1714" } : undefined}>{children}</button>
   );
 }

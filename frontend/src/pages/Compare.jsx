@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { Check, X, ArrowUpRight, Share2, Link as LinkIcon } from "lucide-react";
 import { getTools, compareTools } from "../api/client.js";
 import { Stars, Loader } from "../components/ui.jsx";
@@ -70,7 +70,7 @@ export default function Compare() {
     : <span className="inline-flex items-center gap-1 text-accentDeep font-semibold"><X size={14} aria-hidden="true" /> No</span>;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 fade-in">
+    <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
       <PageHead kicker="Head to head" title="Compare tools">
         Pick up to three — they can be from different categories. Your comparison is a shareable link.
       </PageHead>
@@ -83,7 +83,7 @@ export default function Compare() {
             const disabled = !on && picked.length >= MAX;
             return (
               <button key={t.slug} onClick={() => toggle(t.slug)} disabled={disabled}
-                className={`font-mono text-xs uppercase px-4 py-2 rounded-full border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"} ${disabled ? "opacity-40" : ""}`}
+                className={`inline-flex items-center font-mono text-xs uppercase px-4 min-h-touch rounded-full border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"} ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
                 style={on ? { background: t.category?.colorPrimary } : undefined}>
                 {t.name}
               </button>
@@ -133,12 +133,23 @@ export default function Compare() {
               <Row label="">
                 {rows.map((t) => (
                   <td key={t.slug} className="p-3 text-center">
-                    <button onClick={() => goAffiliate(t, "compare")} className="stamp text-xs">Get it <ArrowUpRight size={13} aria-hidden="true" /></button>
+                    <button onClick={() => goAffiliate(t, "compare")} aria-describedby="aff-note-compare" className="stamp text-xs">Get it <ArrowUpRight size={13} aria-hidden="true" /></button>
+                    {/* the cell is narrow, so the short form here; the full sentence
+                        sits once under the table where there's room to read it */}
+                    <Link to="/disclosure"
+                      className="block font-mono text-[11px] uppercase tracking-[.12em] text-ink2 mt-2 underline underline-offset-2 hover:text-accentDeep transition-colors">
+                      Partner link
+                    </Link>
                   </td>
                 ))}
               </Row>
             </tbody>
           </table>
+          <p id="aff-note-compare" className="font-mono text-[11px] uppercase tracking-[.12em] text-ink2 mt-4 text-pretty">
+            <span className="text-accent" aria-hidden="true">✦</span>{" "}
+            The "Get it" links are partner links — your price stays the same, and they never affect the ranking.{" "}
+            <Link to="/disclosure" className="underline underline-offset-2 hover:text-accentDeep transition-colors">How we make money</Link>
+          </p>
         </Reveal>
       ) : (
         <p className="font-mono text-sm text-ink2">Select at least two tools to see the comparison.</p>

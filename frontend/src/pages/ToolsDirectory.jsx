@@ -47,7 +47,7 @@ export default function ToolsDirectory() {
   }, [data, cats]);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 fade-in">
+    <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
       <PageHead kicker="The index" title="The directory">
         Filter, search and browse every tool by category. Tap any card for the full honest rundown.
       </PageHead>
@@ -58,7 +58,7 @@ export default function ToolsDirectory() {
         <input value={search} onChange={(e) => setSearch(e.target.value)}
           type="search" aria-label="Search tools" autoComplete="off" spellCheck={false}
           placeholder="Search tools…"
-          className="flex-1 bg-transparent py-3 outline-none text-base" />
+          className="flex-1 min-w-0 bg-transparent min-h-touch outline-none text-base" />
       </div>
 
       {/* tabs */}
@@ -71,21 +71,23 @@ export default function ToolsDirectory() {
         ))}
       </div>
 
-      {/* controls */}
-      <div className="flex flex-wrap items-center gap-4 mb-8 font-mono text-xs">
-        <label className="flex items-center gap-2">SORT
-          <select value={sort} onChange={(e) => setSort(e.target.value)} className="border-2 border-ink bg-paper px-2 py-1">
+      {/* controls — each one a full-height touch target, set as a printed filter strip */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-8 font-mono text-micro uppercase tracking-[.12em]">
+        <label className="flex items-center gap-2 min-h-touch">SORT
+          <select value={sort} onChange={(e) => setSort(e.target.value)}
+            className="border-2 border-ink bg-paper rounded-lg px-2.5 min-h-touch cursor-pointer">
             {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
-        <label className="flex items-center gap-2">MIN RATING
-          <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="border-2 border-ink bg-paper px-2 py-1">
+        <label className="flex items-center gap-2 min-h-touch">MIN RATING
+          <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}
+            className="border-2 border-ink bg-paper rounded-lg px-2.5 min-h-touch cursor-pointer">
             <option value={0}>Any</option><option value={4}>4+</option><option value={4.5}>4.5+</option>
           </select>
         </label>
-        <label className="flex items-center gap-2">MAX ${maxPrice}{maxPrice >= 150 ? "+" : ""}
+        <label className="flex items-center gap-2 min-h-touch tabular-nums">MAX ${maxPrice}{maxPrice >= 150 ? "+" : ""}
           <input type="range" min="0" max="150" step="5" value={maxPrice}
-            onChange={(e) => setMaxPrice(Number(e.target.value))} className="accent-accent" />
+            onChange={(e) => setMaxPrice(Number(e.target.value))} className="accent-accent h-11 cursor-pointer" />
         </label>
       </div>
 
@@ -99,7 +101,7 @@ export default function ToolsDirectory() {
               <h2 className="font-display text-2xl md:text-3xl font-semibold">{g.cat?.name}</h2>
               <span className="flex-1 h-0.5 bg-ink" />
             </div>
-            <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {g.tools.map((t) => <ToolCard key={t.slug} tool={t} />)}
             </Reveal>
           </section>
@@ -112,7 +114,7 @@ export default function ToolsDirectory() {
 function Tab({ on, color, onClick, children }) {
   return (
     <button onClick={onClick}
-      className={`font-mono text-xs uppercase tracking-wide px-4 py-2 rounded-full border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
+      className={`inline-flex items-center font-mono text-xs uppercase tracking-wide px-4 min-h-touch rounded-full border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
       style={on ? { background: color || "#1C1714" } : undefined}>
       {children}
     </button>

@@ -113,7 +113,7 @@ export function CommandPalette() {
           ))}
         </ul>
 
-        <div className="relative flex items-center justify-between px-5 py-2.5 border-t-2 border-ink font-mono text-[10px] uppercase tracking-[.16em] text-ink2">
+        <div className="relative flex items-center justify-between gap-3 px-5 py-2.5 border-t-2 border-ink font-mono text-micro uppercase tracking-[.16em] text-ink2">
           <span>↑↓ move · ↵ open · esc close</span>
           <span className="text-accentDeep">Toolhaven index</span>
         </div>

@@ -12,7 +12,7 @@ const TILTS = [-1.2, 0.9, -0.7, 1.1, -1, 0.7];
 function ToolTile({ t }) {
   return (
     <Link to={`/tool/${t.slug}`} title={t.name}
-      className="grid place-items-center min-w-[2.2rem] h-9 px-2 rounded-lg border-2 border-ink text-white font-display font-bold text-sm transition-transform hover:-translate-y-0.5"
+      className="grid place-items-center min-w-[2rem] sm:min-w-[2.2rem] h-8 sm:h-9 px-1.5 sm:px-2 rounded-lg border-2 border-ink text-white font-display font-bold text-xs sm:text-sm transition-transform hover:-translate-y-0.5"
       style={{ background: t.category?.colorPrimary || "#1C1714", boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
       {t.logoMono || t.name[0]}
     </Link>
@@ -21,12 +21,12 @@ function ToolTile({ t }) {
 
 function StackCard({ stack, tilt = 0 }) {
   return (
-    <figure className="relative bg-paper border-2 border-ink rounded-2xl p-5 rotate-[var(--r)] hover:rotate-0 transition-transform duration-300"
+    <figure className="relative bg-paper border-2 border-ink rounded-2xl p-4 sm:p-5 rotate-[var(--r)] hover:rotate-0 transition-transform duration-300"
       style={{ "--r": `${tilt}deg`, boxShadow: "5px 5px 0 var(--shadow-cast)" }}>
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
         {stack.tools.map((t) => <ToolTile key={t.slug} t={t} />)}
       </div>
-      {stack.note && <p className="font-display text-lg leading-snug mb-4 text-pretty">“{stack.note}”</p>}
+      {stack.note && <p className="font-display text-sm sm:text-lg leading-snug mb-3 sm:mb-4 text-pretty">“{stack.note}”</p>}
       <figcaption className="font-mono text-[11px] uppercase tracking-wide text-ink2">
         {stack.authorName || "Anonymous"}{stack.authorRole ? <span className="text-accentDeep"> · {stack.authorRole}</span> : null}
       </figcaption>
@@ -64,7 +64,7 @@ export default function Stacks() {
   const lab = "block font-mono text-[11px] uppercase tracking-[.14em] text-ink2 mb-1.5";
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 fade-in">
+    <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
       <PageHead kicker="Community" title="The stacks real people actually run.">
         No theory, no sponsored picks — just the tools readers reach for every day. Share yours and see what others use.
       </PageHead>
@@ -130,7 +130,7 @@ export default function Stacks() {
       {stacks === null ? <Loader /> : stacks.length === 0 ? (
         <p className="text-ink2">No stacks shared yet — be the first to show what you run.</p>
       ) : (
-        <Reveal stagger className="columns-1 sm:columns-2 lg:columns-3 gap-4 [column-fill:_balance]">
+        <Reveal stagger className="columns-2 lg:columns-3 gap-3 sm:gap-4 [column-fill:_balance]">
           {stacks.map((s, i) => (
             <div key={s.id} className="break-inside-avoid mb-4">
               <StackCard stack={s} tilt={TILTS[i % TILTS.length]} />

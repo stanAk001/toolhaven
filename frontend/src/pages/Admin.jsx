@@ -85,7 +85,7 @@ export default function Admin() {
 
   if (!authed) {
     return (
-      <div className="max-w-md mx-auto px-6 py-24 fade-in">
+      <div className="max-w-md mx-auto px-5 sm:px-6 py-16 sm:py-24 fade-in">
         <PageHead kicker="Private" title="Editor's desk" />
         <p className="text-ink2 mb-5">Enter the admin token to manage submissions and reviews.</p>
         <form onSubmit={(e) => { e.preventDefault(); load(input.trim()); }} className="flex gap-2">
@@ -102,7 +102,7 @@ export default function Admin() {
   const count = (st) => items.filter((s) => s.status === st).length;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 fade-in">
+    <div className="max-w-4xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
       <PageHead kicker="Editor's desk" title="Moderation" />
 
       {/* view switch */}

@@ -1,21 +1,21 @@
 // Editorial print furniture — the crop marks, honesty ledger and section folios
 // that make Toolhaven read like an independent printed review rather than a web page.
 import { Link } from "react-router-dom";
-import { SplitFlap } from "./splitflap.jsx";
+import { CountUp } from "./motion.jsx";
 
 // A dead-end that still reads like the broadsheet: an accent kicker, an oversized
 // ghosted code, the headline, a line of copy, and a stamp back to safety. Used
 // for the global 404 and every page's "not found" state.
 export function NotFoundBlock({ code = "404", kicker = "Off the press", title, message, to = "/", cta = "Back to the cover →" }) {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-24 text-center fade-in">
-      <p className="font-mono text-xs uppercase tracking-[.2em] text-accentDeep mb-3">{kicker}</p>
+    <div className="max-w-3xl mx-auto px-5 sm:px-6 py-16 sm:py-24 text-center fade-in">
+      <p className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-3">{kicker}</p>
       {code && (
-        <p className="folio font-display font-semibold leading-[.8] tracking-tight text-ink/15 select-none"
-          style={{ fontSize: "clamp(72px,18vw,180px)" }}>{code}</p>
+        <p className="folio font-display text-code font-semibold tracking-tight text-ink/15 select-none"
+          aria-hidden="true">{code}</p>
       )}
-      <h1 className="font-display text-3xl md:text-4xl font-semibold mb-3 text-balance">{title}</h1>
-      <p className="text-ink2 mb-8 text-pretty">{message}</p>
+      <h1 className="font-display text-title font-semibold mb-3 text-balance">{title}</h1>
+      <p className="text-ink2 mb-8 text-pretty max-w-measure-sm mx-auto">{message}</p>
       <Link to={to} className="stamp">{cta}</Link>
     </div>
   );
@@ -39,30 +39,84 @@ export function CropMarks() {
   );
 }
 
-// One figure in the honesty ledger — a split-flap number over a mono label,
-// sitting in its own cell of the printed table.
-function Stat({ value, label, accent = false, live = false }) {
+/* VerdictSeal — the paper's mark of independence, struck as a printer's seal.
+ *
+ * A certification stamp is the one piece of furniture a review publication has
+ * always been allowed: a ring of set type turning slowly around a fixed centre,
+ * hard-edged, no glow, no gradient. It earns its place next to the call to
+ * action by saying the one thing the whole site is built on — that nobody paid
+ * for their position — at the exact moment the reader decides whether to trust
+ * it. The ring turns; the mark in the middle never moves.
+ */
+export function VerdictSeal({ className = "", size = 112 }) {
+  const RING = "NO PAID RANKINGS · EVERY DOWNSIDE LISTED · ";
   return (
-    <div className="bg-paper px-3 py-2.5 md:px-4 md:py-3">
-      <SplitFlap value={value} accent={accent} live={live} style={{ fontSize: "clamp(20px,3vw,38px)" }} />
-      <div className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[.14em] text-ink2 mt-1.5">{label}</div>
+    <div className={`relative shrink-0 ${className}`} style={{ width: size, height: size }}>
+      <svg viewBox="0 0 200 200" className="seal-ring absolute inset-0 w-full h-full" aria-hidden="true">
+        <defs>
+          {/* the baseline the ring type is set on */}
+          <path id="seal-arc" fill="none"
+            d="M100,100 m-76,0 a76,76 0 1,1 152,0 a76,76 0 1,1 -152,0" />
+        </defs>
+        <circle cx="100" cy="100" r="97" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".5" />
+        <text className="seal-type" fill="currentColor">
+          <textPath href="#seal-arc" startOffset="0">{RING}</textPath>
+        </text>
+      </svg>
+
+      {/* the fixed centre — the house mark over an inked disc */}
+      <span className="absolute inset-0 grid place-items-center">
+        <span className="grid place-items-center rounded-full bg-ink text-paper"
+          style={{ width: size * 0.44, height: size * 0.44 }}>
+          <span className="text-accent leading-none" style={{ fontSize: size * 0.2 }}>✦</span>
+        </span>
+      </span>
     </div>
   );
 }
 
+// One standing figure — the numeral and its caption set on a shared baseline,
+// the way a masthead carries its circulation numbers. Reading across rather than
+// stacking in a box is what keeps the whole strip one line deep on a phone.
+function Figure({ value, suffix = "", label, chip = false }) {
+  const body = (
+    <>
+      <dd className="font-display text-2xl sm:text-3xl font-semibold leading-none tracking-tight tabular-nums">
+        <CountUp value={value} suffix={suffix} />
+      </dd>
+      <dt className={`font-mono text-micro uppercase tracking-[.13em] ${chip ? "" : "text-ink2"}`}>
+        {label}
+      </dt>
+    </>
+  );
+
+  // The mission figure is inked into a chip. It's the one claim the whole site
+  // rests on, so it gets to be an object on the page rather than another entry
+  // in a list — which is also the hierarchy the four equal cells never had.
+  if (chip) {
+    return (
+      <div className="inline-flex items-baseline gap-2 bg-accent text-white px-2.5 py-1.5 rounded-[4px]"
+        style={{ boxShadow: "3px 3px 0 var(--shadow-cast)" }}>
+        {body}
+      </div>
+    );
+  }
+  return <div className="inline-flex items-baseline gap-2">{body}</div>;
+}
+
 // The honesty ledger — the cover's opening statement, told in real numbers
-// instead of a strapline, and rendered as a mechanical split-flap board that
-// clatters the figures into place on load. "0 paid rankings" is the whole
-// mission in one accent-red cell.
+// instead of adjectives, and set as a masthead strapline rather than a table.
+// The figures tally up once on the way in, like a ledger totalling itself.
 export function HonestyLedger({ tools = 0, categories = 0 }) {
   return (
     <div className="border-y-2 border-ink">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-ink">
-        <Stat value={tools} label="Tools reviewed" live />
-        <Stat value={categories} label="Categories" />
-        <Stat value="100%" label="Independent" />
-        <Stat value="0" label="Hype" accent />
-      </div>
+      <dl className="flex flex-wrap items-baseline gap-x-5 sm:gap-x-8 gap-y-3 py-3.5 sm:py-4">
+        <Figure value={tools} label="Tools reviewed" />
+        <Figure value={categories} label="Categories" />
+        <Figure value={100} suffix="%" label="Independent" />
+        <Figure value={0} label="Paid rankings" chip />
+      </dl>
     </div>
   );
 }
@@ -72,12 +126,11 @@ export function HonestyLedger({ tools = 0, categories = 0 }) {
 // the same printed-front-matter feel as the cover.
 export function PageHead({ kicker, title, children }) {
   return (
-    <header className="mb-10">
-      <div className="rule-2 mb-5" />
-      {kicker && <p className="font-mono text-xs uppercase tracking-[.2em] text-accentDeep mb-3">{kicker}</p>}
-      <h1 className="font-display font-semibold leading-[.95] tracking-tight text-balance"
-        style={{ fontSize: "clamp(38px,7vw,84px)" }}>{title}</h1>
-      {children && <p className="text-lg text-ink2 mt-4 max-w-2xl text-pretty">{children}</p>}
+    <header className="mb-8 sm:mb-10">
+      <div className="rule-2 mb-4 sm:mb-5" />
+      {kicker && <p className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-3">{kicker}</p>}
+      <h1 className="font-display text-display font-semibold text-balance">{title}</h1>
+      {children && <p className="text-base sm:text-lg text-ink2 mt-4 max-w-measure text-pretty">{children}</p>}
     </header>
   );
 }
@@ -86,16 +139,16 @@ export function PageHead({ kicker, title, children }) {
 // kicker, the title, an optional action on the right, and a heavy closing rule.
 export function SectionHead({ folio, kicker, title, action }) {
   return (
-    <div className="mb-8">
+    <div className="mb-7 sm:mb-8">
       <div className="flex items-end gap-3 md:gap-5">
         {folio && (
-          <span className="folio font-display font-semibold text-ink/15 select-none leading-[.7] hidden sm:block"
-            style={{ fontSize: "clamp(56px,9vw,108px)" }}>{folio}</span>
+          <span className="folio font-display text-folio font-semibold text-ink/15 select-none hidden sm:block"
+            aria-hidden="true">{folio}</span>
         )}
-        <div className="flex-1 pb-1">
-          {kicker && <p className="font-mono text-[11px] uppercase tracking-[.2em] text-accentDeep mb-1">{kicker}</p>}
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="font-display text-3xl md:text-4xl font-semibold leading-none">{title}</h2>
+        <div className="flex-1 pb-1 min-w-0">
+          {kicker && <p className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-1.5">{kicker}</p>}
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+            <h2 className="font-display text-title font-semibold">{title}</h2>
             {action}
           </div>
         </div>

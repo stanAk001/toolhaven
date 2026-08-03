@@ -20,7 +20,7 @@ export default function CategoryPage() {
     <div className="fade-in">
       <section className="relative border-b-2 border-ink overflow-hidden" style={{ background: color }}>
         <div className="halftone absolute inset-0 opacity-20 pointer-events-none" aria-hidden="true" />
-        <div className="relative max-w-6xl mx-auto px-6 py-16 text-white">
+        <div className="relative max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 text-white">
           <div className="flex items-center gap-4 mb-4">
             <span className="w-14 h-14 grid place-items-center border-2 border-white"><Icon size={26} /></span>
             <span className="font-mono text-xs uppercase tracking-wide">{cat.tools?.length || 0} tools</span>
@@ -30,14 +30,14 @@ export default function CategoryPage() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 py-12">
-        <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <section className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12">
+        <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {(cat.tools || []).map((t) => <ToolCard key={t.slug} tool={{ ...t, category: cat }} />)}
         </Reveal>
       </section>
 
       {cat.blogPosts?.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 pb-16">
+        <section className="max-w-6xl mx-auto px-5 sm:px-6 pb-12 sm:pb-16">
           <h2 className="font-display text-2xl font-semibold border-b-2 border-ink pb-2 mb-5">Related reading</h2>
           <Reveal stagger className="grid sm:grid-cols-3 gap-4">
             {cat.blogPosts.map((p) => <PostCard key={p.slug} post={{ ...p, category: p.category || cat }} />)}

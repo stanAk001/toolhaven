@@ -21,7 +21,7 @@ export default function BlogPost() {
   let firstParagraph = true;
 
   return (
-    <article className="max-w-3xl mx-auto px-6 py-12 fade-in">
+    <article className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
       <Link to="/blog"
         className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[.18em] text-ink2 hover:text-accentDeep transition-colors mb-6">
         ← The reading room

@@ -7,7 +7,7 @@ import { PageHead } from "../components/editorial.jsx";
 // make the FTC point a footnote rather than the headline.
 export default function Disclosure() {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-14 fade-in">
+    <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
       <PageHead kicker="Legal" title="Affiliate Disclosure">
         How Toolhaven makes money — and the wall between that and what we write.
       </PageHead>

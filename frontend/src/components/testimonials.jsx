@@ -28,31 +28,38 @@ export function TestimonialCard({ t, tilt = 0, compact = false }) {
       style={{ "--tilt": `${tilt}deg`, boxShadow: compact ? "4px 4px 0 var(--shadow-cast)" : "5px 5px 0 var(--shadow-cast)" }}
       className={`group/t relative bg-paper border-2 border-ink rounded-2xl flex flex-col
         rotate-[var(--tilt)] hover:rotate-0 hover:-translate-y-1 transition-transform duration-300 ease-[cubic-bezier(.2,.8,.2,1)]
-        ${compact ? "p-5" : "p-6 md:p-7"}`}>
+        ${compact ? "p-4 sm:p-5" : "p-4 sm:p-6 md:p-7"}`}>
       {/* the thumbtack holding the clipping to the board */}
       <span aria-hidden="true"
-        className={`absolute -top-2.5 ${compact ? "left-5 w-3.5 h-3.5" : "left-7 w-4 h-4"} rounded-full bg-accent border-2 border-ink shadow-[1px_1px_0_var(--shadow-cast)]
+        className={`absolute -top-2.5 ${compact ? "left-4 sm:left-5 w-3.5 h-3.5" : "left-5 sm:left-7 w-3.5 h-3.5 sm:w-4 sm:h-4"} rounded-full bg-accent border-2 border-ink shadow-[1px_1px_0_var(--shadow-cast)]
           transition-transform duration-300 group-hover/t:scale-110`} />
       {/* the oversized opening quote, ghosted into the corner like set type */}
       <span aria-hidden="true"
-        className="absolute top-2 right-4 font-display font-semibold text-accent/15 select-none leading-none"
-        style={{ fontSize: compact ? "60px" : "84px" }}>&#10078;</span>
+        className={`absolute top-2 right-3 sm:right-4 font-display font-semibold text-accent/15 select-none leading-none
+          ${compact ? "text-[34px] sm:text-[60px]" : "text-[38px] sm:text-[72px] md:text-[84px]"}`}>&#10078;</span>
 
       <Stars n={Math.round(t.rating)} />
-      <blockquote className={`relative mt-3 font-display font-medium leading-snug text-pretty flex-1
-        ${compact ? "text-base md:text-lg" : "text-lg md:text-xl"}`}>
+      {/* a two-up clipping is half the measure, so the quote is set a size down
+          rather than reflowed to four words a line */}
+      <blockquote className={`relative mt-2.5 sm:mt-3 font-display font-medium leading-snug text-pretty flex-1
+        ${compact ? "text-sm sm:text-base md:text-lg" : "text-sm sm:text-lg md:text-xl"}`}>
         {t.content}
       </blockquote>
 
-      <figcaption className={`flex items-center gap-3 border-t-2 border-ink/10 ${compact ? "mt-4 pt-3" : "mt-6 pt-4"}`}>
-        <span className={`grid place-items-center rounded-full bg-ink text-paper font-mono tracking-wide shrink-0
-          ${compact ? "w-9 h-9 text-[11px]" : "w-10 h-10 text-xs"}`}>
+      <figcaption className={`flex items-center gap-2.5 sm:gap-3 border-t-2 border-ink/10 ${compact ? "mt-3.5 pt-3" : "mt-4 sm:mt-6 pt-3 sm:pt-4"}`}>
+        {/* the monogram disc only repeats the name beside it — below 360px that
+            trade isn't worth the ~40px it steals from the byline */}
+        <span aria-hidden="true"
+          className={`hidden min-[360px]:grid place-items-center rounded-full bg-ink text-paper font-mono tracking-wide shrink-0
+          ${compact ? "w-8 h-8 sm:w-9 sm:h-9 text-[11px]" : "w-8 h-8 sm:w-10 sm:h-10 text-[11px] sm:text-xs"}`}>
           {monogram(t.userName)}
         </span>
+        {/* wraps on a half-width clipping, truncates once there's a line to spare —
+            a byline cut to "AISHA RAHM…" is worse than one set over two lines */}
         <span className="leading-tight min-w-0">
-          <span className="block font-mono text-xs uppercase tracking-wide truncate">{t.userName}</span>
+          <span className="block font-mono text-[11px] sm:text-xs uppercase tracking-wide break-words sm:truncate">{t.userName}</span>
           {t.userTitle && (
-            <span className="block font-mono text-[11px] uppercase tracking-wide text-ink2 truncate">{t.userTitle}</span>
+            <span className="block font-mono text-[11px] uppercase tracking-wide text-ink2 break-words sm:truncate">{t.userTitle}</span>
           )}
         </span>
       </figcaption>
@@ -74,9 +81,12 @@ export function TestimonialStrip({ items = [] }) {
 // The full board: a masonry of clippings that deals itself out on scroll.
 export function TestimonialWall({ items = [] }) {
   return (
-    <Reveal stagger className="columns-1 sm:columns-2 lg:columns-3 gap-4 [column-fill:_balance]">
+    // Masonry rather than a grid: clippings are different lengths, and columns
+    // let a short letter sit under a long one instead of padding every card to
+    // the tallest in its row.
+    <Reveal stagger className="columns-2 lg:columns-3 gap-3 sm:gap-4 [column-fill:_balance]">
       {items.map((t, i) => (
-        <div key={t.id} className="break-inside-avoid mb-4">
+        <div key={t.id} className="break-inside-avoid mb-3 sm:mb-4">
           <TestimonialCard t={t} tilt={TILTS[i % TILTS.length]} />
         </div>
       ))}

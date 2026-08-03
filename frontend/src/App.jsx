@@ -23,7 +23,11 @@ import Admin from "./pages/Admin.jsx";
 
 function ScrollTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // block body on purpose: scrollTo returns a Promise in current Chrome, and a
+  // concise arrow would hand that back to React as the effect's cleanup
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 }
 
@@ -45,7 +49,7 @@ export default function App() {
       <BackToTop />
       <CommandPalette />
       <RouteSweep />
-      <div className="grain min-h-screen flex flex-col">
+      <div className="grain min-h-dvh flex flex-col">
         <Navbar />
         <main className="flex-1">
           <Routes>

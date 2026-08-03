@@ -9,7 +9,7 @@ export default function About() {
   const praise = useData(() => getTestimonials({ limit: 3 }), []);
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-14 fade-in">
+    <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
       <PageHead kicker="About" title="Why we built a tools guide that admits the downsides." />
       <Reveal stagger className="space-y-5 text-lg leading-relaxed">
         <p>Toolhaven started from a simple frustration: every "best tools" list online reads like a press release. Glowing scores, no real cons, and a suspicious habit of ranking whoever pays the most at the top.</p>

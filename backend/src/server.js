@@ -16,6 +16,7 @@ import stacks from "./routes/stacks.js";
 import og from "./routes/og.js";
 import clicks from "./routes/clicks.js";
 import { notFound, errorHandler } from "./middleware/error.js";
+import { warmUp } from "./lib/prisma.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -48,7 +49,10 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
-const server = app.listen(PORT, () => console.log(`Toolhaven API running on http://localhost:${PORT}`));
+const server = app.listen(PORT, () => {
+  console.log(`Toolhaven API running on http://localhost:${PORT}`);
+  warmUp();
+});
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
     console.error(`Port ${PORT} is already in use. Stop the other process or set a different PORT.`);

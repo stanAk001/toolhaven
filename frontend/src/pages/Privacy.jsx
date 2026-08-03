@@ -6,7 +6,7 @@ import { PageHead } from "../components/editorial.jsx";
 // contact-form messages, and anonymised affiliate-click analytics.
 export default function Privacy() {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-14 fade-in">
+    <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
       <PageHead kicker="Legal" title="Privacy Policy">
         Last updated: June 2026. Plain English, no surprises.
       </PageHead>

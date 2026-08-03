@@ -21,10 +21,9 @@ export function ArticleCover({ post }) {
         style={{ background: `radial-gradient(130% 130% at 100% 0%, ${accent}66, transparent 55%)` }} />
       <span aria-hidden="true" className="halftone absolute inset-0 opacity-20 mix-blend-multiply" />
       <span aria-hidden="true"
-        className="absolute -bottom-6 -right-3 font-display font-semibold text-white/10 leading-none select-none"
-        style={{ fontSize: "clamp(90px,17vw,210px)" }}>{ghost}</span>
+        className="absolute -bottom-6 -right-3 font-display text-ghost font-semibold text-white/10 select-none">{ghost}</span>
 
-      <div className="relative p-6 md:p-9">
+      <div className="relative p-5 sm:p-6 md:p-9">
         <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[.2em] text-white/90">
           <span className="w-2 h-2 rounded-full bg-white" />
           {c.name || "Field notes"}{post.readTime ? ` · ${post.readTime} min read` : ""}
@@ -32,7 +31,7 @@ export function ArticleCover({ post }) {
 
         {tools.length > 0 ? (
           <div className="mt-7">
-            <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/70 mb-3">The tools in this piece</p>
+            <p className="font-mono text-micro uppercase tracking-[.2em] text-white/70 mb-3">The tools in this piece</p>
             <div className="flex flex-wrap gap-2.5">
               {tools.map((t, i) => (
                 <span key={t.slug} title={t.name}

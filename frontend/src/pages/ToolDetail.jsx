@@ -22,7 +22,7 @@ export default function ToolDetail() {
   return (
     <div className="fade-in">
       {/* hero — a generated review-cover banner in the tool's category colour */}
-      <section className="max-w-4xl mx-auto px-6 pt-8 pb-10">
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-8 sm:pb-10">
         <figure className="relative overflow-hidden rounded-2xl border-2 border-ink"
           style={{ background: color, boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
           {/* accent wash, print tooth, and the monogram bleeding off the corner */}
@@ -30,10 +30,9 @@ export default function ToolDetail() {
             style={{ background: `radial-gradient(130% 130% at 100% 0%, ${accent}66, transparent 55%)` }} />
           <span aria-hidden="true" className="halftone absolute inset-0 opacity-20 mix-blend-multiply" />
           <span aria-hidden="true"
-            className="absolute -bottom-10 -right-4 font-display font-bold text-white/10 leading-none select-none"
-            style={{ fontSize: "clamp(140px,24vw,280px)" }}>{tool.logoMono || tool.name[0]}</span>
+            className="absolute -bottom-10 -right-4 font-display text-monogram font-bold text-white/10 select-none">{tool.logoMono || tool.name[0]}</span>
 
-          <div className="relative p-6 md:p-9">
+          <div className="relative p-5 sm:p-6 md:p-9">
             <div className="flex items-center justify-between gap-4 mb-7 font-mono text-[11px] uppercase tracking-[.18em] text-white/90">
               <Link to={`/category/${tool.category?.slug}`} className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
                 ← {tool.category?.name}
@@ -41,14 +40,14 @@ export default function ToolDetail() {
               <span className="hidden sm:inline text-white/70">Honest review · Downsides included</span>
             </div>
 
-            <div className="flex items-start gap-5">
-              <span className="w-20 h-20 grid place-items-center rounded-2xl bg-paper border-2 border-ink font-display font-bold text-3xl text-ink shrink-0"
+            <div className="flex items-start gap-4 sm:gap-5">
+              <span className="w-16 h-16 sm:w-20 sm:h-20 grid place-items-center rounded-2xl bg-paper border-2 border-ink font-display font-bold text-2xl sm:text-3xl text-ink shrink-0"
                 style={{ boxShadow: "3px 3px 0 var(--shadow-cast)" }}>
                 {tool.logoMono || tool.name[0]}
               </span>
               <div className="min-w-0">
-                <h1 className="font-display text-4xl md:text-5xl font-semibold leading-[.95] text-white text-balance">{tool.name}</h1>
-                <p className="text-lg text-white/85 mt-2 max-w-xl text-pretty">{tool.description}</p>
+                <h1 className="font-display text-display font-semibold text-white text-balance">{tool.name}</h1>
+                <p className="text-base sm:text-lg text-white/85 mt-2 max-w-measure text-pretty">{tool.description}</p>
               </div>
             </div>
 
@@ -59,15 +58,24 @@ export default function ToolDetail() {
               <span className="font-mono text-sm text-white tabular-nums border-2 border-white/30 rounded-full px-3 py-1.5">
                 {priceLabel(tool)}{tool.freeTrial ? " · free trial" : ""}
               </span>
-              <button onClick={go} className="stamp-paper sm:ml-auto">
-                Get {tool.name} <ArrowUpRight size={18} aria-hidden="true" />
-              </button>
+              {/* The disclosure sits with the button, not only in the footer:
+                  "clear and conspicuous" means at the point of the click, and a
+                  note the reader has to go looking for doesn't count. */}
+              <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-2">
+                <button onClick={go} aria-describedby="aff-note-hero" className="stamp-paper">
+                  Get {tool.name} <ArrowUpRight size={18} aria-hidden="true" />
+                </button>
+                <p id="aff-note-hero" className="font-mono text-[11px] uppercase tracking-[.12em] text-white/75">
+                  <Link to="/disclosure" className="underline underline-offset-2 hover:text-white transition-colors">Partner link</Link>
+                  {" — your price stays the same"}
+                </p>
+              </div>
             </div>
           </div>
         </figure>
       </section>
 
-      <section className="max-w-4xl mx-auto px-6 grid md:grid-cols-3 gap-10 py-8 border-t-2 border-ink">
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 grid md:grid-cols-3 gap-10 py-8 border-t-2 border-ink">
         <div className="md:col-span-2">
           <h2 className="font-mono text-xs uppercase tracking-wide mb-3" style={{ color }}>What it is</h2>
           <p className="drop-cap font-display text-xl leading-relaxed mb-8">{tool.fullDescription || tool.description}</p>
@@ -136,16 +144,20 @@ export default function ToolDetail() {
               <p className="text-sm mb-4">{tool.bestFor}</p>
               <p className="font-mono text-[11px] uppercase tracking-wide text-ink2 mb-1">Pricing</p>
               <p className="text-sm mb-5 tabular-nums">{priceLabel(tool)}{tool.freeTrial ? " · free trial" : ""}</p>
-              <button onClick={go} className="stamp w-full justify-center">Get {tool.name} <ArrowUpRight size={16} aria-hidden="true" /></button>
+              <button onClick={go} aria-describedby="aff-note-card" className="stamp w-full justify-center">Get {tool.name} <ArrowUpRight size={16} aria-hidden="true" /></button>
+              <p id="aff-note-card" className="font-mono text-[11px] uppercase tracking-[.12em] text-ink2 mt-2.5 text-center text-balance">
+                <Link to="/disclosure" className="underline underline-offset-2 hover:text-accentDeep transition-colors">Partner link</Link>
+                {" — your price stays the same"}
+              </p>
             </div>
           </div>
         </aside>
       </section>
 
       {tool.related?.length > 0 && (
-        <section className="max-w-4xl mx-auto px-6 py-10 border-t-2 border-ink">
+        <section className="max-w-4xl mx-auto px-5 sm:px-6 py-8 sm:py-10 border-t-2 border-ink">
           <h2 className="font-display text-2xl font-semibold mb-5">Related tools</h2>
-          <Reveal stagger className="grid sm:grid-cols-2 gap-4">
+          <Reveal stagger className="grid grid-cols-2 gap-3 sm:gap-4">
             {tool.related.map((t) => <ToolCard key={t.slug} tool={t} />)}
           </Reveal>
         </section>

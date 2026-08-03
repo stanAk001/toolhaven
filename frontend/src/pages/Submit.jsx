@@ -52,7 +52,7 @@ export default function Submit() {
 
   if (status === "sent") {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-20 fade-in text-center">
+      <div className="max-w-2xl mx-auto px-5 sm:px-6 py-14 sm:py-20 fade-in text-center">
         <div className="relative inline-grid place-items-center w-20 h-20 rounded-2xl bg-ink text-paper mb-7" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
           <span className="font-display text-3xl">✦</span>
         </div>
@@ -69,7 +69,7 @@ export default function Submit() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-14 fade-in">
+    <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
       <PageHead kicker="For founders & makers" title="Put your tool in front of buyers who trust us.">
         We review tools independently and link to the good ones through affiliate partnerships. If yours is genuinely worth it, this is how the right people find it.
       </PageHead>
