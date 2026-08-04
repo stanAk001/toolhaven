@@ -105,25 +105,65 @@ export function Navbar() {
       {/* full-screen editorial takeover */}
       {open && (
         <div className="md:hidden fixed inset-x-0 top-16 bottom-0 z-30 bg-paper flex flex-col fade-in overflow-y-auto overscroll-contain">
-          <nav className="flex-1 flex flex-col justify-center gap-0.5 px-7 py-6">
-            {NAV.map(([to, label], i) => (
-              <NavLink key={to} to={to} style={{ animationDelay: `${90 + i * 55}ms` }}
-                className={({ isActive }) =>
-                  `menu-rise group inline-flex items-center gap-3 font-display text-4xl sm:text-5xl font-semibold leading-[1.15] tracking-tight transition-colors min-h-touch ${isActive ? "text-accentDeep italic" : "hover:text-accentDeep"}`}>
-                <span className="transition-transform duration-300 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:translate-x-3">{label}</span>
-                <span aria-hidden="true" className="text-accent opacity-0 -translate-x-3 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">→</span>
-              </NavLink>
-            ))}
+          {/* Set as the issue's contents rather than six shouted words: each
+              entry folioed, ruled off, and closed by its own arrow. Smaller type
+              buys the structure that makes it read as a printed page — and the
+              whole list now fits a short phone without scrolling. */}
+          <nav className="flex-1 px-6 pt-4" aria-label="Main">
+            <p aria-hidden="true" className="font-mono text-micro uppercase tracking-[.2em] text-ink2 mb-1">
+              <span className="text-accent mr-1.5">№</span> In this issue
+            </p>
+            <ul className="border-t border-ink/20">
+              {NAV.map(([to, label], i) => (
+                <li key={to} className="border-b border-ink/20">
+                  <NavLink to={to} style={{ animationDelay: `${70 + i * 45}ms` }}
+                    className={({ isActive }) =>
+                      `menu-rise group relative flex items-center gap-4 min-h-[3rem] transition-colors ${isActive ? "text-accentDeep" : "hover:text-accentDeep"}`}>
+                    {({ isActive }) => (
+                      <>
+                        {/* the accent rail that marks where you already are */}
+                        <span aria-hidden="true"
+                          className={`absolute -left-6 top-0 bottom-0 w-1 bg-accent origin-top transition-transform duration-300 ${isActive ? "scale-y-100" : "scale-y-0"}`} />
+                        <span aria-hidden="true"
+                          className={`font-mono text-micro tabular-nums w-6 shrink-0 ${isActive ? "text-accent" : "text-ink2/60"}`}>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className={`flex-1 font-display text-2xl font-semibold leading-tight tracking-tight ${isActive ? "italic" : ""}`}>
+                          {label}
+                        </span>
+                        <span aria-hidden="true"
+                          className={`font-mono text-lg leading-none shrink-0 transition-all duration-300 ${isActive ? "text-accent" : "text-ink2/40 group-hover:text-accent group-hover:translate-x-1"}`}>
+                          →
+                        </span>
+                      </>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+
+            <Link to="/submit" className="stamp w-full justify-center mt-5">
+              Submit a tool →
+            </Link>
           </nav>
-          <div className="border-t-2 border-ink px-7 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] flex flex-wrap gap-2.5">
-            {cats.map((c) => (
-              <Link key={c.slug} to={`/category/${c.slug}`}
-                style={{ "--cat": c.colorPrimary, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
-                className="group/m inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide px-3 py-1.5 min-h-touch md:min-h-0 border-2 border-ink rounded-full bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)] active:text-white active:bg-[var(--cat)]">
-                <span className="w-2 h-2 rounded-full bg-[var(--cat)] transition-colors group-hover/m:bg-white" />
-                {c.name}
-              </Link>
-            ))}
+
+          {/* the categories ride the same scrolling rail as the directory —
+              wrapped, eight chips cost four rows and push the panel off a short
+              phone; on one line they cost one */}
+          <div className="border-t-2 border-ink px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <p aria-hidden="true" className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-2.5">
+              Browse by category
+            </p>
+            <div className="rail">
+              {cats.map((c) => (
+                <Link key={c.slug} to={`/category/${c.slug}`}
+                  style={{ "--cat": c.colorPrimary, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
+                  className="group/m inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide whitespace-nowrap px-3 min-h-touch border-2 border-ink rounded-full bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)] active:text-white active:bg-[var(--cat)]">
+                  <span className="w-2 h-2 rounded-full bg-[var(--cat)] shrink-0 transition-colors group-hover/m:bg-white" />
+                  {c.name}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

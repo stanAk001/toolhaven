@@ -1,0 +1,9 @@
+# Vite fingerprints every file in /assets, so those are safe to cache forever.
+# index.html must never be cached: it is the file that names the current asset
+# hashes, and a stale copy points at bundles that no longer exist after a
+# deploy — the other half of "it breaks after I deploy".
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

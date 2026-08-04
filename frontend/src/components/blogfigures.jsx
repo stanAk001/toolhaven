@@ -1,3 +1,4 @@
+
 // Inline article diagrams — generated SVG/flex illustrations that explain a
 // concept in the post, drawn in the same risograph/print language as the rest
 // of the site. Authored from the markdown via an image token, e.g.

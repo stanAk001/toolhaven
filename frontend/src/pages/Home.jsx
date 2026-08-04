@@ -4,13 +4,9 @@ import { getCategories, getTools, getTestimonials } from "../api/client.js";
 import { useData } from "../lib/helpers.jsx";
 import { CategoryCard, ToolCard, SkeletonGrid } from "../components/ui.jsx";
 import { Reveal, Marquee, DrawUnderline } from "../components/motion.jsx";
-import { CropMarks, HonestyLedger, SectionHead, VerdictSeal } from "../components/editorial.jsx";
-import { FlapBoard } from "../components/flapboard.jsx";
+import { CropMarks, LedgerBoard, SectionHead, VerdictSeal } from "../components/editorial.jsx";
 import { TestimonialWall } from "../components/testimonials.jsx";
 
-// single, truthful word per category for the cover's coverage rail
-const CAT_LABEL = { ai: "AI", trading: "TRADING", productivity: "PRODUCTIVITY", design: "DESIGN", dev: "DEVELOPMENT", marketing: "MARKETING", video: "VIDEO", support: "SUPPORT" };
-const FALLBACK_COVERAGE = Object.values(CAT_LABEL);
 
 // The promises that scroll past in the ticker band — the opener's plain-talk
 // pitch, broken into chants.
@@ -29,7 +25,6 @@ export default function Home() {
   const praise = useData(() => getTestimonials({ limit: 7 }), []);
   // three real tools for the compare band, so it shows what it's asking for
   const headToHead = (featured.data?.items || []).slice(0, 3);
-  const coverage = (cats.data || []).map((c) => CAT_LABEL[c.slug] || c.name.split(" ")[0].toUpperCase());
 
   return (
     <div className="fade-in">
@@ -39,10 +34,11 @@ export default function Home() {
             it holds still so the headline is the only thing asking for attention */}
         <span aria-hidden="true" className="newsfield absolute inset-0 pointer-events-none" />
         <div className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
-          <HonestyLedger tools={toolStats.data?.total || 0} categories={(cats.data || []).length} />
-
-          <FlapBoard words={coverage.length ? coverage : FALLBACK_COVERAGE}
-            className="mt-5 sm:mt-6" />
+          {/* one board, and the only thing on the cover that moves */}
+          <LedgerBoard
+            tools={toolStats.data?.total || 0}
+            categories={(cats.data || []).length}
+            palette={(cats.data || []).map((c) => c.colorPrimary)} />
 
           <Reveal stagger className="grid lg:grid-cols-12 gap-10 mt-10 sm:mt-12 lg:mt-16">
             {/* cover headline */}

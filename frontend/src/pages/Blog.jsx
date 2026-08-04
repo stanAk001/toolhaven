@@ -23,7 +23,9 @@ export default function Blog() {
         Comparisons, how-tos and straight talk on the tools worth your time.
       </PageHead>
 
-      <div className="flex flex-wrap gap-2 mb-8">
+      {/* same rail as the directory: one scrolling line on a phone rather than
+          nine pills wrapping into a block */}
+      <div className="rail mb-8" role="group" aria-label="Filter posts by category">
         <Tab on={active === "all"} onClick={() => setActive("all")}>All</Tab>
         {cats.map((c) => (
           <Tab key={c.slug} on={active === c.slug} color={c.colorPrimary} onClick={() => setActive(c.slug)}>{c.name}</Tab>
@@ -41,8 +43,8 @@ export default function Blog() {
 
 function Tab({ on, color, onClick, children }) {
   return (
-    <button onClick={onClick}
-      className={`inline-flex items-center font-mono text-xs uppercase tracking-wide px-4 min-h-touch rounded-full border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
+    <button type="button" onClick={onClick} aria-pressed={on}
+      className={`inline-flex items-center font-mono text-xs uppercase tracking-wide px-4 min-h-touch rounded-full border-2 border-ink whitespace-nowrap transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
       style={on ? { background: color || "#1C1714" } : undefined}>{children}</button>
   );
 }

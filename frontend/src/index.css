@@ -227,6 +227,210 @@ h1, h2 { letter-spacing: -.015em; }
 /* The ghosted folio number sitting behind a section title. */
 .folio { font-feature-settings: "ss01"; }
 
+/* ===== Form controls =====
+   A native <select> and <input type="range"> arrive wearing the operating
+   system's clothes — a grey chevron, a blue thumb, a hairline track. On a page
+   set in Fraunces and Space Mono they are the loudest thing on it, and the
+   clearest sign nobody looked. These are the same controls with the paper's
+   own furniture on them. */
+
+.field {
+  appearance: none; -webkit-appearance: none;
+  background: rgb(var(--paper));
+  border: 2px solid rgb(var(--ink));
+  border-radius: .625rem;
+  padding: 0 2.25rem 0 .75rem;
+  min-height: 2.75rem;
+  font-family: "Space Mono", monospace;
+  font-size: .75rem; text-transform: uppercase; letter-spacing: .08em;
+  color: rgb(var(--ink));
+  cursor: pointer;
+}
+.field:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 3px; }
+/* our own caret, so it inks with the theme instead of staying OS grey */
+.field-wrap { position: relative; display: inline-flex; }
+.field-caret {
+  position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: rgb(var(--ink));
+}
+
+/* The slider, drawn as a press rule with a stamped thumb. --fill is written by
+   the component so the travelled part of the track inks in. */
+.range { -webkit-appearance: none; appearance: none; background: transparent; height: 2.75rem; cursor: pointer; }
+.range:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 3px; border-radius: .25rem; }
+
+.range::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 999px;
+  background: linear-gradient(to right,
+    rgb(var(--accent)) 0 var(--fill, 100%),
+    rgb(var(--ink) / .18) var(--fill, 100%) 100%);
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px; margin-top: -7px;
+  border-radius: 999px;
+  background: rgb(var(--paper));
+  border: 2px solid rgb(var(--ink));
+  box-shadow: 2px 2px 0 var(--shadow-cast);
+  transition: transform .15s ease;
+}
+.range:active::-webkit-slider-thumb { transform: scale(.92); }
+
+.range::-moz-range-track { height: 4px; border-radius: 999px; background: rgb(var(--ink) / .18); }
+.range::-moz-range-progress { height: 4px; border-radius: 999px; background: rgb(var(--accent)); }
+.range::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 999px;
+  background: rgb(var(--paper)); border: 2px solid rgb(var(--ink));
+  box-shadow: 2px 2px 0 var(--shadow-cast);
+}
+
+/* The category rail. Nine pills of different widths wrapping into a ragged
+   block is not a layout; on a phone they become a wall. One line that scrolls
+   keeps the set readable and the filter bar a fixed height. */
+.rail {
+  display: flex; gap: .5rem;
+  overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+  /* the set fades out at the right edge rather than being cut mid-pill, which
+     is what tells you there is more of it to reach */
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 2.5rem), transparent 100%);
+}
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; flex: 0 0 auto; }
+/* on a wide screen the whole set fits, so nothing scrolls and nothing fades */
+@media (min-width: 1024px) { .rail { flex-wrap: wrap; overflow: visible; mask-image: none; } }
+
+/* ===== The comparison sheet =====
+   Three columns will not fit a phone, and shrinking them until they do turns
+   every cell into a two-word column. So the sheet scrolls sideways instead and
+   the label column is pinned to the left edge — you can always see which row
+   you are reading, which is the thing that actually breaks on small screens. */
+.cmp-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.cmp { min-width: 34rem; }
+
+.cmp-corner,
+.cmp-label {
+  position: sticky; left: 0; z-index: 2;
+  background: rgb(var(--paper));
+  text-align: left; vertical-align: middle;
+  padding: .85rem 1rem;
+  font-family: "Space Mono", monospace;
+  font-size: .6875rem; letter-spacing: .12em; text-transform: uppercase;
+  color: rgb(var(--ink2));
+  white-space: nowrap;
+  border-right: 2px solid rgb(var(--ink));
+}
+.cmp-head {
+  padding: 1rem .75rem;
+  vertical-align: bottom; text-align: center;
+  border-bottom: 2px solid rgb(var(--ink));
+  background: rgb(var(--paper));
+}
+.cmp-corner { border-bottom: 2px solid rgb(var(--ink)); }
+.cmp-cell {
+  padding: .85rem .75rem;
+  text-align: center; vertical-align: middle;
+  border-bottom: 1px solid rgb(var(--ink) / .15);
+  min-width: 9rem;
+}
+.cmp tbody tr:last-child .cmp-cell { border-bottom: 0; }
+.cmp-label { border-bottom: 1px solid rgb(var(--ink) / .15); }
+.cmp tbody tr:last-child .cmp-label { border-bottom: 0; }
+
+/* Prose rows carry a sentence rather than a figure, so they read left-aligned
+   at a comfortable measure instead of centred like a number. */
+.cmp-prose {
+  text-align: left; vertical-align: top;
+  font-size: .8125rem; line-height: 1.5;
+  color: rgb(var(--ink2));
+  text-wrap: pretty;
+}
+
+/* The catch is the row the site exists for; it gets the accent ground. */
+.cmp-catch .cmp-cell,
+.cmp-catch .cmp-label { background: rgb(var(--accent) / .06); }
+.cmp-catch .cmp-label { color: rgb(var(--accent-deep)); }
+.cmp-catch .cmp-prose { color: rgb(var(--ink)); }
+
+/* The leading column on a row, marked rather than coloured — colour alone
+   would not survive a colourblind reader or a greyscale print. */
+.cmp-won { position: relative; background: rgb(var(--accent) / .07); }
+/* the flag sits under the value, never beside it — inline it collides with
+   whatever the cell is showing ("4.8LEADS") */
+.cmp-flag {
+  display: flex; align-items: center; justify-content: center; gap: .3rem;
+  margin-top: .4rem;
+  color: rgb(var(--accent-deep));
+}
+.cmp-prose .cmp-flag { justify-content: flex-start; }
+
+/* On a phone the pinned labels were taking half the width, so only one tool
+   column was ever visible — which defeats a comparison. Let them wrap and sit
+   tighter, and two columns fit alongside. */
+@media (max-width: 640px) {
+  .cmp-corner,
+  .cmp-label {
+    white-space: normal;
+    max-width: 6.25rem;
+    padding: .75rem .6rem;
+    letter-spacing: .08em;
+    line-height: 1.35;
+  }
+  .cmp-cell { min-width: 8.5rem; padding: .75rem .6rem; }
+}
+
+/* ===== The record, fed through a gate =====
+   One frame is in the aperture at a time and the strip slides to the next, the
+   way a sheet is drawn through a press: a firm pull, then a settle. Each frame
+   states a figure on the left and acts it out on the right — so the animation
+   is carrying the meaning rather than decorating it. */
+.gate { position: relative; overflow: hidden; }
+
+/* The strip travels vertically, not across.
+   The figure sits at the left of a frame and its mark at the right, so a
+   horizontal slide drags the two past each other through the empty middle and
+   briefly pairs one frame's number with the previous frame's mark — which is
+   what made it read as chaos. Vertically the pair moves as one object, over a
+   much shorter distance, the way a board turns over. */
+.gate-track {
+  display: flex; flex-direction: column;
+  will-change: transform;
+  transition: transform .72s cubic-bezier(.65, 0, .2, 1);
+}
+.gate-frame { flex: 1 1 0; min-height: 0; }
+
+/* Ink settling into paper — dropped a fraction, over-inked and soft, then
+   sharp. Shared by the figure and by every mark that arrives after it. */
+.set-in { animation: set-in .62s cubic-bezier(.16,1,.3,1) both; }
+@keyframes set-in {
+  from { opacity: 0; transform: translateY(.42em) scale(.965); filter: blur(4px); }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* A tally stroke, struck slightly off-square the way a hand would. */
+.tally-in { animation: tally-in .34s cubic-bezier(.16,1,.3,1) both; }
+@keyframes tally-in {
+  from { opacity: 0; transform: translateY(.3em) rotate(-10deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* A category chip dealt onto the page. */
+.chip-in { animation: chip-in .42s cubic-bezier(.16,1,.3,1) both; }
+@keyframes chip-in {
+  from { opacity: 0; transform: translateY(.45em) scale(.6); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* A rule inked across — the independence meter, and the strike through the
+   empty ledger slots that says nothing was ever entered in them. */
+.rule-in { transform-origin: left; animation: rule-in .85s cubic-bezier(.16,1,.3,1) both; }
+@keyframes rule-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-track { transition: none; }
+  .tally-in, .chip-in, .rule-in { animation: none; }
+}
+
 /* The verdict seal. Ring type set in the mono face at the size a real rubber
    stamp would carry, turning once every half-minute — slow enough to read as a
    press mechanism rather than a loading spinner. */
@@ -362,9 +566,11 @@ h1, h2 { letter-spacing: -.015em; }
 
 /* Motion lives behind this guard, so anyone who asks their OS for reduced
    motion just gets the static, fully-legible page — nothing hidden, nothing moving. */
-/* Reduced motion: the seal is struck and stays struck. */
+/* Reduced motion: the seal is struck and stays struck, and the board stops
+   running entirely (the component swaps itself for a static strapline). */
 @media (prefers-reduced-motion: reduce) {
   .seal-ring { animation: none; }
+  .set-in { animation: none; }
 }
 
 @media (prefers-reduced-motion: no-preference) {

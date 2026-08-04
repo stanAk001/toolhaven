@@ -1,0 +1,8 @@
+# SPA fallback — Netlify, Cloudflare Pages and Render static sites.
+#
+# React Router owns every path after the domain, but those paths are not files.
+# Without this line a host asked for /tools looks for dist/tools, finds nothing
+# and serves its 404 page — which is why a refresh or a restored tab breaks
+# while typing the bare domain works. 200 (not 301) so the URL is preserved and
+# the router still sees the original path.
+/*  /index.html  200
