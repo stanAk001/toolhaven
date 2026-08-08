@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Search } from "lucide-react";
 import { getCategories, subscribe } from "../api/client.js";
@@ -73,6 +74,20 @@ export function Navbar() {
   useEffect(() => { getCategories().then(setCats).catch(() => {}); }, []);
   useEffect(() => { setOpen(false); }, [loc.pathname]);
 
+  // Escape closes the panel.
+  //
+  // Deliberately no body-scroll lock here: `overflow:hidden` on <body> stops the
+  // header being a sticky child of a scrolling box, so it drops back to its
+  // static position — scrolled out of sight, taking the close button with it.
+  // The panel is fixed and covers everything under the header anyway, so the
+  // page behind it cannot be seen moving.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <header className={`border-b-2 border-ink sticky top-0 z-40 transition-all duration-300 ${scrolled ? "nav-scrolled bg-paper/80 supports-[backdrop-filter]:bg-paper/70 backdrop-blur-md" : "bg-paper"}`}>
       <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between gap-2">
@@ -102,8 +117,15 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* full-screen editorial takeover */}
-      {open && (
+      {/* Full-screen editorial takeover, rendered into <body> rather than into
+          this header.
+          Once you scroll, the header gains backdrop-blur — and an element with
+          a backdrop-filter becomes the containing block for its position:fixed
+          descendants. Nested here, the panel's `top-16 bottom-0` was measured
+          against the 64px header instead of the viewport, so it computed to
+          zero height and the menu silently opened as nothing. A portal puts it
+          out of reach of anything the header's styling does now or later. */}
+      {open && createPortal(
         <div className="md:hidden fixed inset-x-0 top-16 bottom-0 z-30 bg-paper flex flex-col fade-in overflow-y-auto overscroll-contain">
           {/* Set as the issue's contents rather than six shouted words: each
               entry folioed, ruled off, and closed by its own arrow. Smaller type
@@ -165,7 +187,8 @@ export function Navbar() {
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </header>
   );
