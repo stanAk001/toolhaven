@@ -12,4 +12,6 @@ Disallow: /*?sort=
 Disallow: /*?minRating=
 Disallow: /*?maxPrice=
 
-Sitemap: https://toolhaven.net/sitemap.xml
+# www is the canonical host — the apex 308-redirects to it, so the sitemap is
+# declared there. A Sitemap: line that redirects is a needless hop for a crawler.
+Sitemap: https://www.toolhaven.net/sitemap.xml

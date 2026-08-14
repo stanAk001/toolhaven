@@ -2,11 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "//": "Proxy the sitemap to the API so it answers on the public domain. It is built from the database on request, so newly published tools are crawlable without a redeploy. Point this at your deployed API origin.",
       "source": "/sitemap.xml",
       "destination": "https://toolhavenbackend.onrender.com/sitemap.xml"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
