@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Seo } from "../lib/seo.jsx";
 
 // Affiliate disclosure rewritten to disarm the "you're paid to praise" doubt
 // head-on: lead with editorial independence, frame the money as a wall, and
@@ -8,6 +9,7 @@ import { PageHead } from "../components/editorial.jsx";
 export default function Disclosure() {
   return (
     <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
+      <Seo title="Affiliate disclosure" description="How Toolhaven makes money, and the wall between that and what we write." path="/disclosure" />
       <PageHead kicker="Legal" title="Affiliate Disclosure">
         How Toolhaven makes money — and the wall between that and what we write.
       </PageHead>

@@ -24,6 +24,7 @@ model Category {
   tools         Tool[]
   subcategories Subcategory[]
   blogPosts     BlogPost[]
+  bestLists     BestList[]
   clicks        AffiliateClick[]
 }
 
@@ -73,6 +74,7 @@ model Tool {
   pros         ToolPro[]
   clicks       AffiliateClick[]
   blogMentions BlogPostTool[]
+  bestEntries  BestListEntry[]
 }
 
 model ToolPro {
@@ -186,7 +188,66 @@ model Stack {
   createdAt  DateTime @default(now())
 }
 
+// ── Best-of lists ────────────────────────────────────────────────────────
+// The editorial listicle: "Best accounting software for small businesses".
+// These are the pages that answer commercial-intent searches, and the reason
+// they are modelled rather than written as blog markdown is that every entry
+// points at a real Tool row. Price, rating and the catch are therefore read
+// live from the tool itself — a list published in March cannot still be quoting
+// March's pricing in September, and the comparison table cannot drift out of
+// step with the tool pages it links to.
+model BestList {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique // "accounting-software" → /best/accounting-software
+  title       String
+  subtitle    String?  // the deck under the headline
+  intro       String   // markdown: what this list covers
+  audience    String?  // "who this is for", stated plainly
+  criteria    String?  // markdown: how the picks were chosen
+  isPublished Boolean  @default(true)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  entries BestListEntry[]
+  faqs    BestListFaq[]
+}
+
+// One tool's place in a list. `award` is the reason it's here ("Best overall",
+// "Best free tier"); `blurb` is the editorial note for this list specifically,
+// distinct from the tool's own description.
+model BestListEntry {
+  id         Int      @id @default(autoincrement())
+  bestListId Int
+  bestList   BestList @relation(fields: [bestListId], references: [id], onDelete: Cascade)
+  toolId     Int
+  tool       Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  rank       Int      @default(0)
+  award      String?
+  blurb      String?
+
+  @@unique([bestListId, toolId])
+}
+
+model BestListFaq {
+  id         Int      @id @default(autoincrement())
+  bestListId Int
+  bestList   BestList @relation(fields: [bestListId], references: [id], onDelete: Cascade)
+  question   String
+  answer     String
+  orderIndex Int      @default(0)
+}
+
 // Vendors submitting their tool to be considered for an (honest) review.
+//
+// The extra fields below are the ones a reviewer would otherwise have to go and
+// find: what it does, who it's for, what it actually costs. Asking once, at
+// submission, is the difference between a queue that can be worked through and
+// a queue of links needing research. All of them are optional — a thin
+// submission is still a submission, it just waits longer.
 model ToolSubmission {
   id               Int      @id @default(autoincrement())
   toolName         String
@@ -198,6 +259,19 @@ model ToolSubmission {
   email            String
   pitch            String   // one-line pitch
   details          String?  // longer context
-  status           String   @default("pending") // pending | reviewing | listed | declined
-  createdAt        DateTime @default(now())
+
+  // what it is
+  description    String?
+  logoUrl        String?
+  features       String[] // key features, one per line
+  useCases       String[] // "what people use it for", one per line
+  targetAudience String?
+
+  // who's behind it — context for the reviewer, and how to follow up
+  companyName String?
+  socialLinks String[] // X, LinkedIn, GitHub…
+  screenshots String[] // image URLs
+
+  status    String   @default("pending") // pending | reviewing | listed | declined
+  createdAt DateTime @default(now())
 }

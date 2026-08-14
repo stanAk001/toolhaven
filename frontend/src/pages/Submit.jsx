@@ -4,6 +4,7 @@ import { ScanSearch, Users, ShieldCheck, Send } from "lucide-react";
 import { submitTool } from "../api/client.js";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Seo } from "../lib/seo.jsx";
 
 const CATEGORIES = ["AI Tools", "Stock Trading", "Productivity", "Design", "Development", "Marketing", "Video & Audio", "Customer Support", "Other / not sure"];
 const PRICING = ["Free", "Freemium", "Paid", "Subscription"];
@@ -12,6 +13,11 @@ const PROGRAMS = ["PartnerStack", "Impact", "ShareASale", "Other network", "None
 const EMPTY = {
   toolName: "", websiteUrl: "", category: "", pricing: "", affiliateProgram: "",
   contactName: "", email: "", pitch: "", details: "", website: "", // `website` is the honeypot
+  // Optional detail. Everything here is something a reviewer would otherwise
+  // have to go and find, which is the difference between a queue that can be
+  // worked and a queue of links needing research.
+  description: "", logoUrl: "", features: "", useCases: "", targetAudience: "",
+  companyName: "", socialLinks: "", screenshots: "",
 };
 
 function Promise({ icon: Icon, title, text }) {
@@ -70,6 +76,7 @@ export default function Submit() {
 
   return (
     <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
+      <Seo title="Submit your tool" description="Get your software in front of people actively looking for tools. Every submission is reviewed before publication." path="/submit" />
       <PageHead kicker="For founders & makers" title="Put your tool in front of buyers who trust us.">
         We review tools independently and link to the good ones through affiliate partnerships. If yours is genuinely worth it, this is how the right people find it.
       </PageHead>
@@ -134,6 +141,80 @@ export default function Submit() {
             <label htmlFor="s-details" className={lab}>Anything else we should know?</label>
             <textarea id="s-details" className={`${field} min-h-[120px] resize-y`} placeholder="Who it's really for, what makes it different, the honest downside, a demo login if you have one…" value={form.details} onChange={set("details")} />
           </div>
+
+          {/* Everything past this point is optional, and said so plainly — a
+              wall of required fields is how a submission form stops collecting
+              submissions. Filling it in is framed as what it is: the difference
+              between waiting for a reviewer to research you and being ready to
+              publish. */}
+          <details className="border-2 border-ink rounded-2xl bg-paper2/40 overflow-hidden group/d">
+            <summary className="flex items-center justify-between gap-3 px-4 min-h-touch cursor-pointer select-none list-none">
+              <span className="font-mono text-[11px] uppercase tracking-[.14em]">
+                Add detail <span className="text-ink2">— optional, speeds up review</span>
+              </span>
+              <span aria-hidden="true" className="text-accent transition-transform duration-300 group-open/d:rotate-45">+</span>
+            </summary>
+
+            <div className="px-4 pb-4 pt-1 space-y-4 border-t-2 border-ink/15">
+              <p className="text-sm text-ink2 text-pretty">
+                The more of this we have, the less we have to go and find — and the sooner your page can go live.
+              </p>
+
+              <div>
+                <label htmlFor="s-desc" className={lab}>Short description</label>
+                <input id="s-desc" className={field} maxLength={400}
+                  placeholder="A sentence or two, the way you'd describe it to a colleague"
+                  value={form.description} onChange={set("description")} />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="s-company" className={lab}>Company / maker</label>
+                  <input id="s-company" className={field} value={form.companyName} onChange={set("companyName")} />
+                </div>
+                <div>
+                  <label htmlFor="s-logo" className={lab}>Logo URL</label>
+                  <input id="s-logo" className={field} placeholder="https://…" value={form.logoUrl} onChange={set("logoUrl")} />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="s-audience" className={lab}>Who is it for?</label>
+                <input id="s-audience" className={field} maxLength={300}
+                  placeholder="Solo founders, design teams, accountants…"
+                  value={form.targetAudience} onChange={set("targetAudience")} />
+              </div>
+
+              <div>
+                <label htmlFor="s-features" className={lab}>Key features — one per line</label>
+                <textarea id="s-features" rows={4} className={`${field} resize-y`}
+                  placeholder={"Real-time collaboration\nOffline mode\nAPI access"}
+                  value={form.features} onChange={set("features")} />
+              </div>
+
+              <div>
+                <label htmlFor="s-usecases" className={lab}>What people use it for — one per line</label>
+                <textarea id="s-usecases" rows={3} className={`${field} resize-y`}
+                  placeholder={"Writing product specs\nRunning a weekly review"}
+                  value={form.useCases} onChange={set("useCases")} />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="s-social" className={lab}>Social links — one per line</label>
+                  <textarea id="s-social" rows={3} className={`${field} resize-y`}
+                    placeholder={"https://x.com/…\nhttps://linkedin.com/company/…"}
+                    value={form.socialLinks} onChange={set("socialLinks")} />
+                </div>
+                <div>
+                  <label htmlFor="s-shots" className={lab}>Screenshot URLs — one per line</label>
+                  <textarea id="s-shots" rows={3} className={`${field} resize-y`}
+                    placeholder={"https://…/screen-1.png"}
+                    value={form.screenshots} onChange={set("screenshots")} />
+                </div>
+              </div>
+            </div>
+          </details>
 
           <div className="rule my-2" />
 

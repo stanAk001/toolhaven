@@ -62,7 +62,7 @@ export function CommandPalette() {
 
   const ql = q.trim().toLowerCase();
   const items = [
-    ...tools.map((t) => ({ kind: "tool", label: t.name, sub: t.category?.name || "Tool", to: `/tool/${t.slug}`, color: t.category?.colorPrimary, mono: t.logoMono })),
+    ...tools.map((t) => ({ kind: "tool", label: t.name, sub: t.category?.name || "Tool", to: `/tools/${t.slug}`, color: t.category?.colorPrimary, mono: t.logoMono })),
     ...PAGES.filter((p) => !ql || p.label.toLowerCase().includes(ql)).map((p) => ({ kind: "page", label: p.label, sub: p.sub, to: p.to })),
   ];
   const clamped = Math.min(active, Math.max(0, items.length - 1));

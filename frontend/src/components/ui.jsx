@@ -70,7 +70,7 @@ export function ToolCard({ tool }) {
   const mono = tool.logoMono || tool.name[0];
   return (
     <Tilt className="h-full">
-      <Link to={`/tool/${tool.slug}`} style={{ transformStyle: "preserve-3d" }}
+      <Link to={`/tools/${tool.slug}`} style={{ transformStyle: "preserve-3d" }}
         className="tactile group relative flex flex-col h-full rounded-2xl bg-paper border-2 border-ink p-4 sm:p-5">
         {/* One hover idea, not nine: the category colour floods up the card and
             the type inverts onto it. The ghost monogram is a printed mark and
@@ -146,7 +146,7 @@ export function CategoryRow({ category, n = 0, preview = [] }) {
   const onLeave = () => { if (arrowRef.current) arrowRef.current.style.transform = ""; };
 
   return (
-    <Link to={`/category/${category.slug}`} onMouseMove={onMove} onMouseLeave={onLeave}
+    <Link to={`/categories/${category.slug}`} onMouseMove={onMove} onMouseLeave={onLeave}
       className="group relative block border-b-2 border-ink overflow-hidden">
       {/* the colour wipe + a printed halftone over it */}
       <span aria-hidden="true"
@@ -212,7 +212,7 @@ export function CategoryCard({ category }) {
   const extraNarrow = total - Math.min(preview.length, 3);  // three, on a half-width card
   return (
     <Tilt className="h-full">
-      <Link to={`/category/${category.slug}`} style={{ transformStyle: "preserve-3d" }}
+      <Link to={`/categories/${category.slug}`} style={{ transformStyle: "preserve-3d" }}
         className="tactile tactile-lg group relative flex flex-col h-full rounded-2xl bg-paper border-2 border-ink p-4 sm:p-6">
         {/* one move: the colour floods up and the type inverts onto it */}
         <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[14px]">

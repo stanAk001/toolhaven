@@ -8,6 +8,7 @@ import { useScrolled, Reveal } from "./motion.jsx";
 
 const NAV = [
   ["/tools", "All tools"],
+  ["/best", "Best of"],
   ["/compare", "Compare"],
   ["/stacks", "Stacks"],
   ["/blog", "Blog"],
@@ -178,7 +179,7 @@ export function Navbar() {
             </p>
             <div className="rail">
               {cats.map((c) => (
-                <Link key={c.slug} to={`/category/${c.slug}`}
+                <Link key={c.slug} to={`/categories/${c.slug}`}
                   style={{ "--cat": c.colorPrimary, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
                   className="group/m inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide whitespace-nowrap px-3 min-h-touch border-2 border-ink rounded-full bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)] active:text-white active:bg-[var(--cat)]">
                   <span className="w-2 h-2 rounded-full bg-[var(--cat)] shrink-0 transition-colors group-hover/m:bg-white" />
@@ -283,7 +284,7 @@ export function Footer() {
               <h4 className="font-mono text-[11px] uppercase tracking-[.2em] text-accentDeep mb-4">Categories</h4>
               <div className="flex flex-wrap gap-2">
                 {cats.map((c) => (
-                  <Link key={c.slug} to={`/category/${c.slug}`}
+                  <Link key={c.slug} to={`/categories/${c.slug}`}
                     style={{ "--cat": c.colorPrimary, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
                     className="group/c inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide px-3 py-1.5 min-h-touch md:min-h-0 border-2 border-ink rounded-full bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)]">
                     <span className="w-2 h-2 rounded-full bg-[var(--cat)] transition-colors group-hover/c:bg-white" />
@@ -310,7 +311,7 @@ export function Footer() {
           <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
             {/* legal links, separated by the house ✦ mark, each with an accent underline that wipes in */}
             <nav className="flex flex-wrap items-center font-mono text-[11px] uppercase tracking-[.18em]">
-              {[["/privacy", "Privacy"], ["/disclosure", "Affiliate Disclosure"], ["/terms", "Terms"], ["/contact", "Contact"]].map(([to, label], i) => (
+              {[["/how-we-review", "How We Review"], ["/disclosure", "Affiliate Disclosure"], ["/privacy", "Privacy"], ["/terms", "Terms"]].map(([to, label], i) => (
                 <span key={to} className="inline-flex items-center">
                   {i > 0 && <span aria-hidden="true" className="text-accent px-3 select-none">✦</span>}
                   <Link to={to}

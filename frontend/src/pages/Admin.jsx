@@ -7,6 +7,9 @@ import {
 import { Link } from "react-router-dom";
 import { PageHead } from "../components/editorial.jsx";
 import { Stars } from "../components/ui.jsx";
+import { BestAdmin } from "../components/bestadmin.jsx";
+import { ToolsAdmin, ClicksAdmin } from "../components/toolsadmin.jsx";
+import { Seo } from "../lib/seo.jsx";
 
 // The editor's desk — private, token-gated. Two views: tool submissions and
 // pending reader reviews (the moderation queue that keeps fake reviews out).
@@ -86,6 +89,7 @@ export default function Admin() {
   if (!authed) {
     return (
       <div className="max-w-md mx-auto px-5 sm:px-6 py-16 sm:py-24 fade-in">
+      <Seo title="Editor's desk" description="Private." path="/admin" noIndex />
         <PageHead kicker="Private" title="Editor's desk" />
         <p className="text-ink2 mb-5">Enter the admin token to manage submissions and reviews.</p>
         <form onSubmit={(e) => { e.preventDefault(); load(input.trim()); }} className="flex gap-2">
@@ -103,12 +107,15 @@ export default function Admin() {
 
   return (
     <div className="max-w-4xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
+      {/* the signed-in view needs the noindex too — it renders instead of the
+          token screen, so without it this branch falls back to the site default */}
+      <Seo title="Editor's desk" description="Private." path="/admin" noIndex />
       <PageHead kicker="Editor's desk" title="Moderation" />
 
       {/* view switch */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex gap-2">
-          {[["submissions", `Submissions · ${items.length}`], ["reviews", `Reviews · ${reviews.length}`], ["stacks", `Stacks · ${stacks.length}`]].map(([v, label]) => (
+          {[["submissions", `Submissions · ${items.length}`], ["reviews", `Reviews · ${reviews.length}`], ["stacks", `Stacks · ${stacks.length}`], ["best", "Best-of"], ["tools", "Tools"], ["clicks", "Clicks"]].map(([v, label]) => (
             <button key={v} onClick={() => setView(v)}
               className={`font-mono text-[11px] uppercase tracking-wide px-3.5 py-2 rounded-full border-2 border-ink transition-colors ${view === v ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
               {label}
@@ -176,7 +183,7 @@ export default function Admin() {
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div className="min-w-0">
                     <span className="font-mono text-[11px] uppercase tracking-wide text-ink2">on </span>
-                    <a href={`/tool/${r.tool?.slug}`} className="font-display text-lg font-semibold hover:text-accentDeep">{r.tool?.name || "—"}</a>
+                    <a href={`/tools/${r.tool?.slug}`} className="font-display text-lg font-semibold hover:text-accentDeep">{r.tool?.name || "—"}</a>
                     <span className="font-mono text-[11px] text-ink2 ml-2">{new Date(r.createdAt).toLocaleDateString()}</span>
                   </div>
                   <span className="shrink-0"><Stars r={r.rating} size={14} showNum={false} /></span>
@@ -199,6 +206,12 @@ export default function Admin() {
       )}
 
       {/* ---- STACKS (moderation queue) ---- */}
+      {/* Best-of runs its own loading and saving — it edits rather than
+          moderates, so it doesn't share the queue state above. */}
+      {view === "best" && <BestAdmin token={token} />}
+      {view === "tools" && <ToolsAdmin token={token} />}
+      {view === "clicks" && <ClicksAdmin token={token} />}
+
       {view === "stacks" && (
         <>
           {!loading && stacks.length === 0 && <p className="text-ink2">No stacks waiting — the queue is clear. ✦</p>}
@@ -207,7 +220,7 @@ export default function Admin() {
               <div key={s.id} className="border-2 border-ink rounded-2xl bg-paper p-5" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {s.tools.map((t) => (
-                    <Link key={t.slug} to={`/tool/${t.slug}`} title={t.name}
+                    <Link key={t.slug} to={`/tools/${t.slug}`} title={t.name}
                       className="grid place-items-center min-w-[2rem] h-8 px-2 rounded-lg border-2 border-ink text-white font-display font-bold text-sm"
                       style={{ background: t.category?.colorPrimary || "#1C1714" }}>{t.logoMono || t.name[0]}</Link>
                   ))}

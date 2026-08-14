@@ -7,21 +7,45 @@ import { Reveal } from "../components/motion.jsx";
 import { NotFoundBlock } from "../components/editorial.jsx";
 import { ArticleCover, ToolRail } from "../components/blogvisuals.jsx";
 import { BlogFigure } from "../components/blogfigures.jsx";
+import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { Seo, articleSchema, breadcrumbSchema } from "../lib/seo.jsx";
 
 export default function BlogPost() {
   const { slug } = useParams();
   const { data: post, loading, error } = useData(() => getPost(slug), [slug]);
 
   if (loading) return <Loader />;
-  if (error || !post) return <NotFoundBlock code="" kicker="Missing" title="Post not found."
-    message="That story isn't in print — it may have moved or been unpublished." to="/blog" cta="Back to the blog →" />;
+  if (error || !post) {
+    return (
+      <>
+        <Seo title="Post not found" path={`/blog/${slug}`} noIndex />
+        <NotFoundBlock code="" kicker="Missing" title="Post not found."
+          message="That story isn't in print — it may have moved or been unpublished." to="/blog" cta="Back to the blog →" />
+      </>
+    );
+  }
   const color = post.category?.colorPrimary || "#1C1714";
+  const trail = [
+    { label: "Home", to: "/" },
+    { label: "Blog", to: "/blog" },
+    ...(post.category ? [{ label: post.category.name, to: `/categories/${post.category.slug}` }] : []),
+    { label: post.title, to: `/blog/${post.slug}` },
+  ];
 
   // the first paragraph gets the inked drop-cap; the rest read straight
   let firstParagraph = true;
 
   return (
     <article className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
+      <Seo
+        title={post.title}
+        description={post.excerpt}
+        path={`/blog/${post.slug}`}
+        type="article"
+        image={post.featuredImage || "/og.svg"}
+        schema={[articleSchema(post), breadcrumbSchema(trail)]}
+      />
+      <Breadcrumbs trail={trail} />
       <Link to="/blog"
         className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[.18em] text-ink2 hover:text-accentDeep transition-colors mb-6">
         ← The reading room

@@ -1,8 +1,84 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { ah } from "../middleware/error.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
+
+/* ── Editor's desk: the commercial fields ─────────────────────────────────
+   Registered before "/:slug", which would otherwise read "manage" as a tool
+   slug. This deliberately edits the operational surface — the affiliate link,
+   pricing, the catch, featured and active — rather than the whole record.
+   Features and pros are ordered child tables and belong in their own editor;
+   putting them behind the same Save button would make a one-field pricing fix
+   risk rewriting a tool's entire content. */
+
+// The only fields this endpoint will write. Anything else in the body is
+// ignored rather than trusted — an allowlist, not a spread.
+const EDITABLE = {
+  affiliateLink: (v) => (v?.trim() ? v.trim() : null),
+  affiliateNetwork: (v) => (v?.trim() ? v.trim() : null),
+  websiteUrl: (v) => (v?.trim() ? v.trim() : null),
+  bestFor: (v) => (v?.trim() ? v.trim() : null),
+  caveat: (v) => (v?.trim() ? v.trim() : null),
+  priceType: (v) => (v?.trim() ? v.trim() : null),
+  priceMin: (v) => (v === "" || v == null ? null : Number(v)),
+  priceMax: (v) => (v === "" || v == null ? null : Number(v)),
+  rating: (v) => (v === "" || v == null ? null : Number(v)),
+  freeTrial: (v) => Boolean(v),
+  freeTier: (v) => Boolean(v),
+  isFeatured: (v) => Boolean(v),
+  isActive: (v) => Boolean(v),
+};
+
+// GET /api/tools/manage — every tool, including inactive, with its money fields
+router.get("/manage", requireAdmin, ah(async (_req, res) => {
+  const items = await prisma.tool.findMany({
+    orderBy: [{ isFeatured: "desc" }, { popularity: "desc" }],
+    select: {
+      id: true, slug: true, name: true, logoMono: true,
+      affiliateLink: true, affiliateNetwork: true, websiteUrl: true,
+      priceType: true, priceMin: true, priceMax: true,
+      freeTrial: true, freeTier: true, rating: true,
+      isFeatured: true, isActive: true, bestFor: true, caveat: true,
+      category: { select: { id: true, name: true, colorPrimary: true } },
+      _count: { select: { clicks: true } },
+    },
+  });
+  res.json({
+    items: items.map((t) => ({ ...t, clicks: t._count.clicks, _count: undefined })),
+  });
+}));
+
+// PATCH /api/tools/manage/:id — update only the allowlisted fields
+router.patch("/manage/:id", requireAdmin, ah(async (req, res, next) => {
+  const id = Number(req.params.id);
+  const data = {};
+
+  for (const [key, coerce] of Object.entries(EDITABLE)) {
+    if (req.body?.[key] !== undefined) data[key] = coerce(req.body[key]);
+  }
+  if (Object.keys(data).length === 0) {
+    const e = new Error("Nothing to update.");
+    e.status = 400;
+    return next(e);
+  }
+
+  // A price range that reads backwards would render as "$40–$10/mo".
+  if (data.priceMin != null && data.priceMax != null && data.priceMin > data.priceMax) {
+    const e = new Error("Minimum price can't be higher than the maximum.");
+    e.status = 400;
+    return next(e);
+  }
+  if (data.rating != null && (data.rating < 0 || data.rating > 5)) {
+    const e = new Error("Rating must be between 0 and 5.");
+    e.status = 400;
+    return next(e);
+  }
+
+  const tool = await prisma.tool.update({ where: { id }, data });
+  res.json(tool);
+}));
 
 const SORT_MAP = {
   popular: [{ popularity: "desc" }],

@@ -4,6 +4,7 @@ import { getTools, getStacks, createStack } from "../api/client.js";
 import { Loader } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead, SectionHead } from "../components/editorial.jsx";
+import { Seo } from "../lib/seo.jsx";
 
 const MAX = 12;
 const TILTS = [-1.2, 0.9, -0.7, 1.1, -1, 0.7];
@@ -11,7 +12,7 @@ const TILTS = [-1.2, 0.9, -0.7, 1.1, -1, 0.7];
 // a tool's monogram tile, links through to the tool
 function ToolTile({ t }) {
   return (
-    <Link to={`/tool/${t.slug}`} title={t.name}
+    <Link to={`/tools/${t.slug}`} title={t.name}
       className="grid place-items-center min-w-[2rem] sm:min-w-[2.2rem] h-8 sm:h-9 px-1.5 sm:px-2 rounded-lg border-2 border-ink text-white font-display font-bold text-xs sm:text-sm transition-transform hover:-translate-y-0.5"
       style={{ background: t.category?.colorPrimary || "#1C1714", boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
       {t.logoMono || t.name[0]}
@@ -65,6 +66,7 @@ export default function Stacks() {
 
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
+      <Seo title="Community stacks" description="Real toolkits shared by readers — what people actually use together to get work done." path="/stacks" />
       <PageHead kicker="Community" title="The stacks real people actually run.">
         No theory, no sponsored picks — just the tools readers reach for every day. Share yours and see what others use.
       </PageHead>

@@ -57,7 +57,7 @@ export function ToolRail({ links = [], color = "#1C1714" }) {
   return (
     <div className="flex flex-wrap gap-3">
       {links.map((l) => (
-        <Link key={l.id} to={`/tool/${l.tool.slug}`}
+        <Link key={l.id} to={`/tools/${l.tool.slug}`}
           className="group/r inline-flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-full border-2 border-ink bg-paper
             transition-transform duration-200 hover:-translate-y-0.5"
           style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>

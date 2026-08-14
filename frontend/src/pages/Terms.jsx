@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Seo } from "../lib/seo.jsx";
 
 // Standard terms of use for a content/affiliate site — informational content,
 // no warranties, links go to third parties.
 export default function Terms() {
   return (
     <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
+      <Seo title="Terms of use" description="The terms that apply when you use Toolhaven." path="/terms" />
       <PageHead kicker="Legal" title="Terms of Use">
         Last updated: June 2026. The short version: use it freely, do your own homework.
       </PageHead>

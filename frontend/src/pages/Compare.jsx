@@ -17,6 +17,8 @@ import { getTools, compareTools } from "../api/client.js";
 import { Stars, Loader } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 import { goAffiliate, priceLabel } from "../lib/helpers.jsx";
 
 const MAX = 3;
@@ -65,13 +67,6 @@ function YesNo({ v }) {
   );
 }
 
-// upsert a <meta> tag so the comparison gets a title + preview image
-function setMeta(attr, key, val) {
-  let el = document.head.querySelector(`meta[${attr}="${key}"]`);
-  if (!el) { el = document.createElement("meta"); el.setAttribute(attr, key); document.head.appendChild(el); }
-  el.setAttribute("content", val);
-}
-
 export default function Compare() {
   const [params, setParams] = useSearchParams();
   const [all, setAll] = useState([]);
@@ -95,24 +90,25 @@ export default function Compare() {
     compareTools(picked).then((d) => setRows(d.items || []));
   }, [picked]);
 
-  useEffect(() => {
-    const fallback = "Toolhaven — The honest tools guide";
-    if (rows.length >= 2) {
-      const names = rows.map((r) => r.name).join(" vs ");
-      const title = `${names} — compared on Toolhaven`;
-      const image = `${API}/og/compare?slugs=${encodeURIComponent(picked.join(","))}`;
-      document.title = title;
-      setMeta("property", "og:title", title);
-      setMeta("property", "og:image", image);
-      setMeta("name", "twitter:image", image);
-      setMeta("property", "og:url", window.location.href);
-    } else {
-      document.title = "Compare tools — Toolhaven";
-    }
-    return () => { document.title = fallback; };
-  }, [rows, picked]);
-
   useEffect(() => { if (pickerOpen) searchRef.current?.focus(); }, [pickerOpen]);
+
+  /* A live comparison names itself and gets the generated preview card; the
+   * empty picker is the generic page. The picker state is a query string, so
+   * only the empty page is canonical — otherwise every permutation of three
+   * tools would be a separate URL competing for the same intent. */
+  const comparing = rows.length >= 2;
+  const names = rows.map((r) => r.name);
+  const seo = comparing
+    ? {
+      title: `${names.join(" vs ")} — compared side by side`,
+      description: `${names.join(", ")} compared on price, free tier, ratings and the catch on each. No sponsored winners.`,
+      image: `${API}/og/compare?slugs=${encodeURIComponent(picked.join(","))}`,
+    }
+    : {
+      title: "Compare tools side by side",
+      description: "Put up to three tools head to head: price, free trial, ratings and the catch on each one.",
+      image: "/og.svg",
+    };
 
   const add = (slug) => {
     setPicked((p) => (p.includes(slug) || p.length >= MAX ? p : [...p, slug]));
@@ -168,6 +164,14 @@ export default function Compare() {
 
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
+      <Seo
+        title={seo.title}
+        description={seo.description}
+        image={seo.image}
+        path="/compare"
+        schema={breadcrumbSchema([{ label: "Home", to: "/" }, { label: "Compare", to: "/compare" }])}
+      />
+      <Breadcrumbs trail={[{ label: "Home", to: "/" }, { label: "Compare", to: "/compare" }]} />
       <PageHead kicker="Head to head" title="Compare tools">
         Pick up to three — they can be from different categories. Your comparison is a shareable link.
       </PageHead>
@@ -301,7 +305,7 @@ export default function Compare() {
                         style={{ background: t.category?.colorPrimary || "#1C1714" }}>
                         {t.logoMono || t.name[0]}
                       </span>
-                      <Link to={`/tool/${t.slug}`}
+                      <Link to={`/tools/${t.slug}`}
                         className="font-display text-base sm:text-lg font-semibold leading-tight block hover:text-accentDeep transition-colors text-balance">
                         {t.name}
                       </Link>

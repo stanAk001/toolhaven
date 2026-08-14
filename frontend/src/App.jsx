@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { Navbar, Footer } from "./components/chrome.jsx";
 import { ScrollProgress, BackToTop } from "./components/scrollui.jsx";
@@ -20,6 +20,16 @@ import Terms from "./pages/Terms.jsx";
 import Submit from "./pages/Submit.jsx";
 import Stacks from "./pages/Stacks.jsx";
 import Admin from "./pages/Admin.jsx";
+import BestIndex from "./pages/BestIndex.jsx";
+import BestList from "./pages/BestList.jsx";
+import HowWeReview from "./pages/HowWeReview.jsx";
+
+// Carries a legacy /tool/:slug or /category/:slug straight to its plural
+// equivalent, replacing the history entry so Back doesn't bounce.
+function LegacyRedirect({ to }) {
+  const { slug } = useParams();
+  return <Navigate to={`${to}/${slug}`} replace />;
+}
 
 function ScrollTop() {
   const { pathname } = useLocation();
@@ -55,8 +65,25 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/tools" element={<ToolsDirectory />} />
-            <Route path="/category/:slug" element={<CategoryPage />} />
-            <Route path="/tool/:slug" element={<ToolDetail />} />
+            <Route path="/tools/:slug" element={<ToolDetail />} />
+            <Route path="/categories/:slug" element={<CategoryPage />} />
+
+            {/* The old singular paths. Anything already shared or indexed keeps
+                working and lands on the canonical URL, so no link that exists in
+                the wild breaks and nothing ends up indexed at two addresses. */}
+            <Route path="/tool/:slug" element={<LegacyRedirect to="/tools" />} />
+            <Route path="/category/:slug" element={<LegacyRedirect to="/categories" />} />
+
+            <Route path="/best" element={<BestIndex />} />
+            <Route path="/best/:slug" element={<BestList />} />
+            <Route path="/how-we-review" element={<HowWeReview />} />
+
+            {/* The tool page already *is* the review — full write-up, features,
+                pros, the catch, rating and reader reviews. A separate /reviews
+                URL for the same tool would be two pages competing for one query,
+                so this exists to keep the link shape working, not to duplicate. */}
+            <Route path="/reviews/:slug" element={<LegacyRedirect to="/tools" />} />
+            <Route path="/reviews" element={<Navigate to="/tools" replace />} />
             <Route path="/compare" element={<Compare />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

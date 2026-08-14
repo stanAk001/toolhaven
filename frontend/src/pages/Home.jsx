@@ -5,6 +5,7 @@ import { useData } from "../lib/helpers.jsx";
 import { CategoryCard, ToolCard, SkeletonGrid } from "../components/ui.jsx";
 import { Reveal, Marquee, DrawUnderline } from "../components/motion.jsx";
 import { CropMarks, LedgerBoard, SectionHead, VerdictSeal } from "../components/editorial.jsx";
+import { Seo, orgSchema, siteSchema } from "../lib/seo.jsx";
 import { TestimonialWall } from "../components/testimonials.jsx";
 
 
@@ -28,6 +29,14 @@ export default function Home() {
 
   return (
     <div className="fade-in">
+      {/* The home page carries the site-level schema: who publishes this, and
+          the search endpoint crawlers can offer directly in results. */}
+      <Seo
+        title=""
+        description="Explore, compare and evaluate useful software and digital tools. Independent reviews that list the downsides, not just the features."
+        path="/"
+        schema={[orgSchema(), siteSchema()]}
+      />
       {/* ===== The cover ===== */}
       <section className="relative border-b-2 border-ink overflow-hidden">
         {/* screened newsprint behind the cover — a printed texture, not a toy:

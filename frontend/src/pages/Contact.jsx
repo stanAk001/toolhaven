@@ -2,6 +2,7 @@ import { useState } from "react";
 import { sendContact } from "../api/client.js";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Seo } from "../lib/seo.jsx";
 
 const TYPES = [
   ["general", "General question"],
@@ -28,6 +29,7 @@ export default function Contact() {
 
   return (
     <div className="max-w-2xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
+      <Seo title="Contact" description="Questions, corrections, partnership enquiries or a tool you think we've missed — get in touch." path="/contact" />
       <PageHead kicker="Contact" title="Say hello">
         Found a bug, want a tool reviewed, or thinking partnership? Drop a line.
       </PageHead>

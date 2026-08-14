@@ -60,7 +60,19 @@ router.post("/", ah(async (req, res) => {
   const {
     toolName, websiteUrl, category, pricing, affiliateProgram,
     contactName, email, pitch, details, website, // `website` is a honeypot
+    description, logoUrl, features, useCases, targetAudience,
+    companyName, socialLinks, screenshots,
   } = req.body;
+
+  // The list fields arrive as a textarea — one item per line. Split, trim, drop
+  // blanks, and cap both the count and each entry so a paste-bomb can't land a
+  // thousand-item array in the database.
+  const lines = (v, max = 12, len = 200) =>
+    (typeof v === "string" ? v.split("\n") : Array.isArray(v) ? v : [])
+      .map((s) => String(s).trim())
+      .filter(Boolean)
+      .slice(0, max)
+      .map((s) => s.slice(0, len));
 
   // silently accept-and-drop obvious bots (hidden honeypot field filled in)
   if (website) return res.status(201).json({ ok: true });
@@ -83,6 +95,15 @@ router.post("/", ah(async (req, res) => {
       email: String(email).slice(0, 200),
       pitch: String(pitch).slice(0, 280),
       details: details ? String(details).slice(0, 2000) : null,
+
+      description: description ? String(description).slice(0, 400) : null,
+      logoUrl: logoUrl ? String(logoUrl).slice(0, 500) : null,
+      targetAudience: targetAudience ? String(targetAudience).slice(0, 300) : null,
+      companyName: companyName ? String(companyName).slice(0, 160) : null,
+      features: lines(features),
+      useCases: lines(useCases),
+      socialLinks: lines(socialLinks, 6, 300),
+      screenshots: lines(screenshots, 6, 500),
     },
   });
 

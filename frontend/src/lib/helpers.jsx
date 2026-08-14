@@ -3,6 +3,7 @@ import {
   Sparkles, TrendingUp, Zap, Palette, Code2, Megaphone, Video, Headphones, Wrench,
 } from "lucide-react";
 import { logClick } from "../api/client.js";
+import { track, EVENTS } from "./analytics.js";
 
 // maps Category.iconKey (from the DB) to a lucide icon component
 export const ICONS = {
@@ -31,8 +32,20 @@ export function useData(fn, deps = []) {
   return { data, loading, error };
 }
 
-// logs the affiliate click, then opens the returned link in a new tab
+// Logs the click server-side, mirrors it to analytics, then opens the link.
+//
+// Two records on purpose: the database row is the one that survives ad-blockers
+// and is what an affiliate network will ask you to evidence; the analytics event
+// is what lets you see it beside the rest of the funnel. If either fails the
+// user still leaves for the tool — the navigation is the point.
 export async function goAffiliate(tool, referrerPage) {
+  track(EVENTS.OUTBOUND_CLICK, {
+    tool: tool.slug,
+    category: tool.category?.slug,
+    from: referrerPage,
+    monetised: Boolean(tool.affiliateLink),
+  });
+
   try {
     const { redirect } = await logClick(tool.id, referrerPage);
     const url = redirect || tool.affiliateLink || tool.websiteUrl;

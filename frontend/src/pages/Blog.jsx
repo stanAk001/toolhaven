@@ -3,6 +3,8 @@ import { getCategories, getPosts } from "../api/client.js";
 import { SkeletonGrid, PostCard } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
 export default function Blog() {
   const [cats, setCats] = useState([]);
@@ -19,6 +21,13 @@ export default function Blog() {
 
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
+      <Seo
+        title="Guides and honest takes on software"
+        description="Comparisons, how-tos and straight talk on the tools worth your time — written by people who actually use them."
+        path="/blog"
+        schema={breadcrumbSchema([{ label: "Home", to: "/" }, { label: "Blog", to: "/blog" }])}
+      />
+      <Breadcrumbs trail={[{ label: "Home", to: "/" }, { label: "Blog", to: "/blog" }]} />
       <PageHead kicker="The reading room" title={<>Guides &amp; honest takes</>}>
         Comparisons, how-tos and straight talk on the tools worth your time.
       </PageHead>

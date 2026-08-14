@@ -15,6 +15,8 @@ import submissions from "./routes/submissions.js";
 import stacks from "./routes/stacks.js";
 import og from "./routes/og.js";
 import clicks from "./routes/clicks.js";
+import sitemap from "./routes/sitemap.js";
+import best from "./routes/best.js";
 import { notFound, errorHandler } from "./middleware/error.js";
 import { warmUp } from "./lib/prisma.js";
 
@@ -38,12 +40,18 @@ app.use("/api/tools", tools);
 app.use("/api/reviews", reviews);
 app.use("/api/testimonials", testimonials);
 app.use("/api/blog", blog);
+app.use("/api/best", best);
 app.use("/api/newsletter", newsletter);
 app.use("/api/contact", contact);
 app.use("/api/submissions", submissions);
 app.use("/api/stacks", stacks);
 app.use("/api/og", og);
 app.use("/api/affiliate-clicks", clicks);
+
+// Served at the site root, not under /api — crawlers only look for
+// /sitemap.xml. The frontend host proxies this path through to the API so it
+// answers on the public domain (see frontend/vercel.json).
+app.use("/sitemap.xml", sitemap);
 
 app.use(notFound);
 app.use(errorHandler);

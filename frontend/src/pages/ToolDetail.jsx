@@ -6,21 +6,55 @@ import { Stars, ToolCard, Loader } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { NotFoundBlock } from "../components/editorial.jsx";
 import { ReviewsSection } from "../components/reviews.jsx";
+import { ShareBar } from "../components/share.jsx";
+import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { Seo, toolSchema, breadcrumbSchema } from "../lib/seo.jsx";
 
 export default function ToolDetail() {
   const { slug } = useParams();
   const { data: tool, loading, error } = useData(() => getTool(slug), [slug]);
 
   if (loading) return <Loader />;
-  if (error || !tool) return <NotFoundBlock code="" kicker="Missing" title="Tool not found."
-    message="We couldn't find that one — it may have been renamed or pulled from the list." to="/tools" cta="Browse all tools →" />;
+  if (error || !tool) {
+    return (
+      <>
+        {/* a missing tool must not be indexed as a real page */}
+        <Seo title="Tool not found" path={`/tools/${slug}`} noIndex />
+        <NotFoundBlock code="" kicker="Missing" title="Tool not found."
+          message="We couldn't find that one — it may have been renamed or pulled from the list." to="/tools" cta="Browse all tools →" />
+      </>
+    );
+  }
 
   const color = tool.category?.colorPrimary || "#7C3AED";
   const accent = tool.category?.colorAccent || "#00F5FF";
   const go = () => goAffiliate(tool, `tool/${tool.slug}`);
 
+  const trail = [
+    { label: "Home", to: "/" },
+    { label: "Tools", to: "/tools" },
+    ...(tool.category ? [{ label: tool.category.name, to: `/categories/${tool.category.slug}` }] : []),
+    { label: tool.name, to: `/tools/${tool.slug}` },
+  ];
+
+  // The description leads with what the tool is and who it suits — a search
+  // result has about 155 characters to earn the click.
+  const metaDescription = [
+    tool.description,
+    tool.bestFor ? `Best for ${tool.bestFor.replace(/\.$/, "")}.` : "",
+  ].filter(Boolean).join(" ").slice(0, 300);
+
   return (
     <div className="fade-in">
+      <Seo
+        title={`${tool.name} review — features, pricing and the catch`}
+        description={metaDescription}
+        path={`/tools/${tool.slug}`}
+        schema={[toolSchema(tool), breadcrumbSchema(trail)]}
+      />
+      <div className="max-w-4xl mx-auto px-5 sm:px-6 pt-5">
+        <Breadcrumbs trail={trail} />
+      </div>
       {/* hero — a generated review-cover banner in the tool's category colour */}
       <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-8 sm:pb-10">
         <figure className="relative overflow-hidden rounded-2xl border-2 border-ink"
@@ -34,7 +68,7 @@ export default function ToolDetail() {
 
           <div className="relative p-5 sm:p-6 md:p-9">
             <div className="flex items-center justify-between gap-4 mb-7 font-mono text-[11px] uppercase tracking-[.18em] text-white/90">
-              <Link to={`/category/${tool.category?.slug}`} className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
+              <Link to={`/categories/${tool.category?.slug}`} className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
                 ← {tool.category?.name}
               </Link>
               <span className="hidden sm:inline text-white/70">Honest review · Downsides included</span>
@@ -126,6 +160,15 @@ export default function ToolDetail() {
           )}
 
           <ReviewsSection toolId={tool.id} color={color} initial={tool.reviews || []} />
+
+          {/* The share row a maker sends to their own audience — the loop that
+              brings people here who've never heard of the site. */}
+          <div className="border-t-2 border-ink mt-10 pt-6">
+            <ShareBar
+              context="tool"
+              title={`${tool.name} — an honest review on Toolhaven`}
+            />
+          </div>
         </div>
 
         {/* sticky aside — the printed verdict card */}

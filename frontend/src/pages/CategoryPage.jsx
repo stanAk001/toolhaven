@@ -4,23 +4,45 @@ import { useData, iconFor } from "../lib/helpers.jsx";
 import { ToolCard, PostCard, Loader } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { NotFoundBlock } from "../components/editorial.jsx";
+import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
 export default function CategoryPage() {
   const { slug } = useParams();
   const { data: cat, loading, error } = useData(() => getCategory(slug), [slug]);
 
   if (loading) return <Loader />;
-  if (error || !cat) return <NotFoundBlock code="" kicker="Missing" title="Category not found."
-    message="That category isn't on the shelf — it may have been renamed or removed." to="/tools" cta="Browse all tools →" />;
+  if (error || !cat) {
+    return (
+      <>
+        <Seo title="Category not found" path={`/categories/${slug}`} noIndex />
+        <NotFoundBlock code="" kicker="Missing" title="Category not found."
+          message="That category isn't on the shelf — it may have been renamed or removed." to="/tools" cta="Browse all tools →" />
+      </>
+    );
+  }
 
   const Icon = iconFor(cat.iconKey);
   const color = cat.colorPrimary;
+  const count = cat.tools?.length || 0;
+  const trail = [
+    { label: "Home", to: "/" },
+    { label: "Tools", to: "/tools" },
+    { label: cat.name, to: `/categories/${cat.slug}` },
+  ];
 
   return (
     <div className="fade-in">
+      <Seo
+        title={`Best ${cat.name} — ${count} tools reviewed`}
+        description={cat.description || `Independent reviews of ${cat.name}, with pricing, strengths and the catch on each.`}
+        path={`/categories/${cat.slug}`}
+        schema={breadcrumbSchema(trail)}
+      />
       <section className="relative border-b-2 border-ink overflow-hidden" style={{ background: color }}>
         <div className="halftone absolute inset-0 opacity-20 pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 text-white">
+          <Breadcrumbs trail={trail} className="[&_*]:!text-white/70 [&_a:hover]:!text-white" />
           <div className="flex items-center gap-4 mb-4">
             <span className="w-14 h-14 grid place-items-center border-2 border-white"><Icon size={26} /></span>
             <span className="font-mono text-xs uppercase tracking-wide">{cat.tools?.length || 0} tools</span>

@@ -16,6 +16,8 @@ import { getCategories, getTools } from "../api/client.js";
 import { ToolCard, SkeletonGrid } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
 const SORTS = [
   ["popular", "Most popular"], ["rating", "Highest rated"], ["az", "Name A–Z"],
@@ -67,6 +69,13 @@ export default function ToolsDirectory() {
 
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
+      <Seo
+        title="All tools — browse and compare software"
+        description="Browse every tool we've reviewed, filtered by category, rating and price. Independent write-ups that list the downsides as well as the features."
+        path="/tools"
+        schema={breadcrumbSchema([{ label: "Home", to: "/" }, { label: "Tools", to: "/tools" }])}
+      />
+      <Breadcrumbs trail={[{ label: "Home", to: "/" }, { label: "Tools", to: "/tools" }]} />
       <PageHead kicker="The index" title="The directory">
         Filter, search and browse every tool by category. Tap any card for the full honest rundown.
       </PageHead>

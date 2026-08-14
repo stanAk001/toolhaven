@@ -15,6 +15,27 @@ export const compareTools = (slugs) =>
   api.get("/tools/compare", { params: { slugs: slugs.join(",") } }).then((r) => r.data);
 export const getTestimonials = (params) => api.get("/testimonials", { params }).then((r) => r.data);
 export const getPosts = (params) => api.get("/blog", { params }).then((r) => r.data);
+export const getBestLists = () => api.get("/best").then((r) => r.data);
+export const getBestList = (slug) => api.get(`/best/${slug}`).then((r) => r.data);
+
+// editor-only — best-of lists
+const adminHeaders = (token) => ({ headers: { "x-admin-token": token } });
+export const listBestAdmin = (token) => api.get("/best/manage", adminHeaders(token)).then((r) => r.data);
+export const getBestAdmin = (id, token) => api.get(`/best/manage/${id}`, adminHeaders(token)).then((r) => r.data);
+export const createBest = (body, token) => api.post("/best/manage", body, adminHeaders(token)).then((r) => r.data);
+export const updateBest = (id, body, token) => api.patch(`/best/manage/${id}`, body, adminHeaders(token)).then((r) => r.data);
+export const deleteBest = (id, token) => api.delete(`/best/manage/${id}`, adminHeaders(token)).then((r) => r.data);
+export const saveBestEntries = (id, entries, token) =>
+  api.put(`/best/manage/${id}/entries`, { entries }, adminHeaders(token)).then((r) => r.data);
+export const saveBestFaqs = (id, faqs, token) =>
+  api.put(`/best/manage/${id}/faqs`, { faqs }, adminHeaders(token)).then((r) => r.data);
+
+// editor-only — tools and outbound clicks
+export const listToolsAdmin = (token) => api.get("/tools/manage", adminHeaders(token)).then((r) => r.data);
+export const updateToolAdmin = (id, body, token) =>
+  api.patch(`/tools/manage/${id}`, body, adminHeaders(token)).then((r) => r.data);
+export const getClickStats = (token, days = 30) =>
+  api.get(`/affiliate-clicks/stats?days=${days}`, adminHeaders(token)).then((r) => r.data);
 export const getPost = (slug) => api.get(`/blog/${slug}`).then((r) => r.data);
 export const subscribe = (body) => api.post("/newsletter/subscribe", body).then((r) => r.data);
 export const sendContact = (body) => api.post("/contact", body).then((r) => r.data);

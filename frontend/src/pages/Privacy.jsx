@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
+import { Seo } from "../lib/seo.jsx";
 
 // Privacy policy reflecting what the site actually collects: newsletter emails,
 // contact-form messages, and anonymised affiliate-click analytics.
 export default function Privacy() {
   return (
     <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
+      <Seo title="Privacy policy" description="What Toolhaven collects, why, and how to ask us to delete it." path="/privacy" />
       <PageHead kicker="Legal" title="Privacy Policy">
         Last updated: June 2026. Plain English, no surprises.
       </PageHead>

@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# The editor's desk is token-gated and carries a noindex; there is nothing here
+# for a crawler to read.
+Disallow: /admin
+
+# Query strings on the directory produce the same tools in a different order.
+# The pages themselves stay crawlable; only the filtered permutations are not.
+Disallow: /*?search=
+Disallow: /*?sort=
+Disallow: /*?minRating=
+Disallow: /*?maxPrice=
+
+Sitemap: https://toolhaven.net/sitemap.xml
