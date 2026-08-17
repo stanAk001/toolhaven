@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { ah } from "../middleware/error.js";
 import { requireAdmin } from "../middleware/auth.js";
+import { presentScore, parseScoreInput, SCORE_DIMENSIONS } from "../lib/score.js";
 
 const router = Router();
 
@@ -42,12 +43,43 @@ router.get("/manage", requireAdmin, ah(async (_req, res) => {
       freeTrial: true, freeTier: true, rating: true,
       isFeatured: true, isActive: true, bestFor: true, caveat: true,
       category: { select: { id: true, name: true, colorPrimary: true } },
+      // the raw row, not presentScore() — the editor form needs the individual
+      // dimension values to prefill, not the computed overall
+      score: true,
       _count: { select: { clicks: true } },
     },
   });
   res.json({
     items: items.map((t) => ({ ...t, clicks: t._count.clicks, _count: undefined })),
   });
+}));
+
+// GET /api/tools/manage/score-dimensions — what the editor form renders
+router.get("/manage/score-dimensions", requireAdmin, ah(async (_req, res) => {
+  res.json({ dimensions: SCORE_DIMENSIONS });
+}));
+
+// PUT /api/tools/manage/:id/score — set or update the editorial assessment.
+// Upsert: a tool either has one score row or none, and this is the only way to
+// create it, so scores can never be entered anywhere but here.
+router.put("/manage/:id/score", requireAdmin, ah(async (req, res, next) => {
+  const toolId = Number(req.params.id);
+  const { data, error } = parseScoreInput(req.body);
+  if (error) { const e = new Error(error); e.status = 400; return next(e); }
+
+  const score = await prisma.toolScore.upsert({
+    where: { toolId },
+    update: data,
+    create: { toolId, ...data },
+  });
+  res.json(presentScore(score));
+}));
+
+// DELETE /api/tools/manage/:id/score — withdraw an assessment entirely, so the
+// tool shows no score rather than a stale one.
+router.delete("/manage/:id/score", requireAdmin, ah(async (req, res) => {
+  await prisma.toolScore.deleteMany({ where: { toolId: Number(req.params.id) } });
+  res.json({ ok: true });
 }));
 
 // PATCH /api/tools/manage/:id — update only the allowlisted fields
@@ -149,6 +181,7 @@ router.get("/:slug", ah(async (req, res) => {
       pros: true,
       reviews: { where: { status: "approved" }, orderBy: [{ isFeatured: "desc" }, { helpful: "desc" }, { createdAt: "desc" }] },
       testimonials: true,
+      score: true,
     },
   });
   if (!tool) return res.status(404).json({ error: "Tool not found" });
@@ -160,7 +193,10 @@ router.get("/:slug", ah(async (req, res) => {
     include: { category: { select: { slug: true, name: true, colorPrimary: true } } },
   });
 
-  res.json({ ...tool, related });
+  // `score` is replaced by its presented form: the dimensions plus the computed
+  // overall. Null when nothing has been assessed, so the page renders no score
+  // at all rather than a zero.
+  res.json({ ...tool, score: presentScore(tool.score), related });
 }));
 
 export default router;

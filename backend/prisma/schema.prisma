@@ -75,6 +75,7 @@ model Tool {
   clicks       AffiliateClick[]
   blogMentions BlogPostTool[]
   bestEntries  BestListEntry[]
+  score        ToolScore?
 }
 
 model ToolPro {
@@ -186,6 +187,36 @@ model Stack {
   toolSlugs  String[] // the tools in the stack, by slug
   status     String   @default("pending") // pending | approved
   createdAt  DateTime @default(now())
+}
+
+// ── The Toolhaven Score ──────────────────────────────────────────────────
+// An editorial assessment across six dimensions, entered by hand for tools we
+// have actually sat down with. Every field is nullable and the row is optional:
+// a tool without a score shows no score, rather than a number nobody produced.
+//
+// The overall figure is deliberately NOT stored. It is the mean of whichever
+// dimensions are filled in, computed on read, so it can never drift out of step
+// with its own parts — the classic failure of a cached aggregate.
+//
+// This is separate from `Tool.rating`, which is the community's star average.
+// They answer different questions and are labelled differently in the UI: this
+// is our verdict, that is what readers report.
+model ToolScore {
+  id     Int  @id @default(autoincrement())
+  toolId Int  @unique
+  tool   Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  features      Float? // depth where it matters for the job
+  easeOfUse     Float? // time from signup to actually productive
+  performance   Float? // speed and behaviour under real load
+  value         Float? // what you get for the money, against the free tier
+  devExperience Float? // docs, API, integrations, escape hatches
+  support       Float? // can you solve your own problem at 2am
+
+  notes    String? // why these numbers — shown with the score, not hidden
+  scoredBy String? // who made the call
+  scoredAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ── Best-of lists ────────────────────────────────────────────────────────
