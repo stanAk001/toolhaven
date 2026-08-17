@@ -8,7 +8,109 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, ExternalLink, AlertTriangle } from "lucide-react";
-import { listToolsAdmin, updateToolAdmin, getClickStats } from "../api/client.js";
+import { listToolsAdmin, updateToolAdmin, getClickStats, saveToolScore, clearToolScore } from "../api/client.js";
+
+// Mirrors SCORE_DIMENSIONS on the server. Kept as a literal rather than fetched
+// so the form renders instantly; the server still validates every value.
+const DIMENSIONS = [
+  ["features", "Features"],
+  ["easeOfUse", "Ease of use"],
+  ["performance", "Performance"],
+  ["value", "Value"],
+  ["devExperience", "Developer experience"],
+  ["support", "Support"],
+];
+
+// The editorial assessment. Deliberately separate from the commercial fields
+// above it: a pricing correction and a re-scoring are different acts, and
+// sharing one Save button would make every small edit look like a re-review.
+function ScoreEditor({ tool, token }) {
+  const [vals, setVals] = useState(() =>
+    Object.fromEntries(DIMENSIONS.map(([k]) => [k, tool.score?.[k] ?? ""])));
+  const [notes, setNotes] = useState(tool.score?.notes || "");
+  const [scoredBy, setScoredBy] = useState(tool.score?.scoredBy || "");
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState("");
+
+  // The same mean the server computes, shown live so you can see the headline
+  // move as you type rather than after saving.
+  const nums = DIMENSIONS
+    .map(([k]) => vals[k])
+    .filter((v) => v !== "" && v !== null)
+    .map(Number)
+    .filter((n) => !Number.isNaN(n));
+  const preview = nums.length ? (Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10).toFixed(1) : null;
+
+  const save = async () => {
+    setStatus("saving"); setError("");
+    try {
+      await saveToolScore(tool.id, { ...vals, notes, scoredBy }, token);
+      setStatus("saved");
+      setTimeout(() => setStatus(null), 2200);
+    } catch (e) {
+      setStatus("error");
+      setError(e?.response?.data?.error || "Couldn't save the score.");
+    }
+  };
+
+  const clear = async () => {
+    if (!window.confirm(`Withdraw the Toolhaven Score for ${tool.name}? The page will show no score at all.`)) return;
+    try {
+      await clearToolScore(tool.id, token);
+      setVals(Object.fromEntries(DIMENSIONS.map(([k]) => [k, ""])));
+      setNotes(""); setScoredBy("");
+      setStatus("saved");
+      setTimeout(() => setStatus(null), 2200);
+    } catch (e) { setError(e?.response?.data?.error || "Couldn't clear the score."); }
+  };
+
+  return (
+    <div className="border-t-2 border-ink p-4 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="font-mono text-[11px] uppercase tracking-[.14em] text-accentDeep">
+          Toolhaven Score · leave blank to not score a dimension
+        </p>
+        {preview && (
+          <p className="font-mono text-[11px] uppercase tracking-wide text-ink2">
+            Overall <span className="font-display text-xl font-semibold text-ink tabular-nums ml-1">{preview}</span> / 10
+          </p>
+        )}
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-3">
+        {DIMENSIONS.map(([k, l]) => (
+          <div key={k}>
+            <label htmlFor={`sc-${tool.id}-${k}`} className={label}>{l}</label>
+            <input id={`sc-${tool.id}-${k}`} type="number" min="0" max="10" step="0.1" className={field}
+              value={vals[k]} onChange={(e) => setVals((v) => ({ ...v, [k]: e.target.value }))} />
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <label htmlFor={`sc-${tool.id}-notes`} className={label}>Why these numbers · shown with the score</label>
+        <textarea id={`sc-${tool.id}-notes`} rows={2} className={field} value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </div>
+      <div>
+        <label htmlFor={`sc-${tool.id}-by`} className={label}>Assessed by</label>
+        <input id={`sc-${tool.id}-by`} className={field} value={scoredBy} onChange={(e) => setScoredBy(e.target.value)} />
+      </div>
+
+      {error && <p className="font-mono text-sm text-accentDeep">{error}</p>}
+      <div className="flex flex-wrap items-center gap-2">
+        <button onClick={save} disabled={status === "saving"} className="stamp text-xs disabled:opacity-60">
+          {status === "saving" ? "Saving…" : status === "saved" ? "Saved ✓" : "Save score"}
+        </button>
+        {tool.score && (
+          <button onClick={clear}
+            className="inline-flex items-center min-h-touch font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-4 text-accentDeep hover:bg-paper2 transition-colors">
+            Withdraw score
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const field = "w-full border-2 border-ink rounded-xl bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
 const label = "block font-mono text-[11px] uppercase tracking-[.14em] text-ink2 mb-1.5";
@@ -213,6 +315,8 @@ function ToolRow({ tool, token, open, onToggle, onSaved }) {
           </button>
         </div>
       )}
+
+      {open && <ScoreEditor tool={tool} token={token} />}
     </div>
   );
 }

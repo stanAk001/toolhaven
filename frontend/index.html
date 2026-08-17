@@ -11,6 +11,13 @@
         if (t) document.documentElement.setAttribute("data-theme", t);
       } catch (e) {}
     </script>
+    <!-- impact.com Universal Tracking Tag.
+         Loads async (t.async=1) so it never blocks first paint. This is the only
+         HTML document the app has, so one tag covers every route.
+         Pasted verbatim from the impact.com dashboard — the minified body must
+         not be reformatted or the account id stops resolving. -->
+    <script type="text/javascript">(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A7618072-8294-4470-ab0c-12894a4dc1101.js','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');</script>
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Toolhaven — The honest tools guide</title>
     <meta name="description" content="We review, compare and link to the best tools across AI, trading, productivity, design, development and marketing — explained in plain English." />

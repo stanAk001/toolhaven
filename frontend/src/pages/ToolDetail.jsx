@@ -6,6 +6,8 @@ import { Stars, ToolCard, Loader } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { NotFoundBlock } from "../components/editorial.jsx";
 import { ReviewsSection } from "../components/reviews.jsx";
+import { ScorePanel } from "../components/score.jsx";
+import { pairSlug } from "../lib/comparepair.js";
 import { ShareBar } from "../components/share.jsx";
 import { Breadcrumbs } from "../components/breadcrumbs.jsx";
 import { Seo, toolSchema, breadcrumbSchema } from "../lib/seo.jsx";
@@ -111,6 +113,13 @@ export default function ToolDetail() {
 
       <section className="max-w-4xl mx-auto px-5 sm:px-6 grid md:grid-cols-3 gap-10 py-8 border-t-2 border-ink">
         <div className="md:col-span-2">
+          {/* Renders nothing unless this tool has actually been assessed. */}
+          {tool.score && (
+            <div className="mb-8">
+              <ScorePanel score={tool.score} toolName={tool.name} />
+            </div>
+          )}
+
           <h2 className="font-mono text-xs uppercase tracking-wide mb-3" style={{ color }}>What it is</h2>
           <p className="drop-cap font-display text-xl leading-relaxed mb-8">{tool.fullDescription || tool.description}</p>
 
@@ -177,11 +186,21 @@ export default function ToolDetail() {
             {/* colour cap, tying the card to its category */}
             <div className="h-2.5" style={{ background: color }} />
             <div className="p-5">
-              <p className="font-mono text-[11px] uppercase tracking-[.16em] text-accentDeep mb-2">The verdict</p>
-              <div className="flex items-end gap-2 mb-4">
+              {/* Explicitly the readers' number. The Toolhaven Score is our
+                  assessment and lives in the main column — two figures on one
+                  page have to say which is which, or neither means anything. */}
+              <p className="font-mono text-[11px] uppercase tracking-[.16em] text-accentDeep mb-2">
+                {tool.reviewCount > 0 ? "Community rating" : "Rating"}
+              </p>
+              <div className="flex items-end gap-2 mb-1">
                 <span className="font-display text-4xl font-semibold leading-none tabular-nums">{Number(tool.rating).toFixed(1)}</span>
                 <span className="pb-1"><Stars r={tool.rating} size={13} showNum={false} /></span>
               </div>
+              <p className="font-mono text-[11px] uppercase tracking-wide text-ink2 mb-4">
+                {tool.reviewCount > 0
+                  ? `From ${Number(tool.reviewCount).toLocaleString()} reader${tool.reviewCount === 1 ? "" : "s"}`
+                  : "Out of 5"}
+              </p>
               <div className="rule mb-4" />
               <p className="font-mono text-[11px] uppercase tracking-wide text-ink2 mb-1">Best for</p>
               <p className="text-sm mb-4">{tool.bestFor}</p>
@@ -203,6 +222,26 @@ export default function ToolDetail() {
           <Reveal stagger className="grid grid-cols-2 gap-3 sm:gap-4">
             {tool.related.map((t) => <ToolCard key={t.slug} tool={t} />)}
           </Reveal>
+
+          {/* Real links into the comparison pages. Without these the pair URLs
+              would exist only in the sitemap — reachable, but with nothing
+              pointing at them, which is a weak signal and a dead end for a
+              reader who is clearly still deciding. */}
+          <div className="mt-8">
+            <h3 className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-3">
+              Head to head
+            </h3>
+            <ul className="flex flex-wrap gap-2">
+              {tool.related.map((t) => (
+                <li key={t.slug}>
+                  <Link to={`/compare/${pairSlug(tool.slug, t.slug)}`}
+                    className="inline-flex items-center min-h-touch font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-4 bg-paper hover:bg-paper2 transition-colors">
+                    {tool.name} vs {t.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
       )}
     </div>

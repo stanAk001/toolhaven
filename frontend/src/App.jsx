@@ -85,6 +85,9 @@ export default function App() {
             <Route path="/reviews/:slug" element={<LegacyRedirect to="/tools" />} />
             <Route path="/reviews" element={<Navigate to="/tools" replace />} />
             <Route path="/compare" element={<Compare />} />
+            {/* "a-vs-b" — the shape people actually search for, and the only
+                comparison form with its own indexable URL */}
+            <Route path="/compare/:pair" element={<Compare />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/about" element={<About />} />

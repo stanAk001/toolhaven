@@ -11,7 +11,8 @@
 // the catch, printed side by side, which is the one comparison nobody else
 // publishes and the only reason to trust the rest of it.
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, useParams, useNavigate, Link, Navigate } from "react-router-dom";
+import { pairSlug, parsePair, VS } from "../lib/comparepair.js";
 import { Check, X, ArrowUpRight, Share2, Search, Plus, Link as LinkIcon } from "lucide-react";
 import { getTools, compareTools } from "../api/client.js";
 import { Stars, Loader } from "../components/ui.jsx";
@@ -69,8 +70,18 @@ function YesNo({ v }) {
 
 export default function Compare() {
   const [params, setParams] = useSearchParams();
+  const { pair } = useParams();
+  const navigate = useNavigate();
   const [all, setAll] = useState([]);
-  const [picked, setPicked] = useState(() => (params.get("tools") || "").split(",").filter(Boolean).slice(0, MAX));
+  // A pair URL seeds the selection; otherwise fall back to the query string the
+  // picker writes. Both feed the same sheet below.
+  const [picked, setPicked] = useState(() => {
+    if (pair) {
+      const first = parsePair(pair)[0];
+      if (first) return first;
+    }
+    return (params.get("tools") || "").split(",").filter(Boolean).slice(0, MAX);
+  });
   const [rows, setRows] = useState([]);
   const [copied, setCopied] = useState(false);
   const [diffOnly, setDiffOnly] = useState(false);
@@ -80,10 +91,28 @@ export default function Compare() {
 
   useEffect(() => { getTools({ limit: 100, sort: "popular" }).then((d) => setAll(d.items || [])); }, []);
 
-  // keep the URL in sync so any comparison is a shareable link
+  /* Keep the URL in sync, and promote two-tool comparisons to a real path.
+   *
+   * Two tools is what people actually search for ("notion vs obsidian"), so a
+   * pair gets its own indexable URL. Three stays on the query string: with 41
+   * tools there are ~11,000 possible triples, and minting a page for each is
+   * exactly the thin-content farm this site is meant not to be.
+   *
+   * The pair is always written in canonical (alphabetical) order, so picking
+   * B then A lands on the same URL as picking A then B. */
   useEffect(() => {
+    if (picked.length === 2) {
+      const canonical = pairSlug(picked[0], picked[1]);
+      if (pair !== canonical) navigate(`/compare/${canonical}`, { replace: true });
+      return;
+    }
+    // dropped back to 0, 1 or 3 tools — leave the pair URL for the picker
+    if (pair) {
+      navigate(picked.length ? `/compare?tools=${picked.join(",")}` : "/compare", { replace: true });
+      return;
+    }
     setParams(picked.length ? { tools: picked.join(",") } : {}, { replace: true });
-  }, [picked, setParams]);
+  }, [picked, pair, navigate, setParams]);
 
   useEffect(() => {
     if (picked.length < 2) { setRows([]); return; }
@@ -92,23 +121,42 @@ export default function Compare() {
 
   useEffect(() => { if (pickerOpen) searchRef.current?.focus(); }, [pickerOpen]);
 
-  /* A live comparison names itself and gets the generated preview card; the
-   * empty picker is the generic page. The picker state is a query string, so
-   * only the empty page is canonical — otherwise every permutation of three
-   * tools would be a separate URL competing for the same intent. */
+  /* Three states, three SEO treatments.
+   *
+   *   /compare/a-vs-b   a real page for a real query — indexed, canonical to
+   *                     itself, with the generated preview card
+   *   /compare?tools=…  a working session, not a destination — noindex, and
+   *                     canonical points at the bare picker so the ranking
+   *                     signal isn't split across permutations
+   *   /compare          the picker itself — indexed
+   */
   const comparing = rows.length >= 2;
   const names = rows.map((r) => r.name);
-  const seo = comparing
+  const onPairUrl = Boolean(pair) && picked.length === 2;
+
+  const seo = onPairUrl
     ? {
-      title: `${names.join(" vs ")} — compared side by side`,
-      description: `${names.join(", ")} compared on price, free tier, ratings and the catch on each. No sponsored winners.`,
+      title: `${names.join(" vs ")} — which should you choose?`,
+      description: `${names.join(" and ")} compared on price, free tier, ratings and the catch on each. Independent — no sponsored winners.`,
       image: `${API}/og/compare?slugs=${encodeURIComponent(picked.join(","))}`,
+      path: `/compare/${pairSlug(picked[0], picked[1])}`,
+      noIndex: false,
     }
-    : {
-      title: "Compare tools side by side",
-      description: "Put up to three tools head to head: price, free trial, ratings and the catch on each one.",
-      image: "/og.svg",
-    };
+    : comparing
+      ? {
+        title: `${names.join(" vs ")} — compared side by side`,
+        description: `${names.join(", ")} compared on price, free tier, ratings and the catch on each.`,
+        image: `${API}/og/compare?slugs=${encodeURIComponent(picked.join(","))}`,
+        path: "/compare",
+        noIndex: true,
+      }
+      : {
+        title: "Compare tools side by side",
+        description: "Put up to three tools head to head: price, free trial, ratings and the catch on each one.",
+        image: "/og.svg",
+        path: "/compare",
+        noIndex: false,
+      };
 
   const add = (slug) => {
     setPicked((p) => (p.includes(slug) || p.length >= MAX ? p : [...p, slug]));
@@ -162,16 +210,25 @@ export default function Compare() {
 
   const bySlug = useMemo(() => Object.fromEntries(all.map((t) => [t.slug, t])), [all]);
 
+  const trail = onPairUrl
+    ? [
+      { label: "Home", to: "/" },
+      { label: "Compare", to: "/compare" },
+      { label: names.join(" vs "), to: seo.path },
+    ]
+    : [{ label: "Home", to: "/" }, { label: "Compare", to: "/compare" }];
+
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
       <Seo
         title={seo.title}
         description={seo.description}
         image={seo.image}
-        path="/compare"
-        schema={breadcrumbSchema([{ label: "Home", to: "/" }, { label: "Compare", to: "/compare" }])}
+        path={seo.path}
+        noIndex={seo.noIndex}
+        schema={breadcrumbSchema(trail)}
       />
-      <Breadcrumbs trail={[{ label: "Home", to: "/" }, { label: "Compare", to: "/compare" }]} />
+      <Breadcrumbs trail={trail} />
       <PageHead kicker="Head to head" title="Compare tools">
         Pick up to three — they can be from different categories. Your comparison is a shareable link.
       </PageHead>

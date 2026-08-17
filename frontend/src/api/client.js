@@ -34,6 +34,10 @@ export const saveBestFaqs = (id, faqs, token) =>
 export const listToolsAdmin = (token) => api.get("/tools/manage", adminHeaders(token)).then((r) => r.data);
 export const updateToolAdmin = (id, body, token) =>
   api.patch(`/tools/manage/${id}`, body, adminHeaders(token)).then((r) => r.data);
+export const saveToolScore = (id, body, token) =>
+  api.put(`/tools/manage/${id}/score`, body, adminHeaders(token)).then((r) => r.data);
+export const clearToolScore = (id, token) =>
+  api.delete(`/tools/manage/${id}/score`, adminHeaders(token)).then((r) => r.data);
 export const getClickStats = (token, days = 30) =>
   api.get(`/affiliate-clicks/stats?days=${days}`, adminHeaders(token)).then((r) => r.data);
 export const getPost = (slug) => api.get(`/blog/${slug}`).then((r) => r.data);
