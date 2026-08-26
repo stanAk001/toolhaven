@@ -14,7 +14,7 @@ export function ArticleCover({ post }) {
   const ghost = (c.name || "Read").split(" ")[0];
 
   return (
-    <figure className="relative overflow-hidden rounded-2xl border-2 border-ink mb-8"
+    <figure className="relative overflow-hidden rounded-card border-2 border-ink mb-8"
       style={{ background: color, boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
       {/* a wash of the category's accent, the print tooth, and the category word bleeding off the corner */}
       <span aria-hidden="true" className="absolute inset-0"
@@ -24,7 +24,7 @@ export function ArticleCover({ post }) {
         className="absolute -bottom-6 -right-3 font-display text-ghost font-semibold text-white/10 select-none">{ghost}</span>
 
       <div className="relative p-5 sm:p-6 md:p-9">
-        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[.2em] text-white/90">
+        <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-[.2em] text-white/90">
           <span className="w-2 h-2 rounded-full bg-white" />
           {c.name || "Field notes"}{post.readTime ? ` · ${post.readTime} min read` : ""}
         </span>
@@ -36,7 +36,7 @@ export function ArticleCover({ post }) {
               {tools.map((t, i) => (
                 <span key={t.slug} title={t.name}
                   style={{ "--r": `${ROT[i % ROT.length]}deg`, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
-                  className="grid place-items-center min-w-[3rem] h-12 px-2.5 rounded-lg bg-paper border-2 border-ink
+                  className="grid place-items-center min-w-[3rem] h-12 px-2.5 rounded-ui bg-paper border-2 border-ink
                     font-display text-xl font-semibold text-ink rotate-[var(--r)] transition-transform duration-300 hover:rotate-0 hover:-translate-y-0.5">
                   {t.logoMono || (t.name || "?")[0]}
                 </span>
@@ -58,14 +58,14 @@ export function ToolRail({ links = [], color = "#1C1714" }) {
     <div className="flex flex-wrap gap-3">
       {links.map((l) => (
         <Link key={l.id} to={`/tools/${l.tool.slug}`}
-          className="group/r inline-flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-full border-2 border-ink bg-paper
+          className="group/r inline-flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-ui border-2 border-ink bg-paper
             transition-transform duration-200 hover:-translate-y-0.5"
           style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
           <span className="grid place-items-center w-8 h-8 rounded-full font-display text-sm font-semibold text-white shrink-0"
             style={{ background: l.tool.category?.colorPrimary || color }}>
             {l.tool.logoMono || l.tool.name[0]}
           </span>
-          <span className="font-mono text-[11px] uppercase tracking-wide">{l.tool.name}</span>
+          <span className="font-mono text-label uppercase tracking-wide">{l.tool.name}</span>
         </Link>
       ))}
     </div>

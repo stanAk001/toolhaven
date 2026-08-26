@@ -13,7 +13,7 @@ const TILTS = [-1.2, 0.9, -0.7, 1.1, -1, 0.7];
 function ToolTile({ t }) {
   return (
     <Link to={`/tools/${t.slug}`} title={t.name}
-      className="grid place-items-center min-w-[2rem] sm:min-w-[2.2rem] h-8 sm:h-9 px-1.5 sm:px-2 rounded-lg border-2 border-ink text-white font-display font-bold text-xs sm:text-sm transition-transform hover:-translate-y-0.5"
+      className="grid place-items-center min-w-[2rem] sm:min-w-[2.2rem] h-8 sm:h-9 px-1.5 sm:px-2 rounded-ui border-2 border-ink text-white font-display font-bold text-xs sm:text-sm transition-transform hover:-translate-y-0.5"
       style={{ background: t.category?.colorPrimary || "#1C1714", boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
       {t.logoMono || t.name[0]}
     </Link>
@@ -22,13 +22,13 @@ function ToolTile({ t }) {
 
 function StackCard({ stack, tilt = 0 }) {
   return (
-    <figure className="relative bg-paper border-2 border-ink rounded-2xl p-4 sm:p-5 rotate-[var(--r)] hover:rotate-0 transition-transform duration-300"
+    <figure className="relative bg-paper border-2 border-ink rounded-card p-4 sm:p-5 rotate-[var(--r)] hover:rotate-0 transition-transform duration-300"
       style={{ "--r": `${tilt}deg`, boxShadow: "5px 5px 0 var(--shadow-cast)" }}>
       <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
         {stack.tools.map((t) => <ToolTile key={t.slug} t={t} />)}
       </div>
       {stack.note && <p className="font-display text-sm sm:text-lg leading-snug mb-3 sm:mb-4 text-pretty">“{stack.note}”</p>}
-      <figcaption className="font-mono text-[11px] uppercase tracking-wide text-ink2">
+      <figcaption className="font-mono text-label uppercase tracking-wide text-ink2">
         {stack.authorName || "Anonymous"}{stack.authorRole ? <span className="text-accentDeep"> · {stack.authorRole}</span> : null}
       </figcaption>
     </figure>
@@ -61,8 +61,8 @@ export default function Stacks() {
     catch (err) { setError(err?.response?.data?.error || "Couldn't share that — try again."); setStatus("error"); }
   };
 
-  const field = "w-full border-2 border-ink rounded-xl bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
-  const lab = "block font-mono text-[11px] uppercase tracking-[.14em] text-ink2 mb-1.5";
+  const field = "w-full border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
+  const lab = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12 fade-in">
@@ -76,14 +76,14 @@ export default function Stacks() {
         <div className="flex items-center justify-between gap-4 mb-4">
           <h2 className="font-mono text-xs uppercase tracking-[.2em] text-accentDeep">Share your stack</h2>
           <button onClick={() => setOpen((o) => !o)}
-            className="font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-3 py-1.5 hover:bg-paper2 transition-colors">
+            className="font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-3 py-1.5 hover:bg-paper2 transition-colors">
             {open ? "Close" : "Build it →"}
           </button>
         </div>
 
         {open && status !== "sent" && (
           <Reveal as="form" onSubmit={submit} noValidate
-            className="border-2 border-ink rounded-2xl bg-paper p-5 md:p-6 space-y-5" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
+            className="border-2 border-ink rounded-card bg-paper p-5 md:p-6 space-y-5" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
             <input type="text" name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} className="hidden" aria-hidden="true" />
 
             <div>
@@ -95,7 +95,7 @@ export default function Stacks() {
                     const disabled = !on && picked.length >= MAX;
                     return (
                       <button type="button" key={t.slug} onClick={() => toggle(t.slug)} disabled={disabled}
-                        className={`font-mono text-xs uppercase px-3.5 py-1.5 rounded-full border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"} ${disabled ? "opacity-40" : ""}`}
+                        className={`font-mono text-xs uppercase px-3.5 py-1.5 rounded-ui border-2 border-ink transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"} ${disabled ? "opacity-40" : ""}`}
                         style={on ? { background: t.category?.colorPrimary } : undefined}>
                         {t.name}
                       </button>
@@ -120,7 +120,7 @@ export default function Stacks() {
         )}
 
         {status === "sent" && (
-          <div className="border-2 border-ink rounded-2xl bg-paper2/50 p-5">
+          <div className="border-2 border-ink rounded-card bg-paper2/50 p-5">
             <p className="font-display text-lg font-semibold mb-1">Thanks — your stack is in. ✦</p>
             <p className="text-ink2 text-sm">We give every stack a quick look before it goes live (keeps the spam out). It'll appear below once approved.</p>
           </div>

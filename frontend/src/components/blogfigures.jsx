@@ -20,13 +20,13 @@ function parseItems(alt = "") {
 function Frame({ caption, children }) {
   return (
     <figure className="my-9">
-      <div className="relative rounded-2xl border-2 border-ink bg-paper2/40 p-5 md:p-7 overflow-hidden"
+      <div className="relative rounded-card border-2 border-ink bg-paper2/40 p-5 md:p-7 overflow-hidden"
         style={{ boxShadow: "5px 5px 0 var(--shadow-cast)" }}>
         <span className="halftone absolute inset-0 opacity-[.06] pointer-events-none" aria-hidden="true" />
         <div className="relative">{children}</div>
       </div>
       {caption && (
-        <figcaption className="mt-2.5 font-mono text-[11px] uppercase tracking-[.16em] text-ink2 text-center">{caption}</figcaption>
+        <figcaption className="mt-2.5 font-mono text-label uppercase tracking-[.16em] text-ink2 text-center">{caption}</figcaption>
       )}
     </figure>
   );
@@ -42,7 +42,7 @@ function Steps({ items, color }) {
             <span className="grid place-items-center w-11 h-11 rounded-full text-white font-display font-bold text-lg shrink-0"
               style={{ background: color, boxShadow: "2px 2px 0 var(--shadow-cast)" }}>{i + 1}</span>
             <span className="font-display font-semibold leading-tight">{it.label}</span>
-            {it.caption && <span className="font-mono text-[11px] text-ink2 leading-snug">{it.caption}</span>}
+            {it.caption && <span className="font-mono text-label text-ink2 leading-snug">{it.caption}</span>}
           </li>
           {i < items.length - 1 && (
             <span aria-hidden="true" className="hidden sm:grid place-items-center text-accent font-bold text-2xl pt-1.5">→</span>
@@ -62,8 +62,8 @@ function Bars({ items, color }) {
         const val = Number(it.caption) || 0;
         return (
           <div key={i} className="flex items-center gap-3">
-            <span className="w-24 sm:w-32 shrink-0 font-mono text-[11px] sm:text-xs uppercase tracking-wide truncate">{it.label}</span>
-            <div className="flex-1 h-6 rounded-full border-2 border-ink bg-paper overflow-hidden">
+            <span className="w-24 sm:w-32 shrink-0 font-mono text-label sm:text-xs uppercase tracking-wide truncate">{it.label}</span>
+            <div className="flex-1 h-6 rounded-ui border-2 border-ink bg-paper overflow-hidden">
               <div className="h-full rounded-r-full transition-all" style={{ width: `${Math.max(8, (val / max) * 100)}%`, background: color }} />
             </div>
             <span className="w-7 text-right font-mono text-xs tabular-nums">{val}</span>
@@ -77,11 +77,11 @@ function Bars({ items, color }) {
 // Two contenders, head to head, with an inked VS between.
 function Versus({ items, color }) {
   const card = (t, key) => (
-    <div key={key} className="rounded-xl border-2 border-ink bg-paper p-4 flex flex-col gap-1.5" style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
+    <div key={key} className="rounded-card border-2 border-ink bg-paper p-4 flex flex-col gap-1.5" style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
       <span className="inline-flex items-center gap-2 font-display text-lg font-semibold leading-tight">
         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} />{t.label}
       </span>
-      {t.caption && <span className="font-mono text-[11px] text-ink2 leading-snug">{t.caption}</span>}
+      {t.caption && <span className="font-mono text-label text-ink2 leading-snug">{t.caption}</span>}
     </div>
   );
   return (
@@ -100,13 +100,13 @@ function Tiers({ items, color }) {
       {items.map((it, i) => {
         const last = i === items.length - 1;
         return (
-          <div key={i} className="flex-1 rounded-xl border-2 border-ink bg-paper p-4 text-center"
+          <div key={i} className="flex-1 rounded-card border-2 border-ink bg-paper p-4 text-center"
             style={{ boxShadow: "2px 2px 0 var(--shadow-cast)", minHeight: `${88 + i * 16}px` }}>
-            <span className="block font-mono text-[10px] uppercase tracking-[.18em] mb-1" style={{ color: last ? "#E8431F" : undefined }}>
+            <span className="block font-mono text-nano uppercase tracking-[.18em] mb-1" style={{ color: last ? "#E8431F" : undefined }}>
               {last ? "Top tier" : `Tier ${i + 1}`}
             </span>
             <span className="block font-display text-lg font-semibold leading-tight">{it.label}</span>
-            {it.caption && <span className="block font-mono text-[11px] text-ink2 mt-1">{it.caption}</span>}
+            {it.caption && <span className="block font-mono text-label text-ink2 mt-1">{it.caption}</span>}
           </div>
         );
       })}
@@ -119,13 +119,13 @@ function Stack({ items, color }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
       {items.map((it, i) => (
-        <div key={i} className="rounded-xl border-2 border-ink bg-paper p-3.5 flex items-start gap-2.5" style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
-          <span className="grid place-items-center w-9 h-9 rounded-lg text-white font-display font-bold shrink-0" style={{ background: color }}>
+        <div key={i} className="rounded-card border-2 border-ink bg-paper p-3.5 flex items-start gap-2.5" style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
+          <span className="grid place-items-center w-9 h-9 rounded-ui text-white font-display font-bold shrink-0" style={{ background: color }}>
             {it.label[0]}
           </span>
           <span className="min-w-0">
             <span className="block font-display font-semibold leading-tight truncate">{it.label}</span>
-            {it.caption && <span className="block font-mono text-[11px] text-ink2 leading-snug">{it.caption}</span>}
+            {it.caption && <span className="block font-mono text-label text-ink2 leading-snug">{it.caption}</span>}
           </span>
         </div>
       ))}

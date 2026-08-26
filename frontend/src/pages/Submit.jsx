@@ -22,8 +22,8 @@ const EMPTY = {
 
 function Promise({ icon: Icon, title, text }) {
   return (
-    <div className="tactile rounded-2xl border-2 border-ink bg-paper p-5">
-      <span className="grid place-items-center w-11 h-11 rounded-xl bg-ink text-paper mb-3">
+    <div className="tactile rounded-card border-2 border-ink bg-paper p-5">
+      <span className="grid place-items-center w-11 h-11 rounded-card bg-ink text-paper mb-3">
         <Icon size={20} strokeWidth={2} aria-hidden="true" />
       </span>
       <h3 className="font-display text-lg font-semibold leading-tight mb-1">{title}</h3>
@@ -53,13 +53,13 @@ export default function Submit() {
     }
   };
 
-  const field = "w-full border-2 border-ink rounded-xl bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
-  const lab = "block font-mono text-[11px] uppercase tracking-[.14em] text-ink2 mb-1.5";
+  const field = "w-full border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
+  const lab = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
   if (status === "sent") {
     return (
       <div className="max-w-2xl mx-auto px-5 sm:px-6 py-14 sm:py-20 fade-in text-center">
-        <div className="relative inline-grid place-items-center w-20 h-20 rounded-2xl bg-ink text-paper mb-7" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
+        <div className="relative inline-grid place-items-center w-20 h-20 rounded-card bg-ink text-paper mb-7" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
           <span className="font-display text-3xl">✦</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-semibold mb-4 leading-tight">Submission received.</h1>
@@ -88,7 +88,7 @@ export default function Submit() {
         <Promise icon={ShieldCheck} title="No pay-to-play" text="You can't buy a score or a ranking here. That's exactly why a good review carries weight." />
       </Reveal>
 
-      <div className="rounded-2xl border-2 border-ink bg-paper p-6 md:p-8" style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
+      <div className="rounded-card border-2 border-ink bg-paper p-6 md:p-8" style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
         <h2 className="font-display text-2xl font-semibold mb-1">Tell us about your tool</h2>
         <p className="text-ink2 mb-6">Five minutes. The more honest the pitch, the better your odds.</p>
 
@@ -147,9 +147,9 @@ export default function Submit() {
               submissions. Filling it in is framed as what it is: the difference
               between waiting for a reviewer to research you and being ready to
               publish. */}
-          <details className="border-2 border-ink rounded-2xl bg-paper2/40 overflow-hidden group/d">
+          <details className="border-2 border-ink rounded-card bg-paper2/40 overflow-hidden group/d">
             <summary className="flex items-center justify-between gap-3 px-4 min-h-touch cursor-pointer select-none list-none">
-              <span className="font-mono text-[11px] uppercase tracking-[.14em]">
+              <span className="font-mono text-label uppercase tracking-[.14em]">
                 Add detail <span className="text-ink2">— optional, speeds up review</span>
               </span>
               <span aria-hidden="true" className="text-accent transition-transform duration-300 group-open/d:rotate-45">+</span>

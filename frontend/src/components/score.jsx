@@ -26,7 +26,7 @@ export function ScorePanel({ score, toolName }) {
   const partial = score.assessed < score.total;
 
   return (
-    <section aria-labelledby="th-score" className="border-2 border-ink rounded-2xl bg-paper overflow-hidden"
+    <section aria-labelledby="th-score" className="border-2 border-ink rounded-card bg-paper overflow-hidden"
       style={{ boxShadow: "5px 5px 0 var(--shadow-cast)" }}>
       <div className="flex items-start gap-5 p-5 sm:p-6 border-b-2 border-ink">
         <div className="shrink-0 text-center">
@@ -58,9 +58,9 @@ export function ScorePanel({ score, toolName }) {
             </div>
             {/* role=img with a spoken label: a bare div would be silent, and the
                 number beside it already carries the value for sighted readers */}
-            <div className="h-2 rounded-full bg-paper2 overflow-hidden"
+            <div className="h-2 rounded-ui bg-paper2 overflow-hidden"
               role="img" aria-label={`${d.label}: ${d.value.toFixed(1)} out of 10`}>
-              <div className={`h-full rounded-full ${toneFor(d.value)}`} style={{ width: `${(d.value / 10) * 100}%` }} />
+              <div className={`h-full rounded-ui ${toneFor(d.value)}`} style={{ width: `${(d.value / 10) * 100}%` }} />
             </div>
           </div>
         ))}

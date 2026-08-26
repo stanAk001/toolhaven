@@ -34,15 +34,38 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
  * quietly drift out of step with the data. */
 const SHEET = [
   { key: "category", label: "Category", read: (t) => t.category?.name ?? "—" },
+  // One rating row, and it says whose rating it is.
+  //
+  // This used to print our own reader average, which meant five empty stars and
+  // "0.0" for every tool no reader has reviewed — a comparison that made two
+  // perfectly good products look rated zero against each other. Readers first
+  // when there are enough of them to mean anything, then the sourced external
+  // figure, then an honest blank.
   {
     key: "rating", label: "Rating", best: "max",
-    read: (t) => Number(t.rating) || 0,
-    show: (t) => <Stars r={t.rating} />,
+    read: (t) => (Number(t.reviewCount) >= 3 ? Number(t.rating) || 0 : Number(t.topRating?.rating) || 0),
+    show: (t) => (
+      Number(t.reviewCount) >= 3 ? <Stars r={t.rating} />
+        : t.topRating ? (
+          <span className="font-mono text-label tabular-nums">
+            {t.topRating.rating}/{t.topRating.maxRating}
+            <span className="block text-nano uppercase tracking-[.12em] text-ink2 mt-0.5">
+              on {t.topRating.sourceName}
+            </span>
+          </span>
+        ) : <span className="font-mono text-label text-ink2">Not rated yet</span>
+    ),
   },
   {
-    key: "reviews", label: "Reviews", best: "max",
-    read: (t) => Number(t.reviewCount) || 0,
-    show: (t) => <span className="tabular-nums">{(t.reviewCount || 0).toLocaleString()}</span>,
+    key: "reviews", label: "Reviews behind it", best: "max",
+    read: (t) => (Number(t.reviewCount) >= 3 ? Number(t.reviewCount) : Number(t.topRating?.reviewCount) || 0),
+    show: (t) => {
+      const own = Number(t.reviewCount) || 0;
+      const ext = Number(t.topRating?.reviewCount) || 0;
+      if (own >= 3) return <span className="tabular-nums">{own.toLocaleString()} readers</span>;
+      if (ext) return <span className="tabular-nums">{ext.toLocaleString()} elsewhere</span>;
+      return <span className="text-ink2">—</span>;
+    },
   },
   {
     key: "price", label: "Price", best: "min",
@@ -243,7 +266,7 @@ export default function Compare() {
               if (!t) {
                 return (
                   <button key={`empty-${i}`} type="button" onClick={() => setPickerOpen(true)}
-                    className="group flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-2xl border-2 border-dashed border-ink/35 text-ink2 hover:border-accent hover:text-accentDeep transition-colors">
+                    className="group flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-card border-2 border-dashed border-ink/35 text-ink2 hover:border-accent hover:text-accentDeep transition-colors">
                     <Plus size={20} strokeWidth={2.5} aria-hidden="true" />
                     <span className="font-mono text-micro uppercase tracking-[.14em]">Add a tool</span>
                   </button>
@@ -251,14 +274,14 @@ export default function Compare() {
               }
               const color = t.category?.colorPrimary || "#1C1714";
               return (
-                <div key={t.slug} className="relative flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-2xl border-2 border-ink bg-paper px-2 py-3"
+                <div key={t.slug} className="relative flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-card border-2 border-ink bg-paper px-2 py-3"
                   style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
                   <button type="button" onClick={() => drop(t.slug)} aria-label={`Remove ${t.name}`}
                     className="absolute top-1.5 right-1.5 grid place-items-center w-8 h-8 rounded-full text-ink2 hover:text-accentDeep hover:bg-paper2 transition-colors">
                     <X size={15} strokeWidth={2.5} aria-hidden="true" />
                   </button>
                   <span aria-hidden="true"
-                    className="grid place-items-center w-11 h-11 sm:w-12 sm:h-12 rounded-lg border-2 border-ink font-display font-bold text-lg text-white"
+                    className="grid place-items-center w-11 h-11 sm:w-12 sm:h-12 rounded-ui border-2 border-ink font-display font-bold text-lg text-white"
                     style={{ background: color }}>
                     {t.logoMono || t.name[0]}
                   </span>
@@ -273,11 +296,11 @@ export default function Compare() {
             <div className="mb-8">
               {!pickerOpen ? (
                 <button type="button" onClick={() => setPickerOpen(true)}
-                  className="inline-flex items-center gap-2 min-h-touch font-mono text-xs uppercase tracking-wide border-2 border-ink rounded-full px-4 bg-paper hover:bg-paper2 transition-colors">
+                  className="inline-flex items-center gap-2 min-h-touch font-mono text-xs uppercase tracking-wide border-2 border-ink rounded-ui px-4 bg-paper hover:bg-paper2 transition-colors">
                   <Search size={14} strokeWidth={2.5} aria-hidden="true" /> Find a tool
                 </button>
               ) : (
-                <div className="border-2 border-ink rounded-2xl bg-paper overflow-hidden" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+                <div className="border-2 border-ink rounded-card bg-paper overflow-hidden" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
                   <div className="flex items-center gap-3 px-4 border-b-2 border-ink">
                     <Search size={17} strokeWidth={2.5} aria-hidden="true" className="text-accentDeep shrink-0" />
                     <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)}
@@ -300,7 +323,7 @@ export default function Compare() {
                         <button type="button" onClick={() => add(t.slug)}
                           className="w-full flex items-center gap-3 px-4 py-2.5 min-h-touch text-left hover:bg-paper2 transition-colors">
                           <span aria-hidden="true"
-                            className="grid place-items-center w-9 h-9 shrink-0 rounded-lg border-2 border-ink font-display font-bold text-sm text-white"
+                            className="grid place-items-center w-9 h-9 shrink-0 rounded-ui border-2 border-ink font-display font-bold text-sm text-white"
                             style={{ background: t.category?.colorPrimary || "#1C1714" }}>
                             {t.logoMono || t.name[0]}
                           </span>
@@ -340,14 +363,14 @@ export default function Compare() {
                   : <>{navigatorHasShare() ? <Share2 size={13} aria-hidden="true" /> : <LinkIcon size={13} aria-hidden="true" />} Share</>}
               </button>
               <button onClick={() => setPicked([])}
-                className="inline-flex items-center min-h-touch font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-4 hover:bg-paper2 transition-colors">
+                className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
                 Clear
               </button>
             </div>
           </div>
 
           {/* ===== the sheet ===== */}
-          <Reveal key={picked.join("-")} className="cmp-wrap border-2 border-ink rounded-2xl bg-paper">
+          <Reveal key={picked.join("-")} className="cmp-wrap border-2 border-ink rounded-card bg-paper">
             <table className="cmp w-full text-sm border-collapse">
               <caption className="sr-only">
                 {rows.map((r) => r.name).join(" versus ")} compared across {visible.length} attributes
@@ -358,7 +381,7 @@ export default function Compare() {
                   {rows.map((t) => (
                     <th key={t.slug} scope="col" className="cmp-head">
                       <span aria-hidden="true"
-                        className="grid place-items-center w-11 h-11 mx-auto mb-2 rounded-lg border-2 border-ink font-display font-bold text-white"
+                        className="grid place-items-center w-11 h-11 mx-auto mb-2 rounded-ui border-2 border-ink font-display font-bold text-white"
                         style={{ background: t.category?.colorPrimary || "#1C1714" }}>
                         {t.logoMono || t.name[0]}
                       </span>
@@ -385,7 +408,7 @@ export default function Compare() {
                           <td key={t.slug} className={`cmp-cell ${row.prose ? "cmp-prose" : ""} ${won ? "cmp-won" : ""}`}>
                             {row.show ? row.show(t) : row.read(t)}
                             {won && (
-                              <span className="cmp-flag font-mono text-[10px] uppercase tracking-[.12em]">
+                              <span className="cmp-flag font-mono text-nano uppercase tracking-[.12em]">
                                 <Check size={11} strokeWidth={3} aria-hidden="true" />
                                 Leads
                               </span>
@@ -400,13 +423,15 @@ export default function Compare() {
                   <th scope="row" className="cmp-label" />
                   {rows.map((t) => (
                     <td key={t.slug} className="cmp-cell">
-                      <button onClick={() => goAffiliate(t, "compare")} aria-describedby="aff-note-compare" className="stamp text-xs">
-                        Get it <ArrowUpRight size={13} aria-hidden="true" />
+                      {/* Named, and quiet. Two accent-red "Get it" stamps side
+                          by side made a comparison table look like a pair of
+                          adverts competing — the one thing this page must not
+                          feel like. Outlined, and it says where it goes. */}
+                      <button onClick={() => goAffiliate(t, "compare")} aria-describedby="aff-note-compare"
+                        className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-[.1em]
+                          border-2 border-ink rounded-ui px-4 bg-paper hover:bg-ink hover:text-paper transition-colors">
+                        Visit {t.name} <ArrowUpRight size={13} aria-hidden="true" />
                       </button>
-                      <Link to="/disclosure"
-                        className="block font-mono text-[11px] uppercase tracking-[.12em] text-ink2 mt-2 underline underline-offset-2 hover:text-accentDeep transition-colors">
-                        Partner link
-                      </Link>
                     </td>
                   ))}
                 </tr>
@@ -414,14 +439,14 @@ export default function Compare() {
             </table>
           </Reveal>
 
-          <p id="aff-note-compare" className="font-mono text-[11px] uppercase tracking-[.12em] text-ink2 mt-4 text-pretty">
+          <p id="aff-note-compare" className="font-mono text-label uppercase tracking-[.12em] text-ink2 mt-4 text-pretty">
             <span className="text-accent" aria-hidden="true">✦</span>{" "}
-            The "Get it" links are partner links — your price stays the same, and they never affect the ranking.{" "}
+            The "Get it" links are partner links. They never affect the ranking.{" "}
             <Link to="/disclosure" className="underline underline-offset-2 hover:text-accentDeep transition-colors">How we make money</Link>
           </p>
         </>
       ) : all.length > 0 && (
-        <div className="border-2 border-dashed border-ink/30 rounded-2xl px-6 py-12 text-center">
+        <div className="border-2 border-dashed border-ink/30 rounded-card px-6 py-12 text-center">
           <p className="font-display text-xl sm:text-2xl font-semibold text-balance mb-2">
             {picked.length === 1 ? "One more and we can compare." : "Nothing on the bench yet."}
           </p>

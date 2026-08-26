@@ -68,7 +68,7 @@ export function VerdictSeal({ className = "", size = 112 }) {
 
       {/* the fixed centre — the house mark over an inked disc */}
       <span className="absolute inset-0 grid place-items-center">
-        <span className="grid place-items-center rounded-full bg-ink text-paper"
+        <span className="grid place-items-center rounded-ui bg-ink text-paper"
           style={{ width: size * 0.44, height: size * 0.44 }}>
           <span className="text-accent leading-none" style={{ fontSize: size * 0.2 }}>✦</span>
         </span>
@@ -127,13 +127,17 @@ function Figure({ value, suffix = "", label, chip = false }) {
  * user. */
 const HOLD_MS = 5500;
 
-export function LedgerBoard({ tools = 0, categories = 0, palette = [] }) {
+export function LedgerBoard({ tools = null, categories = null, palette = [] }) {
+  // A count we do not have yet is not a count of zero. Printing "0 tools
+  // reviewed" while the request is in flight reads as an empty directory for
+  // the moment it is on screen — the exact thing a placeholder figure should
+  // never be allowed to imply. Frames wait until their number is real.
   const frames = [
-    { key: "tools", value: tools, label: "Tools reviewed", art: "tally" },
-    { key: "cats", value: categories, label: "Categories", art: "chips" },
+    tools ? { key: "tools", value: tools, label: "Tools reviewed", art: "tally" } : null,
+    categories ? { key: "cats", value: categories, label: "Categories", art: "chips" } : null,
     { key: "indep", value: "100%", label: "Independent", art: "meter" },
     { key: "paid", value: "0", label: "Paid rankings", art: "empty", accent: true },
-  ];
+  ].filter(Boolean);
 
   const [i, setI] = useState(0);
   const [reduced, setReduced] = useState(false);
@@ -159,8 +163,8 @@ export function LedgerBoard({ tools = 0, categories = 0, palette = [] }) {
     return (
       <div className="border-y-2 border-ink">
         <dl className="flex flex-wrap items-baseline gap-x-5 sm:gap-x-8 gap-y-3 py-3.5 sm:py-4">
-          <Figure value={tools} label="Tools reviewed" />
-          <Figure value={categories} label="Categories" />
+          {tools ? <Figure value={tools} label="Tools reviewed" /> : null}
+          {categories ? <Figure value={categories} label="Categories" /> : null}
           <Figure value={100} suffix="%" label="Independent" />
           <Figure value={0} label="Paid rankings" chip />
         </dl>
@@ -215,8 +219,8 @@ export function LedgerBoard({ tools = 0, categories = 0, palette = [] }) {
             a keyboard or touch reader, and this content updates on its own. */}
         <button type="button" onClick={() => setStopped((s) => !s)}
           aria-label={stopped ? "Resume the record" : "Stop the record"}
-          className="shrink-0 grid place-items-center min-w-touch min-h-touch -my-1 rounded-full text-ink2/70 hover:text-accentDeep hover:bg-paper2 transition-colors">
-          <span aria-hidden="true" className="font-mono text-[11px] leading-none">{stopped ? "▶" : "❙❙"}</span>
+          className="shrink-0 grid place-items-center min-w-touch min-h-touch -my-1 rounded-ui text-ink2/70 hover:text-accentDeep hover:bg-paper2 transition-colors">
+          <span aria-hidden="true" className="font-mono text-label leading-none">{stopped ? "▶" : "❙❙"}</span>
         </button>
       </div>
 
@@ -309,7 +313,7 @@ function Art({ kind, n = 0, palette = [], live }) {
   if (kind === "meter") {
     return (
       <span className="flex items-center gap-3 w-full max-w-[8rem] sm:max-w-[13rem]">
-        <span className="relative flex-1 h-2 rounded-full border-2 border-ink overflow-hidden">
+        <span className="relative flex-1 h-2 rounded-ui border-2 border-ink overflow-hidden">
           <span className={`absolute inset-0 bg-accent ${live ? "rule-in" : "scale-x-0"}`} />
         </span>
       </span>
@@ -339,6 +343,73 @@ export function PageHead({ kicker, title, children }) {
       <h1 className="font-display text-display font-semibold text-balance">{title}</h1>
       {children && <p className="text-base sm:text-lg text-ink2 mt-4 max-w-measure text-pretty">{children}</p>}
     </header>
+  );
+}
+
+/**
+ * The short version, printed first.
+ *
+ * A trust page is read by two people: one who will read every word, and one who
+ * wants to know in ten seconds whether they are being sold to. The second is
+ * the more sceptical of the two and is currently served worst, because the
+ * honest answer is buried in the fourth paragraph. This puts it at the top.
+ *
+ * Numbered rather than bulleted — a numbered list reads as a stated position, a
+ * bulleted one as marketing copy.
+ */
+export function KeyPoints({ label = "The short version", points = [] }) {
+  if (!points.length) return null;
+  return (
+    <aside className="border-y-2 border-ink py-5 sm:py-6 mb-9 sm:mb-11">
+      <p className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-4">{label}</p>
+      <ol className="space-y-3">
+        {points.map((p, i) => (
+          <li key={p} className="flex gap-4">
+            <span aria-hidden="true"
+              className="font-mono text-label tabular-nums text-ink2 pt-1 shrink-0 w-5">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className="font-display text-lg sm:text-xl leading-snug text-pretty">{p}</span>
+          </li>
+        ))}
+      </ol>
+    </aside>
+  );
+}
+
+/**
+ * A contents rail set in the margin.
+ *
+ * These pages run to eight hundred words in a single column with a third of the
+ * viewport empty on either side at desktop. This puts the empty margin to work
+ * the way a printed reference would — the reader can see the shape of the whole
+ * argument, and jump.
+ *
+ * Margin-only by design: it appears where there is genuinely room beside the
+ * measure and is simply absent below that, rather than collapsing into another
+ * stacked block competing with the prose.
+ */
+export function MarginContents({ items = [] }) {
+  if (items.length < 2) return null;
+  return (
+    <nav aria-label="On this page"
+      className="hidden xl:block absolute right-full top-0 h-full pr-10 w-56">
+      <div className="sticky top-28">
+        <p className="font-mono text-nano uppercase tracking-[.2em] text-ink2 mb-3">On this page</p>
+        <ul className="space-y-2 border-l-2 border-ink/15 pl-4">
+          {items.map((it) => (
+            <li key={it.id}>
+              {/* A navigation link, not an inline one, so it has to carry a
+                  real target rather than lean on the sentence exemption. */}
+              <a href={`#${it.id}`}
+                className="flex items-center min-h-[26px] font-mono text-label leading-snug text-ink2 hover:text-accentDeep transition-colors">
+                {it.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
   );
 }
 

@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { ah } from "../middleware/error.js";
+import { cached } from "../lib/cache.js";
 
 const router = Router();
 
 // GET /api/blog?category=ai&page=1&limit=9
-router.get("/", ah(async (req, res) => {
+router.get("/", cached(300), ah(async (req, res) => {
   const { category, page = "1", limit = "9" } = req.query;
   const where = { isPublished: true };
   if (category && category !== "all") where.category = { slug: String(category) };
@@ -27,7 +28,7 @@ router.get("/", ah(async (req, res) => {
 }));
 
 // GET /api/blog/:slug
-router.get("/:slug", ah(async (req, res) => {
+router.get("/:slug", cached(300), ah(async (req, res) => {
   const post = await prisma.blogPost.findUnique({
     where: { slug: req.params.slug },
     include: {

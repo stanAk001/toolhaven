@@ -11,6 +11,7 @@
 // underneath behind a rule. Every control is the paper's own. The count is the
 // important part — a filter you cannot see the effect of is a guess.
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, X, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { getCategories, getTools } from "../api/client.js";
 import { ToolCard, SkeletonGrid } from "../components/ui.jsx";
@@ -27,10 +28,14 @@ const RATINGS = [[0, "Any rating"], [4, "4.0 and up"], [4.5, "4.5 and up"]];
 const PRICE_CAP = 150;
 
 export default function ToolsDirectory() {
+  // A search is a place, not just a state: arriving from the cover, sharing a
+  // result, or hitting Back should all land on the same list. The term lives in
+  // the URL so all three work.
+  const [params, setParams] = useSearchParams();
   const [cats, setCats] = useState([]);
-  const [active, setActive] = useState("all");
-  const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
+  const [active, setActive] = useState(params.get("category") || "all");
+  const [search, setSearch] = useState(params.get("search") || "");
+  const [debounced, setDebounced] = useState(params.get("search") || "");
   const [sort, setSort] = useState("popular");
   const [minRating, setMinRating] = useState(0);
   const [maxPrice, setMaxPrice] = useState(PRICE_CAP);
@@ -41,6 +46,16 @@ export default function ToolsDirectory() {
   useEffect(() => { getCategories().then(setCats).catch(() => {}); }, []);
   useEffect(() => { getTools({ limit: 1 }).then((d) => setTotal(d.total ?? null)).catch(() => {}); }, []);
   useEffect(() => { const t = setTimeout(() => setDebounced(search), 250); return () => clearTimeout(t); }, [search]);
+
+  // Keep the address bar in step with the two filters worth linking to, and
+  // replace rather than push so Back leaves the directory instead of walking
+  // letter by letter through what someone typed.
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (debounced) next.set("search", debounced);
+    if (active !== "all") next.set("category", active);
+    setParams(next, { replace: true });
+  }, [debounced, active, setParams]);
 
   useEffect(() => {
     setLoading(true);
@@ -82,7 +97,7 @@ export default function ToolsDirectory() {
 
       {/* ===== the filter bar — one surface, three registers ===== */}
       <section aria-label="Filter the directory"
-        className="border-2 border-ink rounded-2xl bg-paper overflow-hidden mb-8"
+        className="border-2 border-ink rounded-card bg-paper overflow-hidden mb-8"
         style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
 
         {/* search + the count it affects, on the same line */}
@@ -144,7 +159,7 @@ export default function ToolsDirectory() {
 
           {narrowed && (
             <button type="button" onClick={reset}
-              className="inline-flex items-center justify-center gap-1.5 min-h-touch w-full sm:w-auto sm:ml-auto font-mono text-micro uppercase tracking-[.12em] text-accentDeep hover:text-ink border-2 border-ink/25 sm:border-0 rounded-full transition-colors">
+              className="inline-flex items-center justify-center gap-1.5 min-h-touch w-full sm:w-auto sm:ml-auto font-mono text-micro uppercase tracking-[.12em] text-accentDeep hover:text-ink border-2 border-ink/25 sm:border-0 rounded-ui transition-colors">
               <X size={13} strokeWidth={2.5} aria-hidden="true" /> Reset filters
             </button>
           )}
@@ -152,7 +167,7 @@ export default function ToolsDirectory() {
       </section>
 
       {loading ? <SkeletonGrid count={6} /> : grouped.length === 0 ? (
-        <div className="border-2 border-dashed border-ink/30 rounded-2xl px-6 py-14 text-center">
+        <div className="border-2 border-dashed border-ink/30 rounded-card px-6 py-14 text-center">
           <p className="font-display text-xl sm:text-2xl font-semibold text-balance mb-2">
             Nothing matches that combination.
           </p>
@@ -174,7 +189,7 @@ export default function ToolsDirectory() {
               <span aria-hidden="true" className="flex-1 h-0.5 bg-ink" />
             </div>
             <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {g.tools.map((t) => <ToolCard key={t.slug} tool={t} />)}
+              {g.tools.map((t) => <ToolCard key={t.slug} tool={t} showCategory={false} />)}
             </Reveal>
           </section>
         ))
@@ -200,7 +215,7 @@ function Field({ label, value, onChange, options }) {
 function Chip({ on, color, onClick, children }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={on}
-      className={`inline-flex items-center font-mono text-[11px] uppercase tracking-[.06em] px-3.5 min-h-touch rounded-full border-2 border-ink whitespace-nowrap transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
+      className={`inline-flex items-center font-mono text-label uppercase tracking-[.06em] px-3.5 min-h-touch rounded-ui border-2 border-ink whitespace-nowrap transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
       style={on ? { background: color || "#1C1714" } : undefined}>
       {children}
     </button>

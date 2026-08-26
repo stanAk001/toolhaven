@@ -54,7 +54,7 @@ export default function CategoryPage() {
 
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12">
         <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {(cat.tools || []).map((t) => <ToolCard key={t.slug} tool={{ ...t, category: cat }} />)}
+          {(cat.tools || []).map((t) => <ToolCard key={t.slug} tool={{ ...t, category: cat }} showCategory={false} />)}
         </Reveal>
       </section>
 

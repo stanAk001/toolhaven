@@ -111,7 +111,7 @@ export default function BestList() {
 
       {/* How the picks were made, stated before the picks themselves. */}
       {list.criteria && (
-        <section className="border-2 border-ink rounded-2xl bg-paper2/40 p-5 sm:p-6 mb-10">
+        <section className="border-2 border-ink rounded-card bg-paper2/40 p-5 sm:p-6 mb-10">
           <h2 className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-3">How we chose</h2>
           <div className="prose-editorial max-w-measure text-sm">
             <ReactMarkdown>{list.criteria}</ReactMarkdown>
@@ -127,7 +127,7 @@ export default function BestList() {
       {entries.length > 0 && (
         <section className="mb-12">
           <SectionHead folio="01" kicker="At a glance" title="The shortlist" />
-          <div className="cmp-wrap border-2 border-ink rounded-2xl bg-paper">
+          <div className="cmp-wrap border-2 border-ink rounded-card bg-paper">
             <table className="cmp w-full text-sm border-collapse">
               <caption className="sr-only">{list.title} — summary of all {entries.length} picks</caption>
               <thead>
@@ -187,7 +187,7 @@ export default function BestList() {
             {list.related.map((rl) => (
               <li key={rl.slug}>
                 <Link to={`/best/${rl.slug}`}
-                  className="tactile block h-full border-2 border-ink rounded-2xl bg-paper p-5 hover:bg-paper2/60 transition-colors">
+                  className="tactile block h-full border-2 border-ink rounded-card bg-paper p-5 hover:bg-paper2/60 transition-colors">
                   <span className="font-display text-lg font-semibold leading-tight block mb-1">{rl.title}</span>
                   {rl.subtitle && <span className="text-sm text-ink2 leading-snug line-clamp-2">{rl.subtitle}</span>}
                 </Link>
@@ -201,9 +201,9 @@ export default function BestList() {
         <ShareBar context="best" title={list.title} />
       </div>
 
-      <p className="font-mono text-[11px] uppercase tracking-[.12em] text-ink2 mt-8 text-pretty">
+      <p className="font-mono text-label uppercase tracking-[.12em] text-ink2 mt-8 text-pretty">
         <span className="text-accent" aria-hidden="true">✦</span>{" "}
-        Some outbound links are partner links — your price stays the same, and they never affect the order of this list.{" "}
+        Some outbound links are partner links. They never affect the order of this list.{" "}
         <Link to="/disclosure" className="underline underline-offset-2 hover:text-accentDeep transition-colors">How we make money</Link>
       </p>
     </div>
@@ -225,7 +225,7 @@ function Entry({ entry, rank, listSlug }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-2">
             <span aria-hidden="true"
-              className="w-10 h-10 grid place-items-center rounded-lg border-2 border-ink font-display font-bold text-sm text-white shrink-0"
+              className="w-10 h-10 grid place-items-center rounded-ui border-2 border-ink font-display font-bold text-sm text-white shrink-0"
               style={{ background: color }}>
               {t.logoMono || t.name[0]}
             </span>
@@ -233,7 +233,7 @@ function Entry({ entry, rank, listSlug }) {
               <Link to={`/tools/${t.slug}`} className="hover:text-accentDeep transition-colors">{t.name}</Link>
             </h3>
             {entry.award && (
-              <span className="font-mono text-micro uppercase tracking-wide px-2 py-1 rounded-md bg-accent text-white">
+              <span className="font-mono text-micro uppercase tracking-wide px-2 py-1 rounded-ui bg-accent text-white">
                 {entry.award}
               </span>
             )}

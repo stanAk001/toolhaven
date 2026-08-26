@@ -1,8 +1,11 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
-import { iconFor, priceLabel } from "../lib/helpers.jsx";
+import { iconFor, priceLabel, priceLabelShort } from "../lib/helpers.jsx";
 import { Tilt } from "./motion.jsx";
+import { ToolLogo } from "./toollogo.jsx";
+import { useIntentPrefetch } from "../lib/prefetchlink.jsx";
+import { getTool, getCategory } from "../api/client.js";
 
 export function Stars({ r = 0, size = 13, showNum = true }) {
   return (
@@ -28,10 +31,10 @@ export function Loader({ label = "Loading…" }) {
 // A single placeholder card that mirrors a ToolCard's shape while data loads.
 export function CardSkeleton() {
   return (
-    <div className="border-2 border-ink rounded-2xl p-4 sm:p-5 bg-paper" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+    <div className="border-2 border-ink rounded-card p-4 sm:p-5 bg-paper" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
       {/* mirrors the card's own stack-then-inline header so nothing jumps on load */}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3 mb-4">
-        <span className="skeleton w-10 h-10 sm:w-12 sm:h-12 rounded-lg" />
+        <span className="skeleton w-10 h-10 sm:w-12 sm:h-12 rounded-ui" />
         <span className="skeleton h-5 w-20 sm:w-24 rounded" />
       </div>
       <span className="skeleton block h-6 w-3/4 mb-3 rounded" />
@@ -64,62 +67,152 @@ export function Caret({ open }) {
   );
 }
 
-export function ToolCard({ tool }) {
-  const c = tool.category || {};
-  const color = c.colorPrimary || "#7C3AED";
-  const mono = tool.logoMono || tool.name[0];
-  return (
-    <Tilt className="h-full">
-      <Link to={`/tools/${tool.slug}`} style={{ transformStyle: "preserve-3d" }}
-        className="tactile group relative flex flex-col h-full rounded-2xl bg-paper border-2 border-ink p-4 sm:p-5">
-        {/* One hover idea, not nine: the category colour floods up the card and
-            the type inverts onto it. The ghost monogram is a printed mark and
-            stays put — it isn't a third thing competing for the eye. */}
-        <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[14px]">
-          <span className="absolute inset-0 origin-bottom scale-y-0 transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-y-100"
-            style={{ background: color }} />
-          <span className="absolute -right-3 -bottom-9 font-display text-[112px] sm:text-[150px] font-bold leading-none text-ink/[.05] transition-colors duration-500 group-hover:text-white/[.13]"
-            aria-hidden="true">{mono}</span>
-        </span>
-        <CornerMarks />
+/**
+ * A tool, as a listing.
+ *
+ * This used to be seven identical rounded cards in a row, each one carrying a
+ * filled category chip directly underneath a heading that already named the
+ * category, a 3D tilt that followed the pointer, a colour flood on hover, a
+ * ghost monogram and a set of corner brackets. Five decorative ideas, and not
+ * one of them told you whether the tool was any good.
+ *
+ * What it carries now is the thing a reader is actually deciding: what this is,
+ * who it suits, and what to watch out for. Both halves come from the editorial
+ * record — nothing here is generated to fill the space, and a tool with no
+ * caveat on file simply shows one fewer line.
+ */
+/**
+ * The rating, as a printed mark.
+ *
+ * One lockup, whatever the source: the figure large enough to be the card's
+ * focal point, the scale and the provenance set small underneath it. A reader
+ * learns to read it once and can then scan a whole grid of them.
+ *
+ * Renders nothing when there is nothing to show — a blank corner is a fairer
+ * account of "we have not gathered this yet" than any placeholder.
+ */
+function RatingMark({ tool, className = "" }) {
+  const own = Number(tool.reviewCount) >= 3;
+  const value = own ? Number(tool.rating).toFixed(1) : tool.topRating?.rating;
+  if (value === undefined || value === null) return null;
+  const outOf = own ? 5 : tool.topRating.maxRating;
+  const source = own ? "Readers" : tool.topRating.sourceName;
 
-        {/* the content rides forward on the Z-axis, floating above the plane */}
-        <div className="relative flex flex-col h-full transition-colors duration-300 group-hover:text-white" style={{ transform: "translateZ(34px)" }}>
-          {/* logo and category stack on a half-width card, sit side by side once there's room */}
-          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3 mb-3">
-            <span className="w-10 h-10 sm:w-12 sm:h-12 grid place-items-center shrink-0 rounded-lg font-display font-bold text-base sm:text-lg text-white border-2 border-ink transition-colors duration-300 group-hover:border-white/40"
-              style={{ background: color }}>{mono}</span>
-            <span className="font-mono text-[11px] uppercase tracking-[.1em] px-2 py-1 rounded-md text-white border-2 border-transparent max-w-full truncate transition-colors group-hover:bg-white/15 group-hover:border-white/40"
-              style={{ background: color }}>{c.name}</span>
-          </div>
-          <h3 className="font-display text-lg sm:text-xl font-semibold mb-1 tracking-tight leading-tight">{tool.name}</h3>
-          <span className="transition-colors group-hover:[&_em]:text-white/80"><Stars r={tool.rating} /></span>
-          <p className="text-xs sm:text-sm text-ink2 leading-snug mt-2 mb-4 line-clamp-4 sm:line-clamp-none transition-colors group-hover:text-white/85">{tool.description}</p>
-          <div className="flex items-center justify-between gap-2 font-mono text-[11px] sm:text-xs text-ink2 mt-auto transition-colors group-hover:text-white/90">
-            <span className="tabular-nums">{priceLabel(tool)}</span>
-            <span className="inline-flex items-center gap-2 shrink-0">
-              {/* the words are a nicety; the disc carries the affordance when space is tight */}
-              <span className="hidden sm:inline">Read review</span>
-              <span className="grid place-items-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-ink transition-all duration-300 group-hover:border-white/50 group-hover:bg-white/10 group-hover:translate-x-1">→</span>
-            </span>
-          </div>
-        </div>
-      </Link>
-    </Tilt>
+  return (
+    <div className={`shrink-0 text-right leading-none pt-0.5 ${className}`}>
+      <span className="font-display text-lg sm:text-[28px] font-semibold tabular-nums">{value}</span>
+      <span className="font-mono text-nano text-ink2 tabular-nums">/{outOf}</span>
+      {/* The source is the first thing to go when the card is half a phone
+          wide — the figure and the scale still say everything a listing needs,
+          and the tool page carries the provenance in full. */}
+      <span className="hidden sm:block font-mono text-nano uppercase tracking-[.14em] text-ink2 mt-1">{source}</span>
+    </div>
   );
 }
 
-// CornerMarks — four crop-mark brackets that frame a card like a press sheet.
-// They hold still. They're registration marks on a proof, not an animation: the
-// card already has one thing that moves on hover, and that's enough.
+export function ToolCard({ tool, showCategory = true }) {
+  // By the time the click lands, the tool page usually already has its data.
+  const intent = useIntentPrefetch(() => getTool(tool.slug), [tool.slug]);
+  const c = tool.category || {};
+  const color = c.colorPrimary || "#7C3AED";
+
+  return (
+    <Link
+      to={`/tools/${tool.slug}`}
+      {...intent}
+      className="group relative flex flex-col h-full rounded-card bg-paper border-2 border-ink
+        shadow-press transition-[transform,box-shadow] duration-200 ease-out
+        hover:-translate-y-0.5 hover:shadow-press-lg focus-visible:-translate-y-0.5"
+    >
+      {/* The category's colour as a printed head-rule. On hover it inks up —
+          one idea, carried by the element that already identifies the card,
+          instead of a tilt and a flood and a watermark all at once. */}
+      <span aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-[3px] rounded-t-card origin-top transition-transform duration-200 ease-out group-hover:scale-y-[2.2]"
+        style={{ background: color }} />
+
+      {/* Two cards fit across a phone, so the card has to work at about a
+          hundred and seventy pixels. Rather than shrink the full listing until
+          every line truncates, the phone gets a deliberately shorter one:
+          identity, score and price — enough to choose what to open. The
+          description and the trade-off return the moment there is room for
+          them to be read rather than clipped. */}
+      <div className="flex flex-col h-full p-3 sm:p-5 pt-4 sm:pt-6">
+        {/* Half a phone wide, a name and a score cannot share a line — "Midjourney"
+            and "4.4/5" simply collide. So on a phone the mark sits opposite the
+            logo and the name takes the full width beneath them; from `sm` the row
+            un-wraps into logo, name, score. One set of markup, ordered by the
+            flex container rather than duplicated per breakpoint. */}
+        <div className="flex flex-wrap items-start gap-x-2.5 gap-y-1.5 sm:flex-nowrap sm:gap-3 mb-2.5 sm:mb-3.5">
+          <ToolLogo tool={tool} size={32} className="shrink-0 sm:hidden" />
+          <ToolLogo tool={tool} size={40} className="shrink-0 hidden sm:block sm:order-1" />
+
+          {/* The score, set as a score. Everything on this card used to sit
+              between 11px and 20px, which left the eye nowhere to land — the
+              scale jump is what gives a listing a focal point, and a rating is
+              the one number worth being the focus. */}
+          <RatingMark tool={tool} className="ml-auto sm:order-3" />
+
+          <div className="basis-full sm:basis-auto sm:order-2 min-w-0 sm:flex-1">
+            <h3 className="font-display text-base sm:text-2xl font-semibold leading-tight sm:leading-none tracking-tight text-balance">
+              {tool.name}
+            </h3>
+            {showCategory && (
+              <span className="block font-mono text-nano uppercase tracking-[.12em] sm:tracking-[.16em] mt-1 sm:mt-1.5 truncate" style={{ color }}>
+                {c.name}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <p className="hidden sm:block text-sm text-ink2 leading-snug line-clamp-2 mb-4">{tool.description}</p>
+
+        {/* The trade-off, set as a reference entry: the label hangs in the
+            margin and the text runs on, second line aligning under the first.
+            It is how a spec sheet or a dictionary is set, it scans down a
+            column far better than stacked labels, and it costs no decoration. */}
+        {(tool.bestFor || tool.caveat) && (
+          <dl className="hidden sm:block border-t-2 border-ink/10 pt-3 mb-4 space-y-1.5">
+            {tool.bestFor && (
+              <div className="text-sm leading-snug line-clamp-2">
+                <dt className="inline font-mono text-nano uppercase tracking-[.12em] text-accentDeep whitespace-nowrap">Best for</dt>
+                <span aria-hidden="true" className="text-ink2/40"> &mdash; </span>
+                <dd className="inline">{tool.bestFor}</dd>
+              </div>
+            )}
+            {tool.caveat && (
+              <div className="text-sm text-ink2 leading-snug line-clamp-2">
+                <dt className="inline font-mono text-nano uppercase tracking-[.12em] text-ink2 whitespace-nowrap">Watch for</dt>
+                <span aria-hidden="true" className="text-ink2/40"> &mdash; </span>
+                <dd className="inline">{tool.caveat}</dd>
+              </div>
+            )}
+          </dl>
+        )}
+
+        {/* Both halves are set to stay on one line. Uppercase tracking pushed
+           this row onto two lines at three-up, which knocked the footers of a
+           row out of alignment — the exact thing a grid is for. */}
+        <div className="flex items-center justify-between gap-2 mt-auto pt-2.5 sm:pt-3 border-t-2 border-ink/10">
+          <span className="font-mono text-nano text-ink2 tabular-nums whitespace-nowrap">{priceLabelShort(tool)}</span>
+          <span className="font-mono text-nano text-ink shrink-0 whitespace-nowrap inline-flex items-center gap-1.5">
+            <span className="hidden sm:inline">Read review</span>
+            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">&rarr;</span>
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function CornerMarks() {
   const base = "pointer-events-none absolute z-10 w-3.5 h-3.5 border-ink/70 transition-colors duration-300 group-hover:border-white/50";
   return (
     <>
-      <span aria-hidden="true" className={`${base} top-2 left-2 border-t-2 border-l-2 rounded-tl-lg`} />
-      <span aria-hidden="true" className={`${base} top-2 right-2 border-t-2 border-r-2 rounded-tr-lg`} />
-      <span aria-hidden="true" className={`${base} bottom-2 left-2 border-b-2 border-l-2 rounded-bl-lg`} />
-      <span aria-hidden="true" className={`${base} bottom-2 right-2 border-b-2 border-r-2 rounded-br-lg`} />
+      <span aria-hidden="true" className={`${base} top-2 left-2 border-t-2 border-l-2 rounded-tl-ui`} />
+      <span aria-hidden="true" className={`${base} top-2 right-2 border-t-2 border-r-2 rounded-tr-ui`} />
+      <span aria-hidden="true" className={`${base} bottom-2 left-2 border-b-2 border-l-2 rounded-bl-ui`} />
+      <span aria-hidden="true" className={`${base} bottom-2 right-2 border-b-2 border-r-2 rounded-br-ui`} />
     </>
   );
 }
@@ -190,7 +283,7 @@ export function CategoryRow({ category, n = 0, preview = [] }) {
           </div>
         )}
 
-        <span className="font-mono text-[11px] uppercase tracking-wide tabular-nums text-ink2 hidden sm:block shrink-0 transition-colors group-hover:text-white/80">
+        <span className="font-mono text-label uppercase tracking-wide tabular-nums text-ink2 hidden sm:block shrink-0 transition-colors group-hover:text-white/80">
           {category.toolCount ?? 0} tools
         </span>
         {/* magnetic arrow, riding inside a disc that rings white on hover */}
@@ -204,6 +297,7 @@ export function CategoryRow({ category, n = 0, preview = [] }) {
 }
 
 export function CategoryCard({ category }) {
+  const intent = useIntentPrefetch(() => getCategory(category.slug), [category.slug]);
   const Icon = iconFor(category.iconKey);
   const color = category.colorPrimary || "#7C3AED";
   const preview = category.preview || [];
@@ -212,8 +306,8 @@ export function CategoryCard({ category }) {
   const extraNarrow = total - Math.min(preview.length, 3);  // three, on a half-width card
   return (
     <Tilt className="h-full">
-      <Link to={`/categories/${category.slug}`} style={{ transformStyle: "preserve-3d" }}
-        className="tactile tactile-lg group relative flex flex-col h-full rounded-2xl bg-paper border-2 border-ink p-4 sm:p-6">
+      <Link to={`/categories/${category.slug}`} {...intent} style={{ transformStyle: "preserve-3d" }}
+        className="tactile tactile-lg group relative flex flex-col h-full rounded-card bg-paper border-2 border-ink p-4 sm:p-6">
         {/* one move: the colour floods up and the type inverts onto it */}
         <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[14px]">
           <span className="absolute inset-0 origin-bottom scale-y-0 transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-y-100"
@@ -227,7 +321,7 @@ export function CategoryCard({ category }) {
         {/* the content rides forward on the Z-axis, floating above the plane */}
         <div className="relative flex flex-col h-full transition-colors duration-300 group-hover:text-white" style={{ transform: "translateZ(34px)" }}>
           <div className="flex items-center justify-between gap-2 mb-3 sm:mb-5">
-            <span className="grid place-items-center w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg border-2 border-ink text-white transition-colors duration-300 group-hover:bg-white/15 group-hover:border-white/40"
+            <span className="grid place-items-center w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-ui border-2 border-ink text-white transition-colors duration-300 group-hover:bg-white/15 group-hover:border-white/40"
               style={{ background: color }}>
               <Icon size={22} aria-hidden="true" />
             </span>
@@ -247,21 +341,21 @@ export function CategoryCard({ category }) {
                   overflow count is stated for whichever set is actually shown */}
               {preview.slice(0, 5).map((t, i) => (
                 <span key={t.slug} title={t.name} style={{ "--c": color }}
-                  className={`${i >= 3 ? "hidden sm:grid" : "grid"} place-items-center min-w-[1.75rem] sm:min-w-[1.9rem] h-7 sm:h-8 px-1.5 rounded-md border-2 border-ink bg-[var(--c)] text-white font-display text-xs sm:text-sm font-bold leading-none
+                  className={`${i >= 3 ? "hidden sm:grid" : "grid"} place-items-center min-w-[1.75rem] sm:min-w-[1.9rem] h-7 sm:h-8 px-1.5 rounded-ui border-2 border-ink bg-[var(--c)] text-white font-display text-xs sm:text-sm font-bold leading-none
                     transition-colors duration-300 group-hover:bg-white group-hover:text-ink group-hover:border-white`}>
                   {t.logoMono || t.name[0]}
                 </span>
               ))}
               {extraNarrow > 0 && (
-                <span className="sm:hidden font-mono text-[11px] text-ink2 transition-colors group-hover:text-white/75">+{extraNarrow}</span>
+                <span className="sm:hidden font-mono text-label text-ink2 transition-colors group-hover:text-white/75">+{extraNarrow}</span>
               )}
               {extra > 0 && (
-                <span className="hidden sm:inline font-mono text-[11px] text-ink2 transition-colors group-hover:text-white/75">+{extra}</span>
+                <span className="hidden sm:inline font-mono text-label text-ink2 transition-colors group-hover:text-white/75">+{extra}</span>
               )}
             </div>
           )}
 
-          <span className="font-mono text-[11px] sm:text-xs uppercase tracking-wide inline-flex items-center gap-2 transition-colors group-hover:text-white">
+          <span className="font-mono text-label sm:text-xs uppercase tracking-wide inline-flex items-center gap-2 transition-colors group-hover:text-white">
             Explore
             <span className="grid place-items-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-ink transition-all duration-300 group-hover:border-white/50 group-hover:bg-white/10 group-hover:translate-x-1">→</span>
           </span>
@@ -280,7 +374,7 @@ export function PostCard({ post }) {
   return (
     <Tilt className="h-full">
       <Link to={`/blog/${post.slug}`} style={{ transformStyle: "preserve-3d" }}
-        className="tactile tactile-lg group relative flex flex-col h-full rounded-2xl bg-paper border-2 border-ink p-4 sm:p-5">
+        className="tactile tactile-lg group relative flex flex-col h-full rounded-card bg-paper border-2 border-ink p-4 sm:p-5">
         <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[14px]">
           <span className="absolute inset-0 origin-bottom scale-y-0 transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-y-100"
             style={{ background: color }} />
@@ -291,12 +385,12 @@ export function PostCard({ post }) {
 
         <div className="relative flex flex-col h-full transition-colors duration-300 group-hover:text-white" style={{ transform: "translateZ(34px)" }}>
           {c.name && (
-            <span className="font-mono text-[11px] uppercase tracking-wide px-2 py-1 rounded-md text-white border-2 border-transparent self-start mb-3 transition-colors group-hover:border-white/40"
+            <span className="font-mono text-label uppercase tracking-wide px-2 py-1 rounded-ui text-white border-2 border-transparent self-start mb-3 transition-colors group-hover:border-white/40"
               style={{ background: color }}>{c.name}</span>
           )}
           <h3 className="font-display text-base sm:text-xl font-semibold mb-2 tracking-tight leading-tight">{post.title}</h3>
           <p className="text-xs sm:text-sm text-ink2 leading-snug mb-4 line-clamp-3 transition-colors group-hover:text-white/85">{post.excerpt}</p>
-          <span className="font-mono text-[11px] sm:text-xs text-ink2 inline-flex items-center justify-between gap-2 mt-auto w-full transition-colors group-hover:text-white/90">
+          <span className="font-mono text-label sm:text-xs text-ink2 inline-flex items-center justify-between gap-2 mt-auto w-full transition-colors group-hover:text-white/90">
             {post.readTime ?? 5} min read
             <span className="grid place-items-center w-6 h-6 sm:w-7 sm:h-7 shrink-0 rounded-full border-2 border-ink transition-all duration-300 group-hover:border-white/50 group-hover:bg-white/10 group-hover:translate-x-1">→</span>
           </span>

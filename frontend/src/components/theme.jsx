@@ -70,11 +70,14 @@ export function ThemeToggle() {
 
   const night = theme === "night";
   return (
+    // No border or shadow of its own: it is the right-hand half of the header's
+    // segmented control, and two separately-boxed icon buttons sitting side by
+    // side read as two loose objects rather than one considered one.
     <button type="button" onClick={toggle} aria-pressed={night}
       aria-label={night ? "Switch to Day edition" : "Switch to Night edition"}
       title={night ? "Day edition" : "Night edition"}
-      className="inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-ink bg-paper px-3 min-h-touch min-w-touch transition-transform hover:-translate-y-0.5"
-      style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
+      className="inline-flex items-center justify-center gap-1.5 px-3 min-h-touch min-w-touch
+        hover:bg-paper2 transition-colors">
       {night ? <Sun size={16} strokeWidth={2.5} aria-hidden="true" /> : <Moon size={16} strokeWidth={2.5} aria-hidden="true" />}
       <span className="hidden lg:inline font-mono text-micro uppercase tracking-wide">{night ? "Day" : "Night"}</span>
     </button>

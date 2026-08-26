@@ -17,8 +17,13 @@ import og from "./routes/og.js";
 import clicks from "./routes/clicks.js";
 import sitemap from "./routes/sitemap.js";
 import best from "./routes/best.js";
+import pricing from "./routes/pricing.js";
+import pricingAdmin from "./routes/pricingadmin.js";
 import { notFound, errorHandler } from "./middleware/error.js";
 import { warmUp } from "./lib/prisma.js";
+import { invalidateOnWrite } from "./lib/cache.js";
+import { warmCache } from "./lib/warm.js";
+import { startPricingWorker } from "./lib/pricing/scheduler.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -33,6 +38,10 @@ app.use(cors({ origin: origins, credentials: true }));
 // basic rate limit on writes/clicks to keep spam down
 app.use("/api", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false }));
 
+// Any write anywhere under /api drops the whole read cache, so an editor's
+// save is visible on the next request rather than whenever a timer expires.
+app.use("/api", invalidateOnWrite);
+
 app.get("/api/health", (req, res) => res.json({ ok: true, ts: Date.now() }));
 
 app.use("/api/categories", categories);
@@ -41,6 +50,10 @@ app.use("/api/reviews", reviews);
 app.use("/api/testimonials", testimonials);
 app.use("/api/blog", blog);
 app.use("/api/best", best);
+// Pricing reads hang off the tools namespace so a caller already holding a
+// tool slug does not need a second identifier.
+app.use("/api/tools", pricing);
+app.use("/api/admin/pricing", pricingAdmin);
 app.use("/api/newsletter", newsletter);
 app.use("/api/contact", contact);
 app.use("/api/submissions", submissions);
@@ -59,7 +72,12 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 4000;
 const server = app.listen(PORT, () => {
   console.log(`Toolhaven API running on http://localhost:${PORT}`);
-  warmUp();
+  // Connect, then pay the first-request cost here rather than making a reader
+  // wait for it. Neither step is allowed to take the server down with it.
+  warmUp().then(() => warmCache(PORT)).catch(() => {});
+  // Prices refresh themselves in the background; readers are always served
+  // from the database. Set PRICING_WORKER=off to stop it.
+  startPricingWorker();
 });
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {

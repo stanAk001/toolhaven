@@ -1,0 +1,232 @@
+[
+  {
+    "slug": "canva",
+    "rating": 4.6,
+    "reviewCount": 15000
+  },
+  {
+    "slug": "grammarly",
+    "rating": 4.6,
+    "reviewCount": 12400
+  },
+  {
+    "slug": "chatgpt",
+    "rating": 4.8,
+    "reviewCount": 9800
+  },
+  {
+    "slug": "monday",
+    "rating": 4.5,
+    "reviewCount": 9200
+  },
+  {
+    "slug": "figma",
+    "rating": 4.8,
+    "reviewCount": 9100
+  },
+  {
+    "slug": "notion",
+    "rating": 4.6,
+    "reviewCount": 8200
+  },
+  {
+    "slug": "semrush",
+    "rating": 4.5,
+    "reviewCount": 7800
+  },
+  {
+    "slug": "clickup",
+    "rating": 4.4,
+    "reviewCount": 7100
+  },
+  {
+    "slug": "calendly",
+    "rating": 4.7,
+    "reviewCount": 6900
+  },
+  {
+    "slug": "mailchimp",
+    "rating": 4.2,
+    "reviewCount": 6700
+  },
+  {
+    "slug": "tradingview",
+    "rating": 4.7,
+    "reviewCount": 6400
+  },
+  {
+    "slug": "postman",
+    "rating": 4.6,
+    "reviewCount": 6100
+  },
+  {
+    "slug": "freshdesk",
+    "rating": 4.4,
+    "reviewCount": 5800
+  },
+  {
+    "slug": "loom",
+    "rating": 4.6,
+    "reviewCount": 5600
+  },
+  {
+    "slug": "midjourney",
+    "rating": 4.7,
+    "reviewCount": 5600
+  },
+  {
+    "slug": "digitalocean",
+    "rating": 4.6,
+    "reviewCount": 5400
+  },
+  {
+    "slug": "activecampaign",
+    "rating": 4.5,
+    "reviewCount": 5200
+  },
+  {
+    "slug": "asana",
+    "rating": 4.4,
+    "reviewCount": 5100
+  },
+  {
+    "slug": "intercom",
+    "rating": 4.4,
+    "reviewCount": 4900
+  },
+  {
+    "slug": "todoist",
+    "rating": 4.6,
+    "reviewCount": 4800
+  },
+  {
+    "slug": "copilot",
+    "rating": 4.6,
+    "reviewCount": 4300
+  },
+  {
+    "slug": "vimeo",
+    "rating": 4.4,
+    "reviewCount": 4200
+  },
+  {
+    "slug": "convertkit",
+    "rating": 4.5,
+    "reviewCount": 3400
+  },
+  {
+    "slug": "descript",
+    "rating": 4.6,
+    "reviewCount": 3300
+  },
+  {
+    "slug": "claude",
+    "rating": 4.9,
+    "reviewCount": 3120
+  },
+  {
+    "slug": "tidio",
+    "rating": 4.5,
+    "reviewCount": 3100
+  },
+  {
+    "slug": "jasper",
+    "rating": 4.3,
+    "reviewCount": 3100
+  },
+  {
+    "slug": "vercel",
+    "rating": 4.8,
+    "reviewCount": 3000
+  },
+  {
+    "slug": "brevo",
+    "rating": 4.3,
+    "reviewCount": 2900
+  },
+  {
+    "slug": "netlify",
+    "rating": 4.6,
+    "reviewCount": 2700
+  },
+  {
+    "slug": "framer",
+    "rating": 4.6,
+    "reviewCount": 2600
+  },
+  {
+    "slug": "perplexity",
+    "rating": 4.6,
+    "reviewCount": 2400
+  },
+  {
+    "slug": "gorgias",
+    "rating": 4.5,
+    "reviewCount": 2300
+  },
+  {
+    "slug": "supabase",
+    "rating": 4.7,
+    "reviewCount": 2200
+  },
+  {
+    "slug": "unbounce",
+    "rating": 4.3,
+    "reviewCount": 2100
+  },
+  {
+    "slug": "elevenlabs",
+    "rating": 4.7,
+    "reviewCount": 1900
+  },
+  {
+    "slug": "finviz",
+    "rating": 4.3,
+    "reviewCount": 1800
+  },
+  {
+    "slug": "looka",
+    "rating": 4.3,
+    "reviewCount": 1700
+  },
+  {
+    "slug": "riverside",
+    "rating": 4.5,
+    "reviewCount": 1600
+  },
+  {
+    "slug": "benzinga-pro",
+    "rating": 4.2,
+    "reviewCount": 1400
+  },
+  {
+    "slug": "koyfin",
+    "rating": 4.5,
+    "reviewCount": 900
+  },
+  {
+    "slug": "shifter",
+    "rating": 0,
+    "reviewCount": 0
+  },
+  {
+    "slug": "make",
+    "rating": 0,
+    "reviewCount": 0
+  },
+  {
+    "slug": "namecheap",
+    "rating": 0,
+    "reviewCount": 0
+  },
+  {
+    "slug": "elementor",
+    "rating": 0,
+    "reviewCount": 0
+  },
+  {
+    "slug": "onepage",
+    "rating": 0,
+    "reviewCount": 0
+  }
+]

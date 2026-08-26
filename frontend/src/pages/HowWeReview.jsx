@@ -6,7 +6,7 @@
 // that actually exist on a tool, and the moderation flow described is the one
 // the admin console really runs.
 import { Link } from "react-router-dom";
-import { PageHead, SectionHead } from "../components/editorial.jsx";
+import { PageHead, SectionHead, KeyPoints, MarginContents } from "../components/editorial.jsx";
 import { Breadcrumbs } from "../components/breadcrumbs.jsx";
 import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
@@ -21,21 +21,39 @@ const CRITERIA = [
   ["Who it's for", "A tool that's wrong for you isn't a bad tool. We say plainly who each one suits."],
 ];
 
+// One list drives the margin rail and the anchors, so the two cannot drift.
+const SECTIONS = [
+  { id: "criteria", label: "What we assess" },
+  { id: "rating", label: "The rating" },
+  { id: "catch", label: "Every catch" },
+  { id: "listing", label: "Getting listed" },
+  { id: "corrections", label: "Corrections" },
+];
+
 export default function HowWeReview() {
   const trail = [{ label: "Home", to: "/" }, { label: "How we review", to: "/how-we-review" }];
 
   return (
-    <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
+    <div className="relative max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">
       <Seo
         title="How we review"
         description="The criteria behind every Toolhaven rating, how ratings are calculated, and the rules that keep commercial relationships out of editorial decisions."
         path="/how-we-review"
         schema={breadcrumbSchema(trail)}
       />
+      <MarginContents items={SECTIONS} />
       <Breadcrumbs trail={trail} />
       <PageHead kicker="Method" title="How we review">
         Every rating on this site comes from the same eight questions, asked in the same order. Here they are.
       </PageHead>
+
+      {/* What a sceptical reader wants to know before deciding whether to
+          read the method at all. */}
+      <KeyPoints label="In short" points={[
+        "Every tool is judged on the same eight questions, in the same order.",
+        "A rating is our assessment, not a popularity score, and it is never influenced by whether a tool pays us.",
+        "Every review names a catch. A tool with no downside listed has not been reviewed properly.",
+      ]} />
 
       <div className="prose-editorial max-w-measure">
         <p className="drop-cap">
@@ -45,6 +63,7 @@ export default function HowWeReview() {
         </p>
       </div>
 
+      <span id="criteria" className="block scroll-mt-28" />
       <SectionHead folio="01" kicker="The criteria" title="What we actually assess" />
       <dl className="border-t border-ink/25 mb-12">
         {CRITERIA.map(([term, detail], i) => (
@@ -60,6 +79,7 @@ export default function HowWeReview() {
         ))}
       </dl>
 
+      <span id="rating" className="block scroll-mt-28" />
       <SectionHead folio="02" kicker="The number" title="What a rating means" />
       <div className="prose-editorial max-w-measure mb-12">
         <p>
@@ -77,6 +97,7 @@ export default function HowWeReview() {
         </p>
       </div>
 
+      <span id="catch" className="block scroll-mt-28" />
       <SectionHead folio="03" kicker="The catch" title="Why every tool has one" />
       <div className="prose-editorial max-w-measure mb-12">
         <p>
@@ -89,6 +110,7 @@ export default function HowWeReview() {
         </p>
       </div>
 
+      <span id="listing" className="block scroll-mt-28" />
       <SectionHead folio="04" kicker="Submissions" title="How a tool gets listed" />
       <div className="prose-editorial max-w-measure mb-12">
         <p>
@@ -102,6 +124,7 @@ export default function HowWeReview() {
         </p>
       </div>
 
+      <span id="corrections" className="block scroll-mt-28" />
       <SectionHead folio="05" kicker="Corrections" title="When we get it wrong" />
       <div className="prose-editorial max-w-measure">
         <p>

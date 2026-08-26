@@ -10,7 +10,9 @@
     "seed": "node prisma/seed.js",
     "migrate": "prisma migrate dev --name init",
     "generate": "prisma generate",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "test": "node tests/pricing.test.mjs",
+    "pricing:verify": "node prisma/verify-pricing.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

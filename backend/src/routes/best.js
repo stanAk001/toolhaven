@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { ah } from "../middleware/error.js";
 import { requireAdmin } from "../middleware/auth.js";
+import { cached } from "../lib/cache.js";
 
 const r = Router();
 
@@ -27,7 +28,7 @@ const ENTRY_TOOL = {
 };
 
 // GET /api/best — the index
-r.get("/", ah(async (_req, res) => {
+r.get("/", cached(300), ah(async (_req, res) => {
   const items = await prisma.bestList.findMany({
     where: { isPublished: true },
     orderBy: { publishedAt: "desc" },
@@ -208,7 +209,7 @@ r.put("/manage/:id/faqs", requireAdmin, ah(async (req, res, next) => {
 }));
 
 // GET /api/best/:slug — one list, with its ranked entries and FAQ
-r.get("/:slug", ah(async (req, res, next) => {
+r.get("/:slug", cached(120), ah(async (req, res, next) => {
   const list = await prisma.bestList.findUnique({
     where: { slug: req.params.slug },
     include: {

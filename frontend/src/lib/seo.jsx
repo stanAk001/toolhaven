@@ -171,19 +171,40 @@ export function toolSchema(tool) {
   };
   if (tool.websiteUrl) s.sameAs = [tool.websiteUrl];
 
-  // Only claim an offer when there is a real price to state.
-  if (tool.priceType === "free") {
-    s.offers = { "@type": "Offer", price: "0", priceCurrency: "USD" };
-  } else if (Number(tool.priceMax) > 0) {
+  // Offer schema comes from the verified pricing record and nowhere else.
+  // It used to be built from the seeded priceMin/priceMax columns, which are
+  // guesses of the same vintage as the invented review counts — and Google
+  // treats a wrong Offer as a misrepresentation, not a typo. No verified
+  // price means no offers block, which costs a rich-result feature and keeps
+  // the site honest.
+  const verified = tool.pricing && tool.pricing.status === "verified";
+  if (verified && tool.pricing.startingPrice !== null && tool.pricing.startingPrice !== undefined) {
+    const per = tool.pricing.billingPeriod === "year" ? "P1Y"
+      : tool.pricing.billingPeriod === "month" ? "P1M" : null;
     s.offers = {
-      "@type": "Offer", priceCurrency: "USD",
-      price: String(Number(tool.priceMin) || 0),
-      description: `From $${Number(tool.priceMin) || 0} to $${tool.priceMax} per month`,
+      "@type": "Offer",
+      price: String(tool.pricing.startingPrice),
+      priceCurrency: tool.pricing.currency || "USD",
+      availability: "https://schema.org/InStock",
+      ...(tool.pricing.pricingUrl ? { url: tool.pricing.pricingUrl } : {}),
+      ...(per ? {
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: String(tool.pricing.startingPrice),
+          priceCurrency: tool.pricing.currency || "USD",
+          billingDuration: per,
+        },
+      } : {}),
     };
   }
-
-  // Only claim an aggregate rating when reader reviews actually back it.
-  if (Number(tool.rating) > 0 && Number(tool.reviewCount) > 0) {
+  // Only claim an aggregate rating when enough reader reviews actually back it.
+  // These columns were seeded with invented figures once — Canva claimed 15,000
+  // reader reviews against none — and they feed Google directly, where a
+  // self-serving fake aggregate is grounds for a manual action. They are now
+  // derived from approved ToolReview rows, and three is the floor for calling
+  // anything an average. Capterra's figures deliberately never appear here:
+  // they are someone else's ratings and would be a misrepresentation as ours.
+  if (Number(tool.rating) > 0 && Number(tool.reviewCount) >= 3) {
     s.aggregateRating = {
       "@type": "AggregateRating",
       ratingValue: Number(tool.rating).toFixed(1),

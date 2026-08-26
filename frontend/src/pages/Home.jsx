@@ -1,12 +1,14 @@
-import { Link } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
-import { getCategories, getTools, getTestimonials } from "../api/client.js";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowUpRight, Search } from "lucide-react";
+import { getCategories, getTools, getTestimonials, getToolRails } from "../api/client.js";
 import { useData } from "../lib/helpers.jsx";
 import { CategoryCard, ToolCard, SkeletonGrid } from "../components/ui.jsx";
 import { Reveal, Marquee, DrawUnderline } from "../components/motion.jsx";
 import { CropMarks, LedgerBoard, SectionHead, VerdictSeal } from "../components/editorial.jsx";
 import { Seo, orgSchema, siteSchema } from "../lib/seo.jsx";
 import { TestimonialWall } from "../components/testimonials.jsx";
+import { ToolRail } from "../components/rails.jsx";
 
 
 // The promises that scroll past in the ticker band — the opener's plain-talk
@@ -19,11 +21,74 @@ const TICKER = [
   "Every review, honest",
 ];
 
+/**
+ * The way into the index, on the cover.
+ *
+ * Set as a printed entry line — a rule under the field, ink caret, no box and
+ * no rounded pill — so it reads as part of the page rather than a search widget
+ * dropped onto it. The term goes into the URL, so the result is a place a
+ * reader can link to or come back to.
+ */
+function CoverSearch({ categories }) {
+  const [term, setTerm] = useState("");
+  const navigate = useNavigate();
+  const popular = categories.slice(0, 4);
+
+  const submit = (e) => {
+    e.preventDefault();
+    const q = term.trim();
+    navigate(q ? `/tools?search=${encodeURIComponent(q)}` : "/tools");
+  };
+
+  return (
+    <div className="mt-7 sm:mt-9 max-w-xl">
+      <form onSubmit={submit} role="search">
+        <label htmlFor="cover-search" className="block font-mono text-micro uppercase tracking-[.2em] text-ink2 mb-2">
+          Search the index
+        </label>
+        <div className="flex items-center gap-3 border-b-2 border-ink pb-2 focus-within:border-accent transition-colors">
+          <Search size={18} strokeWidth={2.5} aria-hidden="true" className="shrink-0 text-accentDeep" />
+          <input
+            id="cover-search"
+            type="search"
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder="What are you trying to do?"
+            autoComplete="off"
+            className="flex-1 min-w-0 bg-transparent outline-none min-h-touch font-display text-lg placeholder:text-ink2/60"
+          />
+          <button type="submit" className="stamp text-xs shrink-0">
+            Search
+          </button>
+        </div>
+      </form>
+
+      {/* These read as a line of prose but behave as navigation, so they take
+          a real target rather than leaning on the inline exemption. */}
+      {popular.length > 0 && (
+        <p className="mt-3 flex flex-wrap items-center gap-x-1 font-mono text-label text-ink2">
+          <span className="uppercase tracking-[.14em] mr-1">Or browse</span>
+          {popular.map((c, i) => (
+            <span key={c.slug} className="inline-flex items-center">
+              {i > 0 && <span aria-hidden="true" className="text-ink2/50 mr-1">·</span>}
+              <Link to={`/categories/${c.slug}`}
+                className="inline-flex items-center min-h-[26px] underline underline-offset-4 hover:text-accentDeep transition-colors">
+                {c.name}
+              </Link>
+            </span>
+          ))}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const cats = useData(getCategories, []);
   const featured = useData(() => getTools({ featured: true, limit: 6 }), []);
   const toolStats = useData(() => getTools({ limit: 1 }), []);
   const praise = useData(() => getTestimonials({ limit: 7 }), []);
+  const rails = useData(getToolRails, []);
   // three real tools for the compare band, so it shows what it's asking for
   const headToHead = (featured.data?.items || []).slice(0, 3);
 
@@ -45,8 +110,8 @@ export default function Home() {
         <div className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
           {/* one board, and the only thing on the cover that moves */}
           <LedgerBoard
-            tools={toolStats.data?.total || 0}
-            categories={(cats.data || []).length}
+            tools={toolStats.data?.total ?? null}
+            categories={(cats.data || []).length || null}
             palette={(cats.data || []).map((c) => c.colorPrimary)} />
 
           <Reveal stagger className="grid lg:grid-cols-12 gap-10 mt-10 sm:mt-12 lg:mt-16">
@@ -60,10 +125,20 @@ export default function Home() {
                   <DrawUnderline />
                 </span>
               </h1>
+
+              {/* The cover said what we are and why we exist, and then left the
+                  reader with nowhere to go but scroll. Searching the index is
+                  the thing this site is for, so it belongs on the first screen —
+                  set as a ruled entry on the page rather than a floating pill. */}
+              <CoverSearch categories={cats.data || []} />
             </div>
 
             {/* the lede column, set off by a rule like a printed sidebar */}
-            <div className="lg:col-span-4 lg:border-l-2 lg:border-ink lg:pl-7 flex flex-col justify-end">
+            {/* Aligned to the top of the headline rather than the bottom of the
+                column. It used to hang off the baseline, which worked when the
+                headline was the only thing in the main column and left a hole
+                above the lede once the search line was added. */}
+            <div className="lg:col-span-4 lg:border-l-2 lg:border-ink lg:pl-7 flex flex-col justify-start lg:pt-2">
               <p className="drop-cap text-base sm:text-lg leading-relaxed mb-4 text-pretty">
                 There are thousands of tools out there, and almost every "review" you find is quietly an ad.
                 This is the opposite — we read the fine print, try the things ourselves, and tell you plainly
@@ -93,7 +168,7 @@ export default function Home() {
       {/* categories */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
         <SectionHead folio="01" kicker="The index" title="Browse by category"
-          action={<Link to="/tools" className="inline-flex items-center min-h-touch md:min-h-0 font-mono text-xs uppercase hover:text-accentDeep whitespace-nowrap">All tools →</Link>} />
+          action={<Link to="/tools" className="inline-flex items-center min-h-touch md:min-h-[28px] font-mono text-xs uppercase hover:text-accentDeep whitespace-nowrap">All tools →</Link>} />
         {cats.loading ? <SkeletonGrid count={6} /> : (
           <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {(cats.data || []).map((c) => <CategoryCard key={c.slug} category={c} />)}
@@ -103,7 +178,7 @@ export default function Home() {
 
       {/* featured tools */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
-        <SectionHead folio="02" kicker="Editor's picks" title="Featured right now" />
+        <SectionHead folio="02" kicker="Hand-picked" title="Featured right now" />
         {featured.loading ? <SkeletonGrid count={6} /> : (
           <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {(featured.data?.items || []).map((t) => <ToolCard key={t.slug} tool={t} />)}
@@ -111,7 +186,41 @@ export default function Home() {
         )}
       </section>
 
-      {/* letters to the editor — reader testimonials pinned to the board */}
+      {/* ===== The rails =====
+           Each one names the measure it ranks by, and hides itself when there
+           isn't enough real data behind it. None of them look at affiliate
+           status. ===== */}
+      <section className="max-w-6xl mx-auto px-5 sm:px-6">
+        <ToolRail
+          kicker="Moving right now"
+          title="Trending this month"
+          basis="Ranked by outbound clicks in the last 30 days"
+          tools={rails.data?.trending}
+          to="/tools"
+        />
+        <ToolRail
+          kicker="Assessed by us"
+          title="Editor's picks"
+          basis="Tools carrying a Toolhaven Score — ones we've actually sat down with"
+          tools={rails.data?.editorsPicks}
+          to="/best"
+        />
+        <ToolRail
+          kicker="What readers rate"
+          title="Most reviewed"
+          basis="Ranked by number of reader reviews"
+          tools={rails.data?.mostReviewed}
+          to="/tools"
+        />
+        <ToolRail
+          kicker="Just added"
+          title="New to the index"
+          basis="Most recently published profiles"
+          tools={rails.data?.recentlyAdded}
+          to="/tools"
+        />
+      </section>
+
       {(praise.loading || (praise.data || []).length > 0) && (
         <section className="relative border-y-2 border-ink bg-paper2/30 overflow-hidden">
           <span aria-hidden="true" className="newsfield absolute inset-0 pointer-events-none" />
@@ -125,7 +234,7 @@ export default function Home() {
 
       {/* CTA band */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12">
-        <Reveal className="relative border-2 border-ink rounded-3xl p-7 sm:p-10 md:p-16 text-center bg-paper overflow-hidden"
+        <Reveal className="relative border-2 border-ink rounded-card p-7 sm:p-10 md:p-16 text-center bg-paper overflow-hidden"
           style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
           <div className="halftone absolute inset-0 opacity-[.22] pointer-events-none" aria-hidden="true" />
           <div className="relative">
@@ -136,7 +245,7 @@ export default function Home() {
               <div className="flex justify-center items-center mb-6 sm:mb-7" aria-hidden="true">
                 {headToHead.map((t, i) => (
                   <span key={t.slug}
-                    className="grid place-items-center w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-xl border-2 border-ink font-display font-bold text-xl sm:text-2xl text-white transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-1"
+                    className="grid place-items-center w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-card border-2 border-ink font-display font-bold text-xl sm:text-2xl text-white transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-1"
                     style={{
                       background: t.category?.colorPrimary || "#1C1714",
                       boxShadow: "4px 4px 0 var(--shadow-cast)",
@@ -159,7 +268,7 @@ export default function Home() {
 
       {/* vendor CTA — convert founders who want their tool reviewed */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 pb-16 sm:pb-20">
-        <Reveal className="rounded-3xl border-2 border-ink bg-ink text-paper p-7 sm:p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6"
+        <Reveal className="rounded-card border-2 border-ink bg-ink text-paper p-7 sm:p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6"
           style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
           <div>
             <p className="font-mono text-micro uppercase tracking-[.2em] text-accent mb-2">Built a tool?</p>

@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { ah } from "../middleware/error.js";
+import { cached } from "../lib/cache.js";
 
 const router = Router();
 
 // GET /api/categories  — all categories with a tool count and a few preview
 // tools (top by feature/popularity) so cards can show the real logos inside.
-router.get("/", ah(async (req, res) => {
+router.get("/", cached(300), ah(async (req, res) => {
   const categories = await prisma.category.findMany({
     orderBy: { orderDisplay: "asc" },
     include: {
@@ -27,7 +28,7 @@ router.get("/", ah(async (req, res) => {
 }));
 
 // GET /api/categories/:slug — category + its active tools + related posts
-router.get("/:slug", ah(async (req, res) => {
+router.get("/:slug", cached(120), ah(async (req, res) => {
   const category = await prisma.category.findUnique({
     where: { slug: req.params.slug },
     include: {

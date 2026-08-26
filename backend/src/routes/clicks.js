@@ -13,7 +13,10 @@ router.post("/", ah(async (req, res) => {
 
   const tool = await prisma.tool.findUnique({
     where: { id: Number(toolId) },
-    select: { id: true, categoryId: true, affiliateLink: true, websiteUrl: true },
+    select: {
+      id: true, categoryId: true, affiliateLink: true, websiteUrl: true,
+      partner: { select: { affiliateUrl: true, status: true, trackingEnabled: true } },
+    },
   });
   if (!tool) return res.status(404).json({ error: "Tool not found" });
 
@@ -27,7 +30,18 @@ router.post("/", ah(async (req, res) => {
     },
   });
 
-  res.status(201).json({ ok: true, redirect: tool.affiliateLink || tool.websiteUrl });
+  // Resolution order, most specific first:
+  //   1. the partner programme's tracking URL, when the partner is live
+  //   2. a per-tool override, for one-off links outside a programme
+  //   3. the plain official site, so a button never leads nowhere
+  // Pausing a partner therefore drops every one of its links back to the
+  // official site in one change, rather than per tool and per component.
+  const viaPartner =
+    tool.partner && tool.partner.status === "active" && tool.partner.trackingEnabled
+      ? tool.partner.affiliateUrl
+      : null;
+
+  res.status(201).json({ ok: true, redirect: viaPartner || tool.affiliateLink || tool.websiteUrl });
 }));
 
 // GET /api/affiliate-clicks/stats — the outbound picture, for the editor's desk.

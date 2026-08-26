@@ -9,6 +9,7 @@ import { PageHead } from "../components/editorial.jsx";
 import { Stars } from "../components/ui.jsx";
 import { BestAdmin } from "../components/bestadmin.jsx";
 import { ToolsAdmin, ClicksAdmin } from "../components/toolsadmin.jsx";
+import { PricingAdmin } from "../components/pricingadmin.jsx";
 import { Seo } from "../lib/seo.jsx";
 
 // The editor's desk — private, token-gated. Two views: tool submissions and
@@ -94,7 +95,7 @@ export default function Admin() {
         <p className="text-ink2 mb-5">Enter the admin token to manage submissions and reviews.</p>
         <form onSubmit={(e) => { e.preventDefault(); load(input.trim()); }} className="flex gap-2">
           <input type="password" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Admin token" autoFocus
-            className="flex-1 border-2 border-ink rounded-xl bg-paper px-4 py-3 outline-none focus:border-accent" />
+            className="flex-1 border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent" />
           <button type="submit" disabled={loading} className="stamp disabled:opacity-60">{loading ? "…" : "Enter"}</button>
         </form>
         {error && <p className="font-mono text-sm text-accentDeep mt-3">{error}</p>}
@@ -115,9 +116,9 @@ export default function Admin() {
       {/* view switch */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex gap-2">
-          {[["submissions", `Submissions · ${items.length}`], ["reviews", `Reviews · ${reviews.length}`], ["stacks", `Stacks · ${stacks.length}`], ["best", "Best-of"], ["tools", "Tools"], ["clicks", "Clicks"]].map(([v, label]) => (
+          {[["submissions", `Submissions · ${items.length}`], ["reviews", `Reviews · ${reviews.length}`], ["stacks", `Stacks · ${stacks.length}`], ["best", "Best-of"], ["tools", "Tools"], ["pricing", "Pricing"], ["clicks", "Clicks"]].map(([v, label]) => (
             <button key={v} onClick={() => setView(v)}
-              className={`font-mono text-[11px] uppercase tracking-wide px-3.5 py-2 rounded-full border-2 border-ink transition-colors ${view === v ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
+              className={`font-mono text-label uppercase tracking-wide px-3.5 py-2 rounded-ui border-2 border-ink transition-colors ${view === v ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
               {label}
             </button>
           ))}
@@ -137,7 +138,7 @@ export default function Admin() {
           <div className="flex flex-wrap gap-2 mb-5">
             {["all", ...STATUSES].map((st) => (
               <button key={st} onClick={() => setFilter(st)}
-                className={`font-mono text-[11px] uppercase tracking-wide px-3 py-1.5 rounded-full border-2 border-ink transition-colors ${filter === st ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
+                className={`font-mono text-label uppercase tracking-wide px-3 py-1.5 rounded-ui border-2 border-ink transition-colors ${filter === st ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
                 {st} {st === "all" ? `· ${items.length}` : `· ${count(st)}`}
               </button>
             ))}
@@ -145,22 +146,22 @@ export default function Admin() {
           {!loading && shown.length === 0 && <p className="text-ink2">Nothing here yet.</p>}
           <div className="space-y-4">
             {shown.map((s) => (
-              <div key={s.id} className="border-2 border-ink rounded-2xl bg-paper p-5" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+              <div key={s.id} className="border-2 border-ink rounded-card bg-paper p-5" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div className="min-w-0">
                     <a href={s.websiteUrl} target="_blank" rel="noreferrer"
                       className="font-display text-xl font-semibold hover:text-accentDeep underline-offset-2 hover:underline break-words">{s.toolName}</a>
-                    <span className="font-mono text-[11px] text-ink2 ml-2">{new Date(s.createdAt).toLocaleDateString()}</span>
+                    <span className="font-mono text-label text-ink2 ml-2">{new Date(s.createdAt).toLocaleDateString()}</span>
                   </div>
                   <select value={s.status} onChange={(e) => setSubStatus(s.id, e.target.value)}
-                    className="shrink-0 font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-3 py-1.5 bg-paper cursor-pointer"
+                    className="shrink-0 font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-3 py-1.5 bg-paper cursor-pointer"
                     style={{ color: STATUS_COLOR[s.status] }}>
                     {STATUSES.map((st) => <option key={st} value={st}>{st}</option>)}
                   </select>
                 </div>
                 <p className="mb-2">{s.pitch}</p>
                 {s.details && <p className="text-sm text-ink2 mb-3 whitespace-pre-wrap">{s.details}</p>}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-wide text-ink2">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-label uppercase tracking-wide text-ink2">
                   {s.category && <span>{s.category}</span>}
                   {s.pricing && <span>· {s.pricing}</span>}
                   {s.affiliateProgram && <span>· {s.affiliateProgram}</span>}
@@ -179,24 +180,24 @@ export default function Admin() {
           {!loading && reviews.length === 0 && <p className="text-ink2">No reviews waiting — the queue is clear. ✦</p>}
           <div className="space-y-4">
             {reviews.map((r) => (
-              <div key={r.id} className="border-2 border-ink rounded-2xl bg-paper p-5" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+              <div key={r.id} className="border-2 border-ink rounded-card bg-paper p-5" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div className="min-w-0">
-                    <span className="font-mono text-[11px] uppercase tracking-wide text-ink2">on </span>
+                    <span className="font-mono text-label uppercase tracking-wide text-ink2">on </span>
                     <a href={`/tools/${r.tool?.slug}`} className="font-display text-lg font-semibold hover:text-accentDeep">{r.tool?.name || "—"}</a>
-                    <span className="font-mono text-[11px] text-ink2 ml-2">{new Date(r.createdAt).toLocaleDateString()}</span>
+                    <span className="font-mono text-label text-ink2 ml-2">{new Date(r.createdAt).toLocaleDateString()}</span>
                   </div>
                   <span className="shrink-0"><Stars r={r.rating} size={14} showNum={false} /></span>
                 </div>
                 {r.title && <h3 className="font-display text-lg font-semibold leading-tight">{r.title}</h3>}
                 <p className="mt-1 mb-3 leading-relaxed whitespace-pre-wrap">{r.content}</p>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-wide text-ink2">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-label uppercase tracking-wide text-ink2">
                   <span className="normal-case tracking-normal">{r.authorName || "Anonymous"}{r.useCase ? ` · ${r.useCase}` : ""}</span>
                   <span className="ml-auto flex gap-2">
                     <button onClick={() => approveReview(r.id)}
-                      className="px-3 py-1.5 rounded-full border-2 border-ink bg-paper hover:bg-paper2 transition-colors" style={{ color: "#15803D" }}>Approve</button>
+                      className="px-3 py-1.5 rounded-ui border-2 border-ink bg-paper hover:bg-paper2 transition-colors" style={{ color: "#15803D" }}>Approve</button>
                     <button onClick={() => rejectReview(r.id)}
-                      className="px-3 py-1.5 rounded-full border-2 border-ink bg-paper hover:bg-paper2 transition-colors text-accentDeep">Reject</button>
+                      className="px-3 py-1.5 rounded-ui border-2 border-ink bg-paper hover:bg-paper2 transition-colors text-accentDeep">Reject</button>
                   </span>
                 </div>
               </div>
@@ -210,6 +211,7 @@ export default function Admin() {
           moderates, so it doesn't share the queue state above. */}
       {view === "best" && <BestAdmin token={token} />}
       {view === "tools" && <ToolsAdmin token={token} />}
+      {view === "pricing" && <PricingAdmin token={token} />}
       {view === "clicks" && <ClicksAdmin token={token} />}
 
       {view === "stacks" && (
@@ -217,21 +219,21 @@ export default function Admin() {
           {!loading && stacks.length === 0 && <p className="text-ink2">No stacks waiting — the queue is clear. ✦</p>}
           <div className="space-y-4">
             {stacks.map((s) => (
-              <div key={s.id} className="border-2 border-ink rounded-2xl bg-paper p-5" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+              <div key={s.id} className="border-2 border-ink rounded-card bg-paper p-5" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {s.tools.map((t) => (
                     <Link key={t.slug} to={`/tools/${t.slug}`} title={t.name}
-                      className="grid place-items-center min-w-[2rem] h-8 px-2 rounded-lg border-2 border-ink text-white font-display font-bold text-sm"
+                      className="grid place-items-center min-w-[2rem] h-8 px-2 rounded-ui border-2 border-ink text-white font-display font-bold text-sm"
                       style={{ background: t.category?.colorPrimary || "#1C1714" }}>{t.logoMono || t.name[0]}</Link>
                   ))}
                 </div>
                 {s.note && <p className="mb-3 leading-relaxed whitespace-pre-wrap">“{s.note}”</p>}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-wide text-ink2">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-label uppercase tracking-wide text-ink2">
                   <span className="normal-case tracking-normal">{s.authorName || "Anonymous"}{s.authorRole ? ` · ${s.authorRole}` : ""}</span>
                   <span>· {new Date(s.createdAt).toLocaleDateString()}</span>
                   <span className="ml-auto flex gap-2">
-                    <button onClick={() => approveStack(s.id)} className="px-3 py-1.5 rounded-full border-2 border-ink bg-paper hover:bg-paper2 transition-colors" style={{ color: "#15803D" }}>Approve</button>
-                    <button onClick={() => rejectStack(s.id)} className="px-3 py-1.5 rounded-full border-2 border-ink bg-paper hover:bg-paper2 transition-colors text-accentDeep">Reject</button>
+                    <button onClick={() => approveStack(s.id)} className="px-3 py-1.5 rounded-ui border-2 border-ink bg-paper hover:bg-paper2 transition-colors" style={{ color: "#15803D" }}>Approve</button>
+                    <button onClick={() => rejectStack(s.id)} className="px-3 py-1.5 rounded-ui border-2 border-ink bg-paper hover:bg-paper2 transition-colors text-accentDeep">Reject</button>
                   </span>
                 </div>
               </div>

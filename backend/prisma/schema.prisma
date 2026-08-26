@@ -47,6 +47,8 @@ model Tool {
   bestFor         String?
   caveat          String?
   logoMono        String?  // monogram fallback for the logo tile
+  logoUrl         String?  // official brand asset, served from the vendor's own domain
+  logoAlt         String?  // accessible name, e.g. "Make logo"
   websiteUrl      String?
   affiliateLink   String?
   affiliateNetwork String?
@@ -76,6 +78,17 @@ model Tool {
   blogMentions BlogPostTool[]
   bestEntries  BestListEntry[]
   score        ToolScore?
+  facts        ToolFact[]
+  externalRatings ExternalRating[]
+  verdict      ToolVerdict?
+  alternatives ToolAlternative[] @relation("AlternativesFor")
+  alternativeTo ToolAlternative[] @relation("AlternativeOf")
+  partnerId    Int?
+  partner      Partner?  @relation(fields: [partnerId], references: [id])
+
+  pricing        ToolPricing?
+  pricingHistory ToolPricingHistory[]
+  pricingLogs    PricingVerificationLog[]
 }
 
 model ToolPro {
@@ -305,4 +318,267 @@ model ToolSubmission {
 
   status    String   @default("pending") // pending | reviewing | listed | declined
   createdAt DateTime @default(now())
+}
+
+// ── Affiliate partners ────────────────────────────────────────────────────
+// The single place an affiliate URL is allowed to live. Previously each tool
+// carried its own link, which meant a partner changing their tracking URL was a
+// hunt through rows; and a link pasted into a component would be a hunt through
+// code. Everything resolves through here, so switching a partner off is one
+// status change rather than an edit per surface.
+model Partner {
+  id              Int      @id @default(autoincrement())
+  slug            String   @unique
+  name            String
+  affiliateUrl    String
+  officialUrl     String
+  network         String?  // Impact, Cello, direct…
+  status          String   @default("active") // active | paused | ended
+  disclosure      String?  // partner-specific wording, where a programme requires it
+  trackingEnabled Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tools Tool[]
+}
+
+// ── Source-aware facts ────────────────────────────────────────────────────
+// Every externally sourced claim carries where it came from and when it was
+// last checked. Software facts rot — an integration count or a price quoted
+// without a date is a liability, not social proof.
+//
+// `kind` keeps the four kinds of evidence apart so they can never be blended
+// into one misleading number:
+//   official   — the vendor's own published figure
+//   community  — computed from Toolhaven reviews
+//   editorial  — Toolhaven's own assessment
+//   external   — a third-party review platform
+model ToolFact {
+  id         Int       @id @default(autoincrement())
+  toolId     Int
+  tool       Tool      @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  kind       String    @default("official")
+  label      String    // "Integrations"
+  value      String    // "3,000+"
+  sourceName String?   // "Make"
+  sourceUrl  String?
+  verifiedAt DateTime?
+  orderIndex Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([toolId, kind])
+}
+
+// ── External ratings ──────────────────────────────────────────────────────
+// A rating from a third-party platform, stored with enough structure to reason
+// about rather than just print. ToolFact holds strings ("3,000+"); this holds
+// numbers, because confidence maths needs the count and the scale.
+//
+// Nothing here is ever computed from a guess. A tool with no rows shows no
+// external ratings, and every consumer of this table is written to expect that.
+model ExternalRating {
+  id          Int      @id @default(autoincrement())
+  toolId      Int
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  sourceName  String   // "G2", "Capterra", "Trustpilot"
+  sourceUrl   String   // where a reader can check it themselves
+  rating      Float    // as published, on that platform's own scale
+  maxRating   Float    @default(5)
+  reviewCount Int
+  ratingDate  DateTime? // the date the platform's figure refers to, if stated
+  retrievedAt DateTime  @default(now())
+  summary     String?   // a short, traceable characterisation — never a quote
+  orderIndex  Int       @default(0)
+
+  @@unique([toolId, sourceName])
+  @@index([toolId])
+}
+
+// ── The editorial verdict ─────────────────────────────────────────────────
+// Everything on a tool page that is Toolhaven's judgement rather than the
+// vendor's claim or a platform's rating. One row per tool, every field
+// optional: a section with nothing in it does not render, so a half-written
+// verdict looks unfinished rather than dishonest.
+//
+// Covers the brief's §12-§16, §23 and §24 in one place because they are all
+// the same act — someone sitting down and deciding what they think — and
+// splitting them across seven tables would make writing one verdict a
+// seven-form job.
+model ToolVerdict {
+  id     Int  @id @default(autoincrement())
+  toolId Int  @unique
+  tool   Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // §13 — who it fits, and who it doesn't
+  bestFor     String[] // "Agencies", "Operations teams"
+  notIdealFor String[] // "Anyone wanting one-click automation"
+
+  // §14 — the same judgement in the second person, where it lands harder
+  loveIf   String[] // "You need branching logic"
+  regretIf String[] // "You expected to be productive in an afternoon"
+
+  // §15 — phrased as considerations, not accusations
+  costNotes String[] // "Operations are metered; heavy workflows climb tiers"
+
+  // §16 — how hard it is to leave
+  switchingCost String? // low | medium | high
+  switchingNote String?
+
+  // §12 / §23 — the vendor's positioning against what the evidence supports
+  companyClaim  String?
+  claimEvidence String?
+  claimVerdict  String? // supported | partly-supported | unsupported | untested
+
+  // §24
+  biggestStrength String?
+  biggestTradeoff String?
+  valueAssessment String?
+  finalVerdict    String?
+
+  reviewedBy String?
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+}
+
+// ── Editorial alternatives ────────────────────────────────────────────────
+// §19. Chosen by hand with a stated reason, because "same category, high
+// popularity" is how you end up recommending a CRM to someone looking at a
+// proxy provider. `reason` is the whole point: an alternative without one is
+// just another link.
+model ToolAlternative {
+  id            Int    @id @default(autoincrement())
+  toolId        Int
+  tool          Tool   @relation("AlternativesFor", fields: [toolId], references: [id], onDelete: Cascade)
+  alternativeId Int
+  alternative   Tool   @relation("AlternativeOf", fields: [alternativeId], references: [id], onDelete: Cascade)
+
+  // the need this alternative answers better — "Want something simpler?"
+  reason     String
+  orderIndex Int    @default(0)
+
+  @@unique([toolId, alternativeId])
+  @@index([toolId])
+}
+
+// ─── Pricing intelligence ────────────────────────────────────────────────
+// What a tool costs, read from the vendor's own pricing page rather than typed
+// in by hand. Kept in its own tables so nothing here can corrupt the editorial
+// record: if extraction gets something wrong the worst case is a pricing panel
+// that says it could not verify, never a wrong number on a tool page.
+
+model ToolPricing {
+  id     Int  @id @default(autoincrement())
+  toolId Int  @unique
+  tool   Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // The headline figure, and everything needed to say it correctly.
+  currency      String   @default("USD")
+  startingPrice Float?   // null is a real answer: "we could not determine one"
+  billingPeriod String?  // month | year | one-time | usage | seat
+  billingType   String?  // monthly | annual | annual-billed-monthly | usage | custom
+  pricingModel  String?  // free | freemium | subscription | usage | per-seat | custom | one-time
+  freePlan      Boolean  @default(false)
+  freeTrial     Boolean  @default(false)
+
+  // How much this is worth trusting.
+  verificationStatus String  @default("unverified") // verified | partially_verified | unverified | unavailable | custom_pricing
+  confidenceScore    Float   @default(0)
+  confidenceReasons  String[]
+
+  // Where it came from, so an editor can audit any figure on the site.
+  pricingUrl       String?
+  sourceUrl        String?
+  sourceType       String?  // official-pricing-page | official-website | structured-data
+  extractionMethod String?  // json-ld | embedded-json | html-table | html-text | manual
+
+  lastVerifiedAt     DateTime?
+  lastAttemptedAt    DateTime?
+  nextVerificationAt DateTime?
+  consecutiveFailures Int     @default(0)
+
+  // An editor's correction outranks the crawler and is never overwritten by it.
+  isManualOverride Boolean @default(false)
+  overrideNote     String?
+  overriddenBy     String?
+
+  // Held back for review when the crawler is confident enough to save but not
+  // confident enough to publish. Never shown to readers.
+  pendingReview Boolean @default(false)
+
+  plans     ToolPricingPlan[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([nextVerificationAt])
+  @@index([verificationStatus])
+}
+
+model ToolPricingPlan {
+  id        Int         @id @default(autoincrement())
+  pricingId Int
+  pricing   ToolPricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+
+  name          String
+  price         Float?   // null means the plan exists but the price is not public
+  currency      String   @default("USD")
+  billingPeriod String   @default("month")
+  billingType   String?
+  isFree        Boolean  @default(false)
+  isCustom      Boolean  @default(false)  // "Contact sales"
+  isPopular     Boolean  @default(false)  // the vendor's own highlighted plan
+  perUnit       String?  // "user" | "seat" | "1,000 operations" | "credit"
+  note          String?
+  rawText       String?  // the source text this plan was read from, for audit
+  orderIndex    Int      @default(0)
+
+  @@index([pricingId])
+}
+
+model ToolPricingHistory {
+  id     Int  @id @default(autoincrement())
+  toolId Int
+  tool   Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // A snapshot of what was true before a change, never an overwrite.
+  currency      String
+  startingPrice Float?
+  billingPeriod String?
+  pricingModel  String?
+  freePlan      Boolean @default(false)
+  freeTrial     Boolean @default(false)
+  planSnapshot  Json?
+
+  changeType    String  // increase | decrease | plan-added | plan-removed | free-plan-changed | currency-changed | billing-changed | first-record
+  previousPrice Float?
+  newPrice      Float?
+  percentChange Float?
+  summary       String?
+
+  sourceUrl  String?
+  detectedAt DateTime @default(now())
+
+  @@index([toolId, detectedAt])
+}
+
+model PricingVerificationLog {
+  id     Int  @id @default(autoincrement())
+  toolId Int
+  tool   Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  outcome     String   // success | partial | no-pricing-found | blocked | timeout | error
+  sourceUrl   String?
+  httpStatus  Int?
+  durationMs  Int?
+  method      String?
+  confidence  Float?
+  plansFound  Int      @default(0)
+  // Operator-facing only. Never rendered to a reader; the public UI says
+  // "pricing unavailable" and offers the vendor's own page.
+  detail      String?
+  createdAt   DateTime @default(now())
+
+  @@index([toolId, createdAt])
+  @@index([outcome])
 }

@@ -47,7 +47,7 @@ export default function BlogPost() {
       />
       <Breadcrumbs trail={trail} />
       <Link to="/blog"
-        className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[.18em] text-ink2 hover:text-accentDeep transition-colors mb-6">
+        className="inline-flex items-center gap-1.5 font-mono text-label uppercase tracking-[.18em] text-ink2 hover:text-accentDeep transition-colors mb-6">
         ← The reading room
       </Link>
 

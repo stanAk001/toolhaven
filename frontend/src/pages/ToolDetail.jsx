@@ -1,14 +1,19 @@
 import { useParams, Link } from "react-router-dom";
 import { Check, ArrowUpRight } from "lucide-react";
 import { getTool } from "../api/client.js";
-import { useData, goAffiliate, priceLabel } from "../lib/helpers.jsx";
+import { useData, goAffiliate } from "../lib/helpers.jsx";
 import { Stars, ToolCard, Loader } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { NotFoundBlock } from "../components/editorial.jsx";
 import { ReviewsSection } from "../components/reviews.jsx";
 import { ScorePanel } from "../components/score.jsx";
+import { ExternalRatings, TrustBadge, CommunityStanding } from "../components/evidence.jsx";
+import { ToolLogo } from "../components/toollogo.jsx";
+import { SocialProof, LastVerified } from "../components/socialproof.jsx";
+import { AudienceFit, RealityCheck, CostAndSwitching, LoveRegret, FinalVerdict, AlternativeFinder } from "../components/verdict.jsx";
 import { pairSlug } from "../lib/comparepair.js";
 import { ShareBar } from "../components/share.jsx";
+import { PriceDisclosure, PricingCard } from "../components/pricing.jsx";
 import { Breadcrumbs } from "../components/breadcrumbs.jsx";
 import { Seo, toolSchema, breadcrumbSchema } from "../lib/seo.jsx";
 
@@ -28,6 +33,9 @@ export default function ToolDetail() {
     );
   }
 
+  // the biggest outside platform, when one has been recorded
+  const headline = (tool?.external?.sources || [])
+    .slice().sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))[0] || null;
   const color = tool.category?.colorPrimary || "#7C3AED";
   const accent = tool.category?.colorAccent || "#00F5FF";
   const go = () => goAffiliate(tool, `tool/${tool.slug}`);
@@ -59,7 +67,7 @@ export default function ToolDetail() {
       </div>
       {/* hero — a generated review-cover banner in the tool's category colour */}
       <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-8 sm:pb-10">
-        <figure className="relative overflow-hidden rounded-2xl border-2 border-ink"
+        <figure className="relative overflow-hidden rounded-card border-2 border-ink"
           style={{ background: color, boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
           {/* accent wash, print tooth, and the monogram bleeding off the corner */}
           <span aria-hidden="true" className="absolute inset-0"
@@ -69,18 +77,17 @@ export default function ToolDetail() {
             className="absolute -bottom-10 -right-4 font-display text-monogram font-bold text-white/10 select-none">{tool.logoMono || tool.name[0]}</span>
 
           <div className="relative p-5 sm:p-6 md:p-9">
-            <div className="flex items-center justify-between gap-4 mb-7 font-mono text-[11px] uppercase tracking-[.18em] text-white/90">
-              <Link to={`/categories/${tool.category?.slug}`} className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
+            <div className="flex items-center justify-between gap-4 mb-7 font-mono text-label uppercase tracking-[.18em] text-white/90">
+              <Link to={`/categories/${tool.category?.slug}`} className="inline-flex items-center gap-1.5 min-h-[28px] hover:text-white transition-colors">
                 ← {tool.category?.name}
               </Link>
               <span className="hidden sm:inline text-white/70">Honest review · Downsides included</span>
             </div>
 
             <div className="flex items-start gap-4 sm:gap-5">
-              <span className="w-16 h-16 sm:w-20 sm:h-20 grid place-items-center rounded-2xl bg-paper border-2 border-ink font-display font-bold text-2xl sm:text-3xl text-ink shrink-0"
-                style={{ boxShadow: "3px 3px 0 var(--shadow-cast)" }}>
-                {tool.logoMono || tool.name[0]}
-              </span>
+              <ToolLogo tool={tool} size={72} labelled
+                className="!rounded-card w-16 h-16 sm:w-20 sm:h-20"
+                />
               <div className="min-w-0">
                 <h1 className="font-display text-display font-semibold text-white text-balance">{tool.name}</h1>
                 <p className="text-base sm:text-lg text-white/85 mt-2 max-w-measure text-pretty">{tool.description}</p>
@@ -88,28 +95,38 @@ export default function ToolDetail() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mt-7">
-              <span className="inline-flex items-center bg-paper border-2 border-ink rounded-full px-3 py-1.5">
-                <Stars r={tool.rating} size={14} />
-              </span>
-              <span className="font-mono text-sm text-white tabular-nums border-2 border-white/30 rounded-full px-3 py-1.5">
-                {priceLabel(tool)}{tool.freeTrial ? " · free trial" : ""}
-              </span>
-              {/* The disclosure sits with the button, not only in the footer:
-                  "clear and conspicuous" means at the point of the click, and a
-                  note the reader has to go looking for doesn't count. */}
-              <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-2">
-                <button onClick={go} aria-describedby="aff-note-hero" className="stamp-paper">
-                  Get {tool.name} <ArrowUpRight size={18} aria-hidden="true" />
-                </button>
-                <p id="aff-note-hero" className="font-mono text-[11px] uppercase tracking-[.12em] text-white/75">
-                  <Link to="/disclosure" className="underline underline-offset-2 hover:text-white transition-colors">Partner link</Link>
-                  {" — your price stays the same"}
-                </p>
-              </div>
+              {/* A tool nobody has reviewed has no rating — printing 0.0 with
+                  five empty stars reads as "rated zero", which is a claim we
+                  have no basis for. */}
+              {tool.reviewCount > 0 && (
+                <span className="inline-flex items-center bg-paper border-2 border-ink rounded-ui px-3 py-1.5">
+                  <Stars r={tool.rating} size={14} />
+                </span>
+              )}
+              {/* A real control now. It looked like a button, and when we had no
+                  figures it said "See pricing" — an instruction to click, on
+                  something that did nothing when clicked. */}
+              <PriceDisclosure tool={tool} />
+              {/* No partner-link badge here by design. The disclosure runs
+                  in the footer of every page and in full at /disclosure;
+                  repeating it beside the button made the page read like an ad. */}
+              <button onClick={go} className="stamp-paper sm:ml-auto">
+                Get {tool.name} <ArrowUpRight size={18} aria-hidden="true" />
+              </button>
             </div>
           </div>
         </figure>
       </section>
+
+      <div className="max-w-4xl mx-auto px-5 sm:px-6">
+        {tool.external && (
+          <div className="mb-8">
+            <ExternalRatings external={tool.external} toolName={tool.name} />
+          </div>
+        )}
+
+        <SocialProof facts={tool.facts || []} tool={tool} />
+      </div>
 
       <section className="max-w-4xl mx-auto px-5 sm:px-6 grid md:grid-cols-3 gap-10 py-8 border-t-2 border-ink">
         <div className="md:col-span-2">
@@ -154,6 +171,16 @@ export default function ToolDetail() {
             </div>
           )}
 
+
+          {/* Everything below is our assessment rather than the vendor's
+              copy. Each block hides itself when it has no data, so an
+              unassessed tool shows none of it instead of empty headings. */}
+          <AudienceFit verdict={tool.verdict} />
+          <RealityCheck verdict={tool.verdict} />
+          <CostAndSwitching verdict={tool.verdict} />
+          <LoveRegret verdict={tool.verdict} toolName={tool.name} />
+          <FinalVerdict verdict={tool.verdict} toolName={tool.name} />
+
           {tool.testimonials?.length > 0 && (
             <>
               <h2 className="font-mono text-xs uppercase tracking-wide mb-3" style={{ color }}>What people say</h2>
@@ -182,39 +209,61 @@ export default function ToolDetail() {
 
         {/* sticky aside — the printed verdict card */}
         <aside className="md:sticky md:top-24 self-start">
-          <div className="border-2 border-ink bg-paper rounded-2xl overflow-hidden" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
+          <div className="border-2 border-ink bg-paper rounded-card overflow-hidden" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
             {/* colour cap, tying the card to its category */}
             <div className="h-2.5" style={{ background: color }} />
             <div className="p-5">
-              {/* Explicitly the readers' number. The Toolhaven Score is our
-                  assessment and lives in the main column — two figures on one
-                  page have to say which is which, or neither means anything. */}
-              <p className="font-mono text-[11px] uppercase tracking-[.16em] text-accentDeep mb-2">
-                {tool.reviewCount > 0 ? "Community rating" : "Rating"}
-              </p>
-              <div className="flex items-end gap-2 mb-1">
-                <span className="font-display text-4xl font-semibold leading-none tabular-nums">{Number(tool.rating).toFixed(1)}</span>
-                <span className="pb-1"><Stars r={tool.rating} size={13} showNum={false} /></span>
-              </div>
-              <p className="font-mono text-[11px] uppercase tracking-wide text-ink2 mb-4">
-                {tool.reviewCount > 0
-                  ? `From ${Number(tool.reviewCount).toLocaleString()} reader${tool.reviewCount === 1 ? "" : "s"}`
-                  : "Out of 5"}
-              </p>
+              {/* The card leads with whatever real evidence exists, in order of
+                  weight: our readers first, then the biggest outside platform.
+                  When there is neither, it shows no rating block at all — the
+                  old "Not yet rated" line was a fact about our coverage that
+                  readers understandably took as a verdict on the tool. */}
+              {tool.reviewCount >= 3 ? (
+                <>
+                  <p className="font-mono text-label uppercase tracking-[.16em] text-accentDeep mb-2">Community rating</p>
+                  <div className="flex items-end gap-2 mb-1">
+                    <span className="font-display text-4xl font-semibold leading-none tabular-nums">{Number(tool.rating).toFixed(1)}</span>
+                    <span className="pb-1"><Stars r={tool.rating} size={13} showNum={false} /></span>
+                  </div>
+                  <p className="font-mono text-label uppercase tracking-wide text-ink2 mb-4">
+                    From {Number(tool.reviewCount).toLocaleString()} reader{tool.reviewCount === 1 ? "" : "s"}
+                  </p>
+                </>
+              ) : headline ? (
+                <>
+                  <p className="font-mono text-label uppercase tracking-[.16em] text-accentDeep mb-2">
+                    Rated on {headline.sourceName}
+                  </p>
+                  <div className="flex items-end gap-1.5 mb-1">
+                    <span className="font-display text-4xl font-semibold leading-none tabular-nums">{headline.rating}</span>
+                    <span className="font-mono text-sm text-ink2 pb-1 tabular-nums">/ {headline.maxRating}</span>
+                  </div>
+                  <p className="font-mono text-label uppercase tracking-wide text-ink2 mb-4">
+                    From {Number(headline.reviewCount).toLocaleString()} reviews ·{" "}
+                    <a href={headline.sourceUrl} target="_blank" rel="noopener noreferrer nofollow"
+                      className="inline-flex items-center min-h-[26px] underline underline-offset-2 hover:text-accentDeep transition-colors">check it</a>
+                  </p>
+                </>
+              ) : null}
               <div className="rule mb-4" />
-              <p className="font-mono text-[11px] uppercase tracking-wide text-ink2 mb-1">Best for</p>
+              <p className="font-mono text-label uppercase tracking-wide text-ink2 mb-1">Best for</p>
               <p className="text-sm mb-4">{tool.bestFor}</p>
-              <p className="font-mono text-[11px] uppercase tracking-wide text-ink2 mb-1">Pricing</p>
-              <p className="text-sm mb-5 tabular-nums">{priceLabel(tool)}{tool.freeTrial ? " · free trial" : ""}</p>
-              <button onClick={go} aria-describedby="aff-note-card" className="stamp w-full justify-center">Get {tool.name} <ArrowUpRight size={16} aria-hidden="true" /></button>
-              <p id="aff-note-card" className="font-mono text-[11px] uppercase tracking-[.12em] text-ink2 mt-2.5 text-center text-balance">
-                <Link to="/disclosure" className="underline underline-offset-2 hover:text-accentDeep transition-colors">Partner link</Link>
-                {" — your price stays the same"}
-              </p>
+              <PricingCard tool={tool} />
+              <button onClick={go} className="stamp w-full justify-center">Get {tool.name} <ArrowUpRight size={16} aria-hidden="true" /></button>
             </div>
           </div>
         </aside>
       </section>
+
+      {tool.hasEditorialAlternatives && (
+        <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-8 sm:pt-10 border-t-2 border-ink">
+          <AlternativeFinder
+            alternatives={tool.alternatives}
+            editorial
+            toolName={tool.name}
+          />
+        </section>
+      )}
 
       {tool.related?.length > 0 && (
         <section className="max-w-4xl mx-auto px-5 sm:px-6 py-8 sm:py-10 border-t-2 border-ink">
@@ -235,7 +284,7 @@ export default function ToolDetail() {
               {tool.related.map((t) => (
                 <li key={t.slug}>
                   <Link to={`/compare/${pairSlug(tool.slug, t.slug)}`}
-                    className="inline-flex items-center min-h-touch font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-4 bg-paper hover:bg-paper2 transition-colors">
+                    className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 bg-paper hover:bg-paper2 transition-colors">
                     {tool.name} vs {t.name}
                   </Link>
                 </li>

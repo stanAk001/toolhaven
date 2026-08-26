@@ -15,8 +15,8 @@ import {
   saveBestEntries, saveBestFaqs, getTools, getCategories,
 } from "../api/client.js";
 
-const field = "w-full border-2 border-ink rounded-xl bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
-const label = "block font-mono text-[11px] uppercase tracking-[.14em] text-ink2 mb-1.5";
+const field = "w-full border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
+const label = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
 export function BestAdmin({ token }) {
   const [lists, setLists] = useState([]);
@@ -59,7 +59,7 @@ export function BestAdmin({ token }) {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <p className="font-mono text-[11px] uppercase tracking-wide text-ink2">
+        <p className="font-mono text-label uppercase tracking-wide text-ink2">
           {lists.length} list{lists.length === 1 ? "" : "s"}
         </p>
         <button onClick={create} className="stamp text-xs">
@@ -72,18 +72,18 @@ export function BestAdmin({ token }) {
 
       <div className="space-y-3">
         {lists.map((l) => (
-          <div key={l.id} className="border-2 border-ink rounded-2xl bg-paper p-4 sm:p-5"
+          <div key={l.id} className="border-2 border-ink rounded-card bg-paper p-4 sm:p-5"
             style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <h3 className="font-display text-lg sm:text-xl font-semibold leading-tight">{l.title}</h3>
-                  <span className={`font-mono text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border-2 ${
+                  <span className={`font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border-2 ${
                     l.isPublished ? "border-green-700 text-green-700" : "border-ink/40 text-ink2"}`}>
                     {l.isPublished ? "Live" : "Draft"}
                   </span>
                 </div>
-                <p className="font-mono text-[11px] text-ink2">
+                <p className="font-mono text-label text-ink2">
                   /best/{l.slug} · {l.entryCount} pick{l.entryCount === 1 ? "" : "s"} · {l.faqCount} FAQ
                   {l.category ? ` · ${l.category.name}` : ""}
                 </p>
@@ -96,7 +96,7 @@ export function BestAdmin({ token }) {
                   </Link>
                 )}
                 <button onClick={() => setEditingId(l.id)}
-                  className="inline-flex items-center min-h-touch font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-4 hover:bg-paper2 transition-colors">
+                  className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
                   Edit
                 </button>
                 <button onClick={() => remove(l)} aria-label={`Delete ${l.title}`}
@@ -199,7 +199,7 @@ function BestEditor({ id, token, onClose }) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <button onClick={onClose}
-          className="inline-flex items-center min-h-touch font-mono text-[11px] uppercase tracking-wide hover:text-accentDeep transition-colors">
+          className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide hover:text-accentDeep transition-colors">
           ← All lists
         </button>
         <div className="flex items-center gap-2">
@@ -207,7 +207,7 @@ function BestEditor({ id, token, onClose }) {
             <input type="checkbox" checked={!!list.isPublished}
               onChange={(e) => setList((l) => ({ ...l, isPublished: e.target.checked }))}
               className="w-4 h-4 accent-accent cursor-pointer" />
-            <span className="font-mono text-[11px] uppercase tracking-wide">Published</span>
+            <span className="font-mono text-label uppercase tracking-wide">Published</span>
           </label>
           <button onClick={save} disabled={status === "saving"} className="stamp text-xs disabled:opacity-60">
             {status === "saving" ? "Saving…" : status === "saved" ? "Saved ✓" : "Save"}
@@ -256,19 +256,19 @@ function BestEditor({ id, token, onClose }) {
 
       {/* ── the ranked picks ── */}
       <h3 className="font-display text-xl font-semibold mb-1">The picks</h3>
-      <p className="font-mono text-[11px] uppercase tracking-wide text-ink2 mb-4">
+      <p className="font-mono text-label uppercase tracking-wide text-ink2 mb-4">
         Order here is the order on the page
       </p>
 
       <div className="space-y-3 mb-4">
         {entries.map((e, i) => (
-          <div key={e.toolId} className="border-2 border-ink rounded-2xl bg-paper p-4">
+          <div key={e.toolId} className="border-2 border-ink rounded-card bg-paper p-4">
             <div className="flex items-start gap-3 mb-3">
               <span aria-hidden="true" className="font-mono text-xs tabular-nums text-ink2 pt-3 w-6 shrink-0">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span aria-hidden="true"
-                className="w-10 h-10 grid place-items-center rounded-lg border-2 border-ink font-display font-bold text-sm text-white shrink-0"
+                className="w-10 h-10 grid place-items-center rounded-ui border-2 border-ink font-display font-bold text-sm text-white shrink-0"
                 style={{ background: e.color || "#1C1714" }}>
                 {e.logoMono || e.name[0]}
               </span>
@@ -301,7 +301,7 @@ function BestEditor({ id, token, onClose }) {
         {entries.length === 0 && <p className="text-ink2">No picks yet — add tools below.</p>}
       </div>
 
-      <div className="border-2 border-ink rounded-2xl bg-paper2/40 p-4 mb-8">
+      <div className="border-2 border-ink rounded-card bg-paper2/40 p-4 mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Search size={16} strokeWidth={2.5} aria-hidden="true" className="text-accentDeep shrink-0" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tools to add…"
@@ -310,11 +310,11 @@ function BestEditor({ id, token, onClose }) {
         <div className="flex flex-wrap gap-2">
           {pool.map((t) => (
             <button key={t.id} onClick={() => addTool(t)}
-              className="inline-flex items-center gap-2 min-h-touch font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-3 bg-paper hover:bg-paper2 transition-colors">
+              className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-3 bg-paper hover:bg-paper2 transition-colors">
               <Plus size={12} aria-hidden="true" /> {t.name}
             </button>
           ))}
-          {pool.length === 0 && <span className="font-mono text-[11px] text-ink2">No matches</span>}
+          {pool.length === 0 && <span className="font-mono text-label text-ink2">No matches</span>}
         </div>
       </div>
 
@@ -322,7 +322,7 @@ function BestEditor({ id, token, onClose }) {
       <h3 className="font-display text-xl font-semibold mb-4">Questions</h3>
       <div className="space-y-3 mb-4">
         {faqs.map((f, i) => (
-          <div key={i} className="border-2 border-ink rounded-2xl bg-paper p-4">
+          <div key={i} className="border-2 border-ink rounded-card bg-paper p-4">
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0 space-y-3">
                 <input className={field} placeholder="Question" aria-label={`Question ${i + 1}`}
@@ -341,7 +341,7 @@ function BestEditor({ id, token, onClose }) {
         ))}
       </div>
       <button onClick={() => setFaqs((p) => [...p, { question: "", answer: "" }])}
-        className="inline-flex items-center gap-2 min-h-touch font-mono text-[11px] uppercase tracking-wide border-2 border-ink rounded-full px-4 hover:bg-paper2 transition-colors">
+        className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
         <Plus size={13} aria-hidden="true" /> Add a question
       </button>
     </div>

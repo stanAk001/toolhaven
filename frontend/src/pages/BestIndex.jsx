@@ -28,7 +28,7 @@ export default function BestIndex() {
       </PageHead>
 
       {loading ? <Loader /> : items.length === 0 ? (
-        <div className="border-2 border-dashed border-ink/30 rounded-2xl px-6 py-12 text-center">
+        <div className="border-2 border-dashed border-ink/30 rounded-card px-6 py-12 text-center">
           <p className="font-display text-xl sm:text-2xl font-semibold mb-2">No lists published yet.</p>
           <p className="text-ink2 max-w-measure-sm mx-auto text-pretty">
             In the meantime, the <Link to="/tools" className="underline underline-offset-2 hover:text-accentDeep">full directory</Link> has
@@ -62,7 +62,7 @@ export default function BestIndex() {
                 <span aria-hidden="true" className="hidden sm:flex items-center -space-x-2 shrink-0 pt-1">
                   {(l.entries || []).map((e, i) => (
                     <span key={e.tool.slug}
-                      className="w-9 h-9 grid place-items-center rounded-full border-2 border-ink font-display font-bold text-[11px] text-white"
+                      className="w-9 h-9 grid place-items-center rounded-full border-2 border-ink font-display font-bold text-label text-white"
                       style={{ background: e.tool.category?.colorPrimary || "#1C1714", zIndex: 10 - i }}>
                       {e.tool.logoMono || e.tool.name[0]}
                     </span>

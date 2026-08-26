@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Navbar, Footer } from "./components/chrome.jsx";
 import { ScrollProgress, BackToTop } from "./components/scrollui.jsx";
 import { CommandPalette } from "./components/palette.jsx";
@@ -9,20 +9,25 @@ import Home from "./pages/Home.jsx";
 import ToolsDirectory from "./pages/ToolsDirectory.jsx";
 import CategoryPage from "./pages/CategoryPage.jsx";
 import ToolDetail from "./pages/ToolDetail.jsx";
-import Compare from "./pages/Compare.jsx";
-import Blog from "./pages/Blog.jsx";
-import BlogPost from "./pages/BlogPost.jsx";
-import About from "./pages/About.jsx";
-import Contact from "./pages/Contact.jsx";
-import Privacy from "./pages/Privacy.jsx";
-import Disclosure from "./pages/Disclosure.jsx";
-import Terms from "./pages/Terms.jsx";
-import Submit from "./pages/Submit.jsx";
-import Stacks from "./pages/Stacks.jsx";
-import Admin from "./pages/Admin.jsx";
-import BestIndex from "./pages/BestIndex.jsx";
-import BestList from "./pages/BestList.jsx";
-import HowWeReview from "./pages/HowWeReview.jsx";
+
+// Split out of the first paint. A reader landing on a tool page should not
+// download the admin desk, the blog renderer and every legal page before
+// anything appears; these arrive on the click that needs them, and the
+// hover-prefetch in ToolLink usually fetches them before the click lands.
+const Compare = lazy(() => import("./pages/Compare.jsx"));
+const Blog = lazy(() => import("./pages/Blog.jsx"));
+const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
+const About = lazy(() => import("./pages/About.jsx"));
+const Contact = lazy(() => import("./pages/Contact.jsx"));
+const Privacy = lazy(() => import("./pages/Privacy.jsx"));
+const Disclosure = lazy(() => import("./pages/Disclosure.jsx"));
+const Terms = lazy(() => import("./pages/Terms.jsx"));
+const Submit = lazy(() => import("./pages/Submit.jsx"));
+const Stacks = lazy(() => import("./pages/Stacks.jsx"));
+const Admin = lazy(() => import("./pages/Admin.jsx"));
+const BestIndex = lazy(() => import("./pages/BestIndex.jsx"));
+const BestList = lazy(() => import("./pages/BestList.jsx"));
+const HowWeReview = lazy(() => import("./pages/HowWeReview.jsx"));
 
 // Carries a legacy /tool/:slug or /category/:slug straight to its plural
 // equivalent, replacing the history entry so Back doesn't bounce.
@@ -62,6 +67,11 @@ export default function App() {
       <div className="grain min-h-dvh flex flex-col">
         <Navbar />
         <main className="flex-1">
+          {/* The fallback is a held page, not a spinner. A split chunk on a
+              warm connection arrives in a few dozen milliseconds, and flashing
+              a loader for that long reads as slower than showing nothing at
+              all — so this only reserves the height and keeps the layout still. */}
+          <Suspense fallback={<div className="min-h-[60vh]" aria-busy="true" aria-live="polite" />}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/tools" element={<ToolsDirectory />} />
@@ -100,6 +110,7 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </main>
         <Footer />
       </div>

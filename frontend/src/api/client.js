@@ -1,7 +1,22 @@
 import axios from "axios";
+import { clearDataCache } from "../lib/datacache.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
+});
+
+// An editor's own save has to be visible to them immediately. The read cache
+// under useData holds a page for five minutes before it will even check for
+// changes, which is right for a reader and wrong for the person who just
+// changed it — so any authenticated write empties it. One interceptor rather
+// than a call at each of the twenty-odd admin helpers, because the one that
+// gets forgotten is the one that produces "I saved it and nothing happened".
+api.interceptors.response.use((res) => {
+  const cfg = res.config || {};
+  const method = (cfg.method || "get").toLowerCase();
+  const authed = !!(cfg.headers && (cfg.headers["x-admin-token"] || cfg.headers.get?.("x-admin-token")));
+  if (authed && method !== "get") clearDataCache();
+  return res;
 });
 
 export default api;
@@ -15,6 +30,7 @@ export const compareTools = (slugs) =>
   api.get("/tools/compare", { params: { slugs: slugs.join(",") } }).then((r) => r.data);
 export const getTestimonials = (params) => api.get("/testimonials", { params }).then((r) => r.data);
 export const getPosts = (params) => api.get("/blog", { params }).then((r) => r.data);
+export const getToolRails = () => api.get("/tools/rails").then((r) => r.data);
 export const getBestLists = () => api.get("/best").then((r) => r.data);
 export const getBestList = (slug) => api.get(`/best/${slug}`).then((r) => r.data);
 
@@ -38,6 +54,35 @@ export const saveToolScore = (id, body, token) =>
   api.put(`/tools/manage/${id}/score`, body, adminHeaders(token)).then((r) => r.data);
 export const clearToolScore = (id, token) =>
   api.delete(`/tools/manage/${id}/score`, adminHeaders(token)).then((r) => r.data);
+export const saveToolFacts = (id, facts, token) =>
+  api.put(`/tools/manage/${id}/facts`, { facts }, adminHeaders(token)).then((r) => r.data);
+export const saveExternalRatings = (id, ratings, token) =>
+  api.put(`/tools/manage/${id}/external`, { ratings }, adminHeaders(token)).then((r) => r.data);
+export const saveToolVerdict = (id, verdict, token) =>
+  api.put(`/tools/manage/${id}/verdict`, verdict, adminHeaders(token)).then((r) => r.data);
+export const saveToolAlternatives = (id, alternatives, token) =>
+  api.put(`/tools/manage/${id}/alternatives`, { alternatives }, adminHeaders(token)).then((r) => r.data);
+// pricing intelligence — public reads
+export const getToolPricing = (slug) => api.get(`/tools/${slug}/pricing`).then((r) => r.data);
+export const getPricingHistory = (slug) => api.get(`/tools/${slug}/pricing/history`).then((r) => r.data);
+
+// pricing intelligence — the editor's desk
+export const listPricingAdmin = (token) => api.get("/admin/pricing", adminHeaders(token)).then((r) => r.data);
+export const verifyPricing = (id, token, force = false) =>
+  api.post(`/admin/pricing/${id}/verify`, { force }, adminHeaders(token)).then((r) => r.data);
+export const runPricingSweep = (token, limit = 5) =>
+  api.post("/admin/pricing/run", { limit }, adminHeaders(token)).then((r) => r.data);
+export const getPricingLogs = (id, token) =>
+  api.get(`/admin/pricing/${id}/logs`, adminHeaders(token)).then((r) => r.data);
+export const approvePricing = (id, token, note) =>
+  api.post(`/admin/pricing/${id}/approve`, { note }, adminHeaders(token)).then((r) => r.data);
+export const rejectPricing = (id, token, note) =>
+  api.post(`/admin/pricing/${id}/reject`, { note }, adminHeaders(token)).then((r) => r.data);
+export const overridePricing = (id, body, token) =>
+  api.put(`/admin/pricing/${id}/override`, body, adminHeaders(token)).then((r) => r.data);
+export const clearPricingOverride = (id, token) =>
+  api.delete(`/admin/pricing/${id}/override`, adminHeaders(token)).then((r) => r.data);
+
 export const getClickStats = (token, days = 30) =>
   api.get(`/affiliate-clicks/stats?days=${days}`, adminHeaders(token)).then((r) => r.data);
 export const getPost = (slug) => api.get(`/blog/${slug}`).then((r) => r.data);

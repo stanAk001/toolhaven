@@ -26,7 +26,7 @@ export function TestimonialCard({ t, tilt = 0, compact = false }) {
   return (
     <figure
       style={{ "--tilt": `${tilt}deg`, boxShadow: compact ? "4px 4px 0 var(--shadow-cast)" : "5px 5px 0 var(--shadow-cast)" }}
-      className={`group/t relative bg-paper border-2 border-ink rounded-2xl flex flex-col
+      className={`group/t relative bg-paper border-2 border-ink rounded-card flex flex-col
         rotate-[var(--tilt)] hover:rotate-0 hover:-translate-y-1 transition-transform duration-300 ease-[cubic-bezier(.2,.8,.2,1)]
         ${compact ? "p-4 sm:p-5" : "p-4 sm:p-6 md:p-7"}`}>
       {/* the thumbtack holding the clipping to the board */}
@@ -36,7 +36,7 @@ export function TestimonialCard({ t, tilt = 0, compact = false }) {
       {/* the oversized opening quote, ghosted into the corner like set type */}
       <span aria-hidden="true"
         className={`absolute top-2 right-3 sm:right-4 font-display font-semibold text-accent/15 select-none leading-none
-          ${compact ? "text-[34px] sm:text-[60px]" : "text-[38px] sm:text-[72px] md:text-[84px]"}`}>&#10078;</span>
+          ${compact ? "text-title" : "text-display"}`}>&#10078;</span>
 
       <Stars n={Math.round(t.rating)} />
       {/* a two-up clipping is half the measure, so the quote is set a size down
@@ -50,16 +50,16 @@ export function TestimonialCard({ t, tilt = 0, compact = false }) {
         {/* the monogram disc only repeats the name beside it — below 360px that
             trade isn't worth the ~40px it steals from the byline */}
         <span aria-hidden="true"
-          className={`hidden min-[360px]:grid place-items-center rounded-full bg-ink text-paper font-mono tracking-wide shrink-0
-          ${compact ? "w-8 h-8 sm:w-9 sm:h-9 text-[11px]" : "w-8 h-8 sm:w-10 sm:h-10 text-[11px] sm:text-xs"}`}>
+          className={`hidden min-[360px]:grid place-items-center rounded-ui bg-ink text-paper font-mono tracking-wide shrink-0
+          ${compact ? "w-8 h-8 sm:w-9 sm:h-9 text-label" : "w-8 h-8 sm:w-10 sm:h-10 text-label sm:text-xs"}`}>
           {monogram(t.userName)}
         </span>
         {/* wraps on a half-width clipping, truncates once there's a line to spare —
             a byline cut to "AISHA RAHM…" is worse than one set over two lines */}
         <span className="leading-tight min-w-0">
-          <span className="block font-mono text-[11px] sm:text-xs uppercase tracking-wide break-words sm:truncate">{t.userName}</span>
+          <span className="block font-mono text-label sm:text-xs uppercase tracking-wide break-words sm:truncate">{t.userName}</span>
           {t.userTitle && (
-            <span className="block font-mono text-[11px] uppercase tracking-wide text-ink2 break-words sm:truncate">{t.userTitle}</span>
+            <span className="block font-mono text-label uppercase tracking-wide text-ink2 break-words sm:truncate">{t.userTitle}</span>
           )}
         </span>
       </figcaption>

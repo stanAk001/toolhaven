@@ -14,7 +14,7 @@ import { track, EVENTS } from "../lib/analytics.js";
 
 const btn =
   "inline-flex items-center justify-center gap-2 min-h-touch px-3.5 rounded-full border-2 border-ink " +
-  "font-mono text-[11px] uppercase tracking-wide bg-paper hover:bg-paper2 transition-colors";
+  "font-mono text-label uppercase tracking-wide bg-paper hover:bg-paper2 transition-colors";
 
 /**
  * @param {string} title  what the share text should say

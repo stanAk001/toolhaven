@@ -24,8 +24,8 @@ export default function Contact() {
     catch { setStatus("error"); }
   };
 
-  const field = "w-full border-2 border-ink rounded-xl bg-paper px-4 py-3 outline-none focus:border-accent";
-  const lab = "block font-mono text-[11px] uppercase tracking-[.14em] text-ink2 mb-1.5";
+  const field = "w-full border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent";
+  const lab = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
   return (
     <div className="max-w-2xl mx-auto px-5 sm:px-6 py-10 sm:py-14 fade-in">

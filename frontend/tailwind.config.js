@@ -50,7 +50,38 @@ export default {
         // 11px is the floor; anything smaller stops being readable on a phone.
         micro: ["0.6875rem", { lineHeight: "1.45", letterSpacing: ".16em" }],
         caption: ["0.75rem", { lineHeight: "1.5", letterSpacing: ".01em" }],
+
+        // --- labels: the two sizes that were being typed out by hand 168
+        // times as text-[11px] and text-[10px]. Deliberately carrying no
+        // letter-spacing of their own, so the tracking a component asks for
+        // still wins.
+        label: ["0.6875rem", { lineHeight: "1.45" }],
+        nano: ["0.625rem", { lineHeight: "1.4" }],
+        nav: ["1.0625rem", { lineHeight: "1", letterSpacing: "-.005em" }],
       },
+      // --- corner radius -------------------------------------------------
+      // A press sheet has no rounded corners. The site had seven different
+      // radii in play (plus three one-off pixel values), which is what makes
+      // an editorial design read as a template with a theme painted on it.
+      // Four steps, each with a job:
+      borderRadius: {
+        edge: "0",       // rules, tables, full-bleed panels: printed things
+        tight: "2px",    // chips, labels, stamps — barely there, on purpose
+        ui: "4px",       // inputs, buttons, controls: functional software
+        card: "8px",     // cards and panels: the only place softness earns it
+        disc: "9999px",  // true circles only, never a pill-shaped button
+      },
+
+      // --- the letterpress shadow ---------------------------------------
+      // The hard offset shadow is Toolhaven's signature and stays. What goes
+      // is the eight different distances it was written at by hand.
+      boxShadow: {
+        press: "3px 3px 0 var(--shadow-cast)",
+        "press-sm": "2px 2px 0 var(--shadow-cast)",
+        "press-lg": "6px 6px 0 var(--shadow-cast)",
+        "press-xl": "10px 10px 0 var(--shadow-cast)",
+      },
+
       maxWidth: {
         // line-length control: ~65-75 characters is the readable measure
         measure: "68ch",
