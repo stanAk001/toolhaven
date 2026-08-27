@@ -121,9 +121,14 @@ export default function ToolsDirectory() {
           </span>
         </div>
 
-        {/* the categories, on one scrolling line rather than a ragged wrap */}
-        <div className="px-4 sm:px-5 py-3 border-b-2 border-ink">
-          <div className="rail" role="group" aria-label="Filter by category">
+        {/* The categories, all of them, wrapped.
+            They used to sit on a horizontal scroller with a fade at its edge,
+            which meant a phone showed four of twelve and sliced the fifth down
+            the middle. A filter you cannot see is not a filter, and the sliced
+            chip was the single scruffiest thing on the page. Wrapping shows the
+            whole index at every width; the chips are light enough to take it. */}
+        <div className="px-4 sm:px-5 py-3.5 border-b-2 border-ink">
+          <div className="flex flex-wrap gap-x-1.5 gap-y-2" role="group" aria-label="Filter by category">
             <Chip on={active === "all"} onClick={() => setActive("all")}>All</Chip>
             {cats.map((c) => (
               <Chip key={c.slug} on={active === c.slug} color={c.colorPrimary} onClick={() => setActive(c.slug)}>
@@ -212,11 +217,33 @@ function Field({ label, value, onChange, options }) {
   );
 }
 
+/**
+ * A category, set as an index entry rather than a button.
+ *
+ * Twelve identical heavy-bordered rectangles was most of why this panel read as
+ * cluttered: every one of them shouted at the same volume, and none of them
+ * said which category it was until you read the word. The colour does that job
+ * now — a small square of the category's own ink, which is the same mark used
+ * on the section heads further down the page — and the border drops to a
+ * hairline until the thing is actually selected.
+ */
 function Chip({ on, color, onClick, children }) {
   return (
+    // "All" has no category colour of its own, so it takes ink-on-paper from
+    // the theme rather than a hard-coded dark hex — which was invisible against
+    // the night edition's near-black background.
     <button type="button" onClick={onClick} aria-pressed={on}
-      className={`inline-flex items-center font-mono text-label uppercase tracking-[.06em] px-3.5 min-h-touch rounded-ui border-2 border-ink whitespace-nowrap transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
-      style={on ? { background: color || "#1C1714" } : undefined}>
+      className={`group/chip inline-flex items-center gap-2 font-mono text-label uppercase tracking-[.06em]
+        px-3 min-h-touch sm:min-h-[36px] rounded-ui whitespace-nowrap transition-colors border-2
+        ${on
+          ? (color ? "text-white" : "bg-ink text-paper border-ink")
+          : "border-ink/25 text-ink2 hover:text-ink hover:border-ink hover:bg-paper2"}`}
+      style={on && color ? { background: color, borderColor: color } : undefined}>
+      {color && (
+        <span aria-hidden="true"
+          className={`w-2 h-2 rotate-45 shrink-0 transition-colors ${on ? "bg-white/80" : ""}`}
+          style={on ? undefined : { background: color }} />
+      )}
       {children}
     </button>
   );

@@ -48,6 +48,11 @@ export const saveBestFaqs = (id, faqs, token) =>
 
 // editor-only — tools and outbound clicks
 export const listToolsAdmin = (token) => api.get("/tools/manage", adminHeaders(token)).then((r) => r.data);
+// Adding a tool from the desk, partner and tracking link included, so getting
+// approved by a programme never needs a deploy.
+export const createTool = (body, token) =>
+  api.post("/tools/manage", body, adminHeaders(token)).then((r) => r.data);
+
 export const updateToolAdmin = (id, body, token) =>
   api.patch(`/tools/manage/${id}`, body, adminHeaders(token)).then((r) => r.data);
 export const saveToolScore = (id, body, token) =>

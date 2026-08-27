@@ -3,53 +3,93 @@ import { prisma } from "../lib/prisma.js";
 import { ah } from "../middleware/error.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { sendMail } from "../lib/mailer.js";
+import { shell, p, facts, button, esc, COLOURS } from "../lib/emailtemplate.js";
 
 const router = Router();
 
-const esc = (s) => String(s ?? "—").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
-
-// Compose and send the "new submission" notification. Fire-and-forget.
+/**
+ * The alert to the desk.
+ *
+ * Written to be actionable from the notification alone: everything needed to
+ * judge the submission is in the mail, with a link straight to the queue and a
+ * Reply-To pointing at the person, so answering does not mean opening the admin
+ * first. That was the whole complaint — the site knew about a submission long
+ * before its editor did.
+ */
 function notify(s) {
   const rows = [
     ["Tool", s.toolName],
-    ["Website", s.websiteUrl],
+    ["Website", s.websiteUrl, s.websiteUrl],
     ["Category", s.category],
     ["Pricing", s.pricing],
-    ["Affiliate program", s.affiliateProgram],
-    ["Pitch", s.pitch],
-    ["Details", s.details],
-    ["From", `${s.contactName} <${s.email}>`],
+    ["Affiliate", s.affiliateProgram],
+    ["From", `${s.contactName} <${s.email}>`, `mailto:${s.email}`],
   ];
-  const text = rows.map(([k, v]) => `${k}: ${v ?? "—"}`).join("\n");
-  const html = `
-    <div style="font-family:system-ui,sans-serif;max-width:560px">
-      <h2 style="margin:0 0 4px">New tool submission</h2>
-      <p style="color:#6A5F52;margin:0 0 16px">Someone submitted a tool to Toolhaven for review.</p>
-      <table style="border-collapse:collapse;width:100%">
-        ${rows.map(([k, v]) => `<tr>
-          <td style="padding:6px 12px 6px 0;color:#6A5F52;vertical-align:top;white-space:nowrap"><strong>${esc(k)}</strong></td>
-          <td style="padding:6px 0;border-bottom:1px solid #eee">${k === "Website" ? `<a href="${esc(v)}">${esc(v)}</a>` : esc(v)}</td>
-        </tr>`).join("")}
-      </table>
-      <p style="color:#6A5F52;margin:16px 0 0;font-size:13px">Reply to this email to reach ${esc(s.contactName)} directly.</p>
-    </div>`;
-  sendMail({ subject: `New tool submission: ${s.toolName}`, text, html, replyTo: s.email });
+  const body = [
+    p(`<strong>${esc(s.contactName)}</strong> submitted <strong>${esc(s.toolName)}</strong> for review.`),
+    facts(rows),
+    s.pitch ? p(`<em>&ldquo;${esc(s.pitch)}&rdquo;</em>`) : "",
+    s.details ? p(esc(s.details), true) : "",
+    button(`${COLOURS.SITE}/admin`, "Open the queue"),
+  ].join("");
+
+  const text = rows.map(([k, v]) => `${k}: ${v ?? "—"}`).join("\n")
+    + (s.pitch ? `\n\nPitch: ${s.pitch}` : "")
+    + (s.details ? `\n\nDetails: ${s.details}` : "")
+    + `\n\nQueue: ${COLOURS.SITE}/admin`;
+
+  return sendMail({
+    subject: `New submission: ${s.toolName}`,
+    text,
+    html: shell({
+      preheader: `${s.contactName} submitted ${s.toolName}${s.category ? ` — ${s.category}` : ""}`,
+      kicker: "Editor's desk",
+      heading: "A new tool has come in",
+      body,
+      footnote: "Reply to this message and it goes straight to them.",
+    }),
+    replyTo: s.email,
+  });
 }
 
-// Confirmation back to the vendor so they know it landed.
+/**
+ * The receipt to whoever submitted.
+ *
+ * For most people this is their only contact with Toolhaven, so it does the
+ * work a receipt should: confirms what was received, says plainly what happens
+ * next, and states the no-pay-to-play position — which is the thing that makes
+ * a listing here worth having and the thing they are most likely to doubt.
+ */
 function confirmToVendor(s) {
-  const html = `
-    <div style="font-family:system-ui,sans-serif;max-width:560px">
-      <h2 style="margin:0 0 4px">Thanks — we've got it ✦</h2>
-      <p>Hi ${esc(s.contactName)}, thanks for submitting <strong>${esc(s.toolName)}</strong> to Toolhaven.</p>
-      <p>We read every submission and try the promising ones properly. If it's a fit, we'll be in touch. We don't do pay-to-play, so the review will be genuinely honest — the strengths and the catch.</p>
-      <p style="color:#6A5F52;font-size:13px;margin-top:16px">— The Toolhaven desk</p>
-    </div>`;
-  sendMail({
+  const body = [
+    p(`Hi ${esc(s.contactName)} — thanks for sending <strong>${esc(s.toolName)}</strong> over.`),
+    p("Here's what happens now. A person reads every submission. If it looks like a fit for the index we'll try it properly, and if we write it up you'll hear from us before it goes live."),
+    p(`We don't take payment for a listing, a ranking, or a good word, so if ${esc(s.toolName)} does get reviewed the write-up will be an honest one: what it's genuinely good at, and the catch. Every tool on the site has both.`),
+    p("If you don't hear back, it means it wasn't the right fit for what we cover — no reflection on the product.", true),
+    button(`${COLOURS.SITE}/how-we-review`, "How we review"),
+  ].join("");
+
+  return sendMail({
     to: s.email,
-    subject: `Thanks for submitting ${s.toolName} to Toolhaven`,
-    text: `Hi ${s.contactName}, thanks for submitting ${s.toolName} to Toolhaven. We read every submission and will be in touch if it's a fit. No pay-to-play — the review will be honest. — The Toolhaven desk`,
-    html,
+    subject: `We've got ${s.toolName} — Toolhaven`,
+    text: [
+      `Hi ${s.contactName} — thanks for sending ${s.toolName} over.`,
+      "",
+      "A person reads every submission. If it looks like a fit we'll try it properly, and if we write it up you'll hear from us before it goes live.",
+      "",
+      `We don't take payment for a listing, a ranking, or a good word, so if ${s.toolName} does get reviewed the write-up will be an honest one: what it's good at, and the catch.`,
+      "",
+      `How we review: ${COLOURS.SITE}/how-we-review`,
+      "",
+      "— The Toolhaven desk",
+    ].join("\n"),
+    html: shell({
+      preheader: `Your submission of ${s.toolName} reached the Toolhaven desk.`,
+      kicker: "Submission received",
+      heading: "Thanks — we've got it",
+      body,
+      footnote: "The Toolhaven desk &middot; no pay-to-play, ever",
+    }),
   });
 }
 

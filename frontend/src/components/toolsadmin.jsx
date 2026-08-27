@@ -8,7 +8,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, ExternalLink, AlertTriangle, X, Plus } from "lucide-react";
-import { listToolsAdmin, updateToolAdmin, getClickStats, saveToolScore, clearToolScore, saveToolFacts, saveExternalRatings, saveToolVerdict, saveToolAlternatives } from "../api/client.js";
+import { getCategories, listToolsAdmin, updateToolAdmin, getClickStats, saveToolScore, clearToolScore, saveToolFacts, saveExternalRatings, saveToolVerdict, saveToolAlternatives } from "../api/client.js";
+import { AddTool } from "./addtool.jsx";
 
 // Mirrors SCORE_DIMENSIONS on the server. Kept as a literal rather than fetched
 // so the form renders instantly; the server still validates every value.
@@ -117,6 +118,7 @@ const label = "block font-mono text-label uppercase tracking-[.14em] text-ink2 m
 
 export function ToolsAdmin({ token }) {
   const [tools, setTools] = useState([]);
+  const [cats, setCats] = useState([]);
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -130,6 +132,7 @@ export function ToolsAdmin({ token }) {
   }, [token]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { getCategories().then(setCats).catch(() => {}); }, []);
 
   const shown = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -141,6 +144,8 @@ export function ToolsAdmin({ token }) {
 
   return (
     <div>
+      <AddTool token={token} categories={cats} onAdded={load} />
+
       {/* the one number worth leading with */}
       {unmonetised.length > 0 && (
         <div className="flex items-start gap-3 border-2 border-ink rounded-card bg-accent/10 p-4 mb-5">
@@ -192,6 +197,7 @@ function ToolRow({ tool, token, allTools, open, onToggle, onSaved }) {
       const updated = await updateToolAdmin(tool.id, {
         affiliateLink: form.affiliateLink, affiliateNetwork: form.affiliateNetwork,
         websiteUrl: form.websiteUrl, bestFor: form.bestFor, caveat: form.caveat,
+        logoUrl: form.logoUrl, logoAlt: form.logoAlt, logoMono: form.logoMono,
         priceType: form.priceType, priceMin: form.priceMin, priceMax: form.priceMax,
         rating: form.rating, freeTrial: form.freeTrial, freeTier: form.freeTier,
         isFeatured: form.isFeatured, isActive: form.isActive,
@@ -264,6 +270,35 @@ function ToolRow({ tool, token, allTools, open, onToggle, onSaved }) {
             <div>
               <label htmlFor={`web-${tool.id}`} className={label}>Website URL</label>
               <input id={`web-${tool.id}`} className={field} value={form.websiteUrl || ""} onChange={set("websiteUrl")} />
+            </div>
+          </div>
+
+          {/* The brand mark. Shown as it will appear, because a wrong path here
+              is otherwise invisible until someone loads the page. */}
+          <div className="flex items-start gap-3.5">
+            <span aria-hidden="true"
+              className="grid place-items-center shrink-0 w-14 h-14 rounded-ui border-2 border-ink overflow-hidden bg-paper">
+              {form.logoUrl
+                ? <img src={form.logoUrl} alt="" className="w-full h-full object-contain p-1.5" />
+                : <span className="font-display font-bold text-lg text-ink2">
+                    {(form.logoMono || tool.name.slice(0, 2)).toUpperCase()}
+                  </span>}
+            </span>
+            <div className="grid sm:grid-cols-4 gap-3 flex-1 min-w-0">
+              <div className="sm:col-span-2">
+                <label htmlFor={`logo-${tool.id}`} className={label}>Logo image</label>
+                <input id={`logo-${tool.id}`} className={field} value={form.logoUrl || ""} onChange={set("logoUrl")}
+                  placeholder="/logos/zapier.svg" />
+              </div>
+              <div>
+                <label htmlFor={`mono-${tool.id}`} className={label}>Initials</label>
+                <input id={`mono-${tool.id}`} className={field} maxLength={3}
+                  value={form.logoMono || ""} onChange={set("logoMono")} />
+              </div>
+              <div>
+                <label htmlFor={`alt-${tool.id}`} className={label}>Image description</label>
+                <input id={`alt-${tool.id}`} className={field} value={form.logoAlt || ""} onChange={set("logoAlt")} />
+              </div>
             </div>
           </div>
 

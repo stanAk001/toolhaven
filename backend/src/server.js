@@ -24,6 +24,7 @@ import { warmUp } from "./lib/prisma.js";
 import { invalidateOnWrite } from "./lib/cache.js";
 import { warmCache } from "./lib/warm.js";
 import { startPricingWorker } from "./lib/pricing/scheduler.js";
+import { mailProvider } from "./lib/mailer.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -72,6 +73,21 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 4000;
 const server = app.listen(PORT, () => {
   console.log(`Toolhaven API running on http://localhost:${PORT}`);
+
+  // Say out loud which transport is live and where alerts go. A silent mail
+  // misconfiguration is invisible for weeks — submission alerts were being
+  // sent to the same Gmail account they were sent from, which Gmail quietly
+  // keeps out of the inbox, and nothing anywhere said so.
+  const provider = mailProvider();
+  const alertsTo = process.env.NOTIFY_EMAIL || process.env.SMTP_USER || "(nowhere)";
+  if (!provider) console.warn("[mail] no provider configured — submission alerts will not be sent");
+  else {
+    console.log(`[mail] ${provider} → alerts to ${alertsTo}`);
+    const from = (process.env.MAIL_FROM || "").match(/<([^>]+)>/)?.[1] || process.env.MAIL_FROM || process.env.SMTP_USER || "";
+    if (from && alertsTo && from.toLowerCase() === alertsTo.toLowerCase()) {
+      console.warn("[mail] NOTIFY_EMAIL is the same address alerts are sent FROM. Gmail hides self-addressed mail from the inbox — point NOTIFY_EMAIL somewhere else.");
+    }
+  }
   // Connect, then pay the first-request cost here rather than making a reader
   // wait for it. Neither step is allowed to take the server down with it.
   warmUp().then(() => warmCache(PORT)).catch(() => {});

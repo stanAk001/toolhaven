@@ -25,6 +25,9 @@ const prisma = new PrismaClient();
 // URLs move without notice, and every page load then depends on someone else's
 // CDN. Self-hosting costs a few KB and removes all three.
 const HERE = dirname(fileURLToPath(import.meta.url));
+// A logo in a 40px tile should not outweigh the page it sits on.
+const MAX_LOGO_BYTES = 40 * 1024;
+
 const LOGO_DIR = join(HERE, "..", "..", "frontend", "public", "logos");
 
 const EXT = { "image/svg+xml": "svg", "image/png": "png", "image/x-icon": "ico",
@@ -97,6 +100,11 @@ async function verifyImage(url) {
     const type = res.headers.get("content-type") || "";
     if (!/^image\//i.test(type)) return null;
     const bytes = Number(res.headers.get("content-length") || 0);
+    // A brand mark rendered into a 40px tile has no business weighing more than
+    // a page of text. Multi-resolution .ico files and uncompressed hero images
+    // routinely run to hundreds of kilobytes; reject them and let a lighter
+    // candidate further down the list win, or fall back to the monogram.
+    if (bytes > MAX_LOGO_BYTES) return null;
     return { url: res.url, type, bytes };
   } catch { return null; }
 }
@@ -123,16 +131,47 @@ async function resolveLogo(officialUrl) {
     const ok = await verifyImage(c.url);
     if (ok) return { ...ok, via: c.rel };
   }
+
+  // Last resort. Some vendors refuse automated requests outright (Namecheap
+  // and TradingView both 403 everything), so their own markup is unreadable
+  // even though the brand mark is public. DuckDuckGo's icon service resolves
+  // the same asset from the same domain, and the file is still downloaded and
+  // served from here rather than hotlinked. Tried only after the vendor's own
+  // declarations have failed, never in preference to them.
+  try {
+    const host = new URL(officialUrl).hostname;
+    const bare = host.replace(/^www\./, "");
+    // Both spellings: the service indexes whichever hostname the brand actually
+    // serves from, and they are not interchangeable — brevo.com 404s where
+    // www.brevo.com resolves.
+    for (const h of [...new Set([bare, `www.${bare}`, host])]) {
+      const fallback = await verifyImage(`https://icons.duckduckgo.com/ip3/${h}.ico`);
+      if (fallback) return { ...fallback, via: "icon service" };
+    }
+  } catch { /* fall through to the monogram */ }
+
   return { error: `${candidates.length} candidate(s), none returned an image` };
 }
 
 async function main() {
+  // Every active tool. This began as a partners-only job, which left forty-three
+  // tools wearing a two-letter tile while four carried real brand marks — an
+  // inconsistency that read as the partners being the ones we cared about.
+  //
+  //   node prisma/fetch-logos.js            every tool still without one
+  //   node prisma/fetch-logos.js zapier     just that tool
+  //   node prisma/fetch-logos.js --force    redo the ones already resolved
+  const only = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+  const force = process.argv.includes("--force");
   const tools = await prisma.tool.findMany({
-    where: { partnerId: { not: null } },
-    select: { id: true, slug: true, name: true, websiteUrl: true, partner: { select: { officialUrl: true } } },
+    where: only.length ? { slug: { in: only } } : { isActive: true },
+    select: { id: true, slug: true, name: true, websiteUrl: true, logoUrl: true, partner: { select: { officialUrl: true } } },
+    orderBy: { name: "asc" },
   });
 
+  let skipped = 0;
   for (const t of tools) {
+    if (t.logoUrl && !force && !only.length) { skipped++; continue; }
     const site = t.partner?.officialUrl || t.websiteUrl;
     if (!site) { console.log(`  ${t.name.padEnd(11)} no official URL — skipped`); continue; }
 
@@ -156,8 +195,10 @@ async function main() {
     console.log(`  ${t.name.padEnd(11)} ${r.via.padEnd(16)} ${saved.path.padEnd(22)} ${Math.round(saved.bytes / 1024)}kb`);
   }
 
-  const done = await prisma.tool.count({ where: { partnerId: { not: null }, logoUrl: { startsWith: "/logos/" } } });
-  console.log(`\n  ${done}/${tools.length} partner logos resolved and verified.`);
+  const done = await prisma.tool.count({ where: { logoUrl: { startsWith: "/logos/" } } });
+  const all = await prisma.tool.count({ where: { isActive: true } });
+  console.log(`\n  ${done}/${all} tools now carry a verified brand mark`
+    + (skipped ? ` (${skipped} already had one — pass --force to redo them)` : "") + ".");
 }
 
 main().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());

@@ -33,6 +33,17 @@ const EDITABLE = {
   freeTier: (v) => Boolean(v),
   isFeatured: (v) => Boolean(v),
   isActive: (v) => Boolean(v),
+  // The brand mark. A path under /logos is ours; an absolute URL has to be
+  // https, since a logo is the one image on a page a reader has no reason to
+  // distrust. Anything else is dropped rather than rendered as a broken tile.
+  logoUrl: (v) => {
+    const s = String(v ?? "").trim();
+    if (!s) return null;
+    if (s.startsWith("/")) return s.slice(0, 300);
+    return /^https:\/\//i.test(s) ? s.slice(0, 300) : null;
+  },
+  logoAlt: (v) => (v?.trim() ? v.trim().slice(0, 160) : null),
+  logoMono: (v) => (v?.trim() ? v.trim().slice(0, 3) : null),
 };
 
 /* GET /api/tools/rails — the homepage rails.
@@ -346,6 +357,119 @@ router.put("/manage/:id/alternatives", requireAdmin, ah(async (req, res, next) =
     ...(clean.length ? [prisma.toolAlternative.createMany({ data: clean })] : []),
   ]);
   res.json({ ok: true, count: clean.length });
+}));
+
+/**
+ * POST /api/tools/manage — add a tool, and optionally the partner behind it.
+ *
+ * Getting approved by an affiliate programme should not require a deploy. This
+ * is the whole flow in one call: the profile, the category it files under, and
+ * — if it is a partner — the partner record that owns the tracking link.
+ *
+ * The tracking URL is written to the Partner row, never to the Tool, because
+ * that is the single place the click route reads it from. Two copies of an
+ * affiliate URL is two chances to update one and forget the other.
+ *
+ * Nothing about ratings, reviews or scores can be set here. A tool arrives with
+ * no figures at all and earns them the same way every other tool does.
+ */
+const slugify = (s) => String(s || "").toLowerCase().trim()
+  .replace(/['']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+
+router.post("/manage", requireAdmin, ah(async (req, res, next) => {
+  const b = req.body || {};
+  const fail = (msg) => { const e = new Error(msg); e.status = 400; return next(e); };
+
+  const name = String(b.name || "").trim();
+  if (!name) return fail("The tool needs a name.");
+  const slug = slugify(b.slug || name);
+  if (!slug) return fail("That name doesn't produce a usable web address — add a slug by hand.");
+
+  const existing = await prisma.tool.findUnique({ where: { slug } });
+  if (existing) return fail(`"${slug}" is already in the index — edit that entry instead of adding a second one.`);
+
+  const websiteUrl = String(b.websiteUrl || "").trim();
+  if (!/^https?:\/\//i.test(websiteUrl)) return fail("The official website needs to start with http:// or https://");
+
+  const description = String(b.description || "").trim();
+  if (description.length < 20) return fail("Write a one-line description — it is the only thing a listing card can show.");
+
+  const category = await prisma.category.findFirst({
+    where: /^\d+$/.test(String(b.category)) ? { id: Number(b.category) } : { slug: String(b.category || "") },
+  });
+  if (!category) return fail("Pick a category.");
+
+  // Partner details, when this arrived through an affiliate programme.
+  const wantsPartner = !!b.isPartner;
+  const affiliateUrl = String(b.affiliateUrl || "").trim();
+  if (wantsPartner && !/^https?:\/\//i.test(affiliateUrl)) {
+    return fail("A partner needs its tracking link, starting with http:// or https://");
+  }
+
+  const PRICE_TYPES = ["free", "freemium", "paid", "subscription", "custom"];
+  const priceType = PRICE_TYPES.includes(b.priceType) ? b.priceType : "freemium";
+
+  const created = await prisma.$transaction(async (tx) => {
+    let partnerId = null;
+    let network = null;
+
+    if (wantsPartner) {
+      const pSlug = slugify(b.partnerName || name);
+      network = String(b.affiliateNetwork || "Direct").trim().slice(0, 40) || "Direct";
+      const partner = await tx.partner.upsert({
+        where: { slug: pSlug },
+        update: { affiliateUrl, officialUrl: websiteUrl, network, status: "active" },
+        create: {
+          slug: pSlug,
+          name: String(b.partnerName || name).trim().slice(0, 60),
+          network, officialUrl: websiteUrl, affiliateUrl,
+          status: "active", trackingEnabled: true,
+        },
+      });
+      partnerId = partner.id;
+    }
+
+    return tx.tool.create({
+      data: {
+        slug, name,
+        description,
+        fullDescription: String(b.fullDescription || "").trim() || null,
+        bestFor: String(b.bestFor || "").trim() || null,
+        caveat: String(b.caveat || "").trim() || null,
+        logoMono: String(b.logoMono || name.slice(0, 2)).trim().slice(0, 3),
+        // A path under /logos is ours and always fine. An absolute URL is
+        // accepted but only over https, because a logo is the one image on the
+        // page a reader has no reason to distrust and we are not going to be
+        // the ones who serve it over plaintext.
+        logoUrl: (() => {
+          const v = String(b.logoUrl || "").trim();
+          if (!v) return null;
+          if (v.startsWith("/")) return v.slice(0, 300);
+          return /^https:\/\//i.test(v) ? v.slice(0, 300) : null;
+        })(),
+        logoAlt: String(b.logoAlt || "").trim() || (b.logoUrl ? `${name} logo` : null),
+        websiteUrl,
+        // Lives on the partner row; see the note above.
+        affiliateLink: null,
+        affiliateNetwork: network,
+        priceType,
+        freeTier: !!b.freeTier,
+        freeTrial: !!b.freeTrial,
+        priceMin: 0,
+        priceMax: 0,
+        rating: 0,
+        reviewCount: 0,
+        popularity: 0,
+        isFeatured: false,
+        isActive: b.isActive === false ? false : true,
+        categoryId: category.id,
+        partnerId,
+      },
+      include: { category: { select: { slug: true, name: true } }, partner: { select: { name: true, network: true } } },
+    });
+  });
+
+  res.status(201).json({ tool: created });
 }));
 
 // PATCH /api/tools/manage/:id — update only the allowlisted fields

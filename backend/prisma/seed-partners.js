@@ -29,6 +29,7 @@ const PARTNERS = [
   { slug: "onepage", name: "Onepage", network: "Cello", officialUrl: "https://onepage.io/", affiliateUrl: "https://onepage.cello.so/mp8Nv4Ngj9W" },
   { slug: "namecheap", name: "Namecheap", network: "Impact", officialUrl: "https://www.namecheap.com/", affiliateUrl: "https://namecheap.pxf.io/c/7618072/1632743/5618" },
   { slug: "elementor", name: "Elementor", network: "Direct", officialUrl: "https://elementor.com/", affiliateUrl: "https://be.elementor.com/visit/?bta=232423&brand=elementor" },
+  { slug: "zapier", name: "Zapier", network: "Direct", officialUrl: "https://zapier.com/", affiliateUrl: "https://try.zapier.com/lgolyhzniqvp" },
 ];
 
 // priceType is the pricing *model*, which is stable. priceMin/priceMax stay at
@@ -78,6 +79,21 @@ const TOOLS = [
     bestFor: "WordPress users, freelancers and agencies who want visual control over layouts without writing theme code.",
     caveat: "It is WordPress-only, so it inherits WordPress's maintenance burden: updates, plugin conflicts and hosting that can keep up. Heavy page designs also need attention paid to performance, which a simpler hosted builder handles for you.",
     priceType: "freemium", freeTier: true, freeTrial: false,
+  },
+  {
+    // Filed under Automation alongside Make on purpose. They are the two
+    // obvious answers to the same question, and a reader weighing one against
+    // the other is exactly who this category is for. Both happen to be
+    // partners, which changes nothing about where either sits or how either
+    // is described — the caveat below is the one that actually costs people
+    // money, and it stays whether or not the link earns anything.
+    slug: "zapier", partner: "zapier", category: "automation", logoMono: "Zp",
+    name: "Zapier",
+    description: "Connects apps to each other and runs simple, reliable workflows between them, with by far the widest app support.",
+    fullDescription: "Zapier links the apps you already use: something happens in one, and Zapier does something in another. Its real advantage is reach — it connects to more services than anything else in the category, so the integration you need almost certainly exists rather than having to be built. The editor is a linear list of steps rather than a canvas, which makes straightforward automations very quick to set up and complicated ones harder to reason about.",
+    bestFor: "Anyone who wants an automation working this afternoon, and teams whose apps are niche enough that integration coverage decides the choice.",
+    caveat: "Billing is by task, and a task is every step of every run — a busy multi-step Zap consumes the allowance far faster than the plan names suggest. Estimate your monthly volume before committing, because this is where the bill surprises people.",
+    priceType: "freemium", freeTier: true, freeTrial: true,
   },
 ];
 

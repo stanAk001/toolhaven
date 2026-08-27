@@ -57,6 +57,7 @@ const CAPTERRA = [
   ["perplexity",       4.2,     35, "p/10014721/Perplexity/"],
   ["framer",           4.3,     32, "p/178917/Framer/"],
   ["elevenlabs",       4.7,     25, "p/10013392/ElevenLabs/"],
+  ["zapier",           4.7,   3070, "p/130182/Zapier/"],
 
   // Deliberately left out:
   //   Looka  - 5.0 from 4 reviews. Real, but four people is not a finding, and
