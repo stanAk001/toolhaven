@@ -17,16 +17,23 @@ export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
+      // One family for reading, one for measuring. `display` and `sans` point
+      // at the same face on purpose: the hierarchy comes from size, weight and
+      // spacing rather than from switching typeface, which is what stops a
+      // page looking like two designs stapled together.
       fontFamily: {
-        display: ['"Fraunces"', "serif"],
-        sans: ['"Hanken Grotesk"', "system-ui", "sans-serif"],
-        mono: ['"Space Mono"', "monospace"],
+        display: ["Archivo", "system-ui", "sans-serif"],
+        sans: ["Archivo", "system-ui", "sans-serif"],
+        mono: ['"IBM Plex Mono"', "ui-monospace", "SFMono-Regular", "monospace"],
       },
       colors: {
         // channel-based so Tailwind opacity modifiers (bg-ink/40) keep working,
         // and so a single [data-theme] swap re-themes the whole site at once.
         paper: "rgb(var(--paper) / <alpha-value>)",
         paper2: "rgb(var(--paper2) / <alpha-value>)",
+        // Panels sit above the ground; every border on the site is `rule`.
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        rule: "rgb(var(--rule) / <alpha-value>)",
         ink: "rgb(var(--ink) / <alpha-value>)",
         ink2: "rgb(var(--ink2) / <alpha-value>)",
         accent: "rgb(var(--accent) / <alpha-value>)",
@@ -64,22 +71,31 @@ export default {
       // radii in play (plus three one-off pixel values), which is what makes
       // an editorial design read as a template with a theme painted on it.
       // Four steps, each with a job:
+      // An instrument has square corners. Nothing here exceeds 4px, and the
+      // difference between the steps is deliberately almost invisible — the
+      // eye should read "precise", not "rounded".
       borderRadius: {
-        edge: "0",       // rules, tables, full-bleed panels: printed things
-        tight: "2px",    // chips, labels, stamps — barely there, on purpose
-        ui: "4px",       // inputs, buttons, controls: functional software
-        card: "8px",     // cards and panels: the only place softness earns it
+        edge: "0",       // tables, full-bleed panels, rules
+        tight: "2px",    // chips and labels
+        ui: "3px",       // inputs, buttons, controls
+        card: "4px",     // panels — the ceiling
         disc: "9999px",  // true circles only, never a pill-shaped button
       },
 
       // --- the letterpress shadow ---------------------------------------
       // The hard offset shadow is Toolhaven's signature and stays. What goes
       // is the eight different distances it was written at by hand.
+      // The letterpress offset shadow is gone. It was the loudest decorative
+      // signal on the site and it belonged to the paper metaphor, which no
+      // longer applies. What replaces it is almost nothing: separation now
+      // comes from a hairline and from space, which is how a precision
+      // interface does it. The names are kept so 200-odd call sites do not
+      // have to be rewritten to say "no shadow".
       boxShadow: {
-        press: "3px 3px 0 var(--shadow-cast)",
-        "press-sm": "2px 2px 0 var(--shadow-cast)",
-        "press-lg": "6px 6px 0 var(--shadow-cast)",
-        "press-xl": "10px 10px 0 var(--shadow-cast)",
+        press: "none",
+        "press-sm": "none",
+        "press-lg": "0 1px 2px rgb(14 17 22 / 0.04), 0 8px 24px rgb(14 17 22 / 0.06)",
+        "press-xl": "0 1px 2px rgb(14 17 22 / 0.05), 0 16px 40px rgb(14 17 22 / 0.08)",
       },
 
       maxWidth: {

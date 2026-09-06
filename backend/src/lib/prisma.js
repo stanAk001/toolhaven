@@ -2,13 +2,22 @@ import { PrismaClient } from "@prisma/client";
 
 // The database is remote (Render, Ohio) and the round trip is long enough that a
 // pooled connection sometimes goes away between requests — an idle socket the
-// load balancer has quietly closed. Prisma only discovers this when it tries to
-// use it, and reports P1001 "Can't reach database server", which the route turns
-// into a 500 and the page turns into an empty section.
+// load balancer has quietly closed, or every socket at once after the machine
+// has been asleep. Prisma only discovers this when it tries to use one, and
+// reports P1001 "Can't reach database server", which the route turns into a 500
+// and the page turns into an empty section.
 //
-// The connection itself almost always comes straight back, so the fix is to try
-// again rather than to fail the request. Only genuinely transient connection
-// codes are retried; a bad query or a constraint violation still throws at once.
+// Retrying used to mean running the same query again immediately. That cannot
+// work: the pool hands back the same dead socket, so all three attempts failed
+// inside a second and the request died anyway —
+//
+//     [db] P1001 on Tool.findMany — retry 1/2
+//     [db] P1001 on Tool.findMany — retry 2/2
+//     Error in PostgreSQL connection: ConnectionReset (10054)
+//
+// A stale socket is only fixed by throwing the pool away, so that is what
+// happens now: on a connection-shaped failure the client disconnects, which
+// closes every socket it holds, and the retry opens fresh ones.
 const TRANSIENT_CODES = new Set([
   "P1001", // can't reach database server
   "P1002", // server reached but timed out
@@ -31,15 +40,42 @@ export function isTransient(err) {
   if (!err) return false;
   if (TRANSIENT_CODES.has(err.code) || TRANSIENT_CODES.has(err.errorCode)) return true;
   if ((err.name || err.constructor?.name) === "PrismaClientInitializationError") return true;
-  return /can't reach database server|connection pool|closed the connection|connection reset/i
+  // Prisma reports the underlying socket error in several wordings, and they
+  // are not consistently spaced: "connection reset" from the driver,
+  // "ConnectionReset" from the Rust layer, and the Windows text for error 10054.
+  return /can't reach database server|connection ?reset|connection pool|closed the connection|forcibly closed|terminating connection/i
     .test(String(err.message || ""));
 }
 
 const ATTEMPTS = 3;
+// Opening a fresh TLS connection to Ohio takes the better part of a second, and
+// when Render has just dropped the socket it may need a moment more. The old
+// 200/400ms gave up before a new connection could plausibly exist.
+const BACKOFF_MS = [600, 1800];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function createClient() {
   const base = new PrismaClient({ log: ["warn", "error"] });
+
+  // Throwing the pool away is shared work. Twenty requests failing at the same
+  // instant — which is exactly what happens when the machine wakes up — must
+  // not each tear down the pool the others are trying to rebuild, so they all
+  // await the same recycle. It is also rate-limited: a database that is
+  // genuinely down should not have its pool churned once per query.
+  let recycling = null;
+  let lastRecycle = 0;
+  const RECYCLE_EVERY_MS = 4000;
+
+  const recycle = () => {
+    const now = Date.now();
+    if (recycling) return recycling;
+    if (now - lastRecycle < RECYCLE_EVERY_MS) return Promise.resolve();
+    lastRecycle = now;
+    recycling = base.$disconnect()
+      .catch(() => { /* already gone is the outcome we wanted */ })
+      .finally(() => { recycling = null; });
+    return recycling;
+  };
 
   return base.$extends({
     query: {
@@ -51,13 +87,13 @@ function createClient() {
           } catch (err) {
             if (!isTransient(err) || attempt === ATTEMPTS) throw err;
             lastError = err;
-            // 200ms, then 400ms — long enough for a new connection on a slow
-            // link, short enough that the request doesn't feel hung
-            await sleep(200 * attempt);
             // eslint-disable-next-line no-console
             console.warn(
-              `[db] ${err.code || err.name} on ${model ?? "raw"}.${operation} — retry ${attempt}/${ATTEMPTS - 1}`,
+              `[db] ${err.code || err.name} on ${model ?? "raw"}.${operation}`
+              + ` — dropping the connection pool and retrying (${attempt}/${ATTEMPTS - 1})`,
             );
+            await recycle();
+            await sleep(BACKOFF_MS[attempt - 1] ?? 1800);
           }
         }
         throw lastError;

@@ -17,7 +17,7 @@ import {
   approvePricing, rejectPricing, overridePricing, clearPricingOverride,
 } from "../api/client.js";
 
-const field = "w-full border-2 border-ink rounded-card bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
+const field = "w-full border border-rule rounded-card bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
 const label = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
 const STATUS_TONE = {
@@ -44,7 +44,7 @@ const when = (iso) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "n
 function StatusChip({ status, score }) {
   if (!status) return <span className="font-mono text-label uppercase tracking-wide text-ink2">not checked</span>;
   return (
-    <span className={`inline-flex items-center gap-1.5 font-mono text-nano uppercase tracking-[.12em] px-2 py-1 rounded-ui border-2 tabular-nums ${STATUS_TONE[status] || STATUS_TONE.unavailable}`}>
+    <span className={`inline-flex items-center gap-1.5 font-mono text-nano uppercase tracking-[.12em] px-2 py-1 rounded-ui border tabular-nums ${STATUS_TONE[status] || STATUS_TONE.unavailable}`}>
       {STATUS_LABEL[status] || status}
       {score !== null && score !== undefined && <span className="opacity-70">{Math.round(score * 100)}%</span>}
     </span>
@@ -142,7 +142,7 @@ export function PricingAdmin({ token }) {
             ["Never checked", summary.neverChecked],
             ["Set by hand", summary.overrides],
           ].map(([k, v]) => (
-            <div key={k} className="border-2 border-ink rounded-card bg-paper p-3">
+            <div key={k} className="border border-rule rounded-card bg-paper p-3">
               <p className="font-display text-2xl font-semibold tabular-nums leading-none">{v}</p>
               <p className="font-mono text-nano uppercase tracking-[.12em] text-ink2 mt-1">{k}</p>
             </div>
@@ -153,12 +153,12 @@ export function PricingAdmin({ token }) {
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {TABS.map(([key, text, count]) => (
           <button key={key} onClick={() => setFilter(key)}
-            className={`inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 transition-colors ${filter === key ? "bg-ink text-paper" : "hover:bg-paper2"}`}>
+            className={`inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 transition-colors ${filter === key ? "bg-ink text-paper" : "hover:bg-paper2"}`}>
             {text}<span className="tabular-nums opacity-70">{count}</span>
           </button>
         ))}
         <button onClick={sweep} disabled={busy === "sweep"}
-          className="ml-auto inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors disabled:opacity-60">
+          className="ml-auto inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors disabled:opacity-60">
           <RefreshCw size={13} aria-hidden="true" className={busy === "sweep" ? "animate-spin" : ""} />
           {busy === "sweep" ? "Checking…" : "Check what's due"}
         </button>
@@ -171,7 +171,7 @@ export function PricingAdmin({ token }) {
         </p>
       )}
 
-      <div className="flex items-center gap-3 border-2 border-ink rounded-ui px-4 mb-5 bg-paper">
+      <div className="flex items-center gap-3 border border-rule rounded-ui px-4 mb-5 bg-paper">
         <Search size={16} strokeWidth={2.5} aria-hidden="true" className="text-accentDeep shrink-0" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tools…"
           aria-label="Search tools" className="flex-1 min-w-0 bg-transparent outline-none min-h-touch" />
@@ -181,7 +181,7 @@ export function PricingAdmin({ token }) {
       {error && <p className="font-mono text-sm text-accentDeep mb-4">{error}</p>}
       {loading && <p className="text-ink2">Loading…</p>}
       {!loading && shown.length === 0 && (
-        <p className="text-ink2 border-2 border-dashed border-ink/30 rounded-card px-6 py-10 text-center text-pretty">
+        <p className="text-ink2 border border-dashed border-rule rounded-card px-6 py-10 text-center text-pretty">
           Nothing here. {filter === "attention" ? "Every price is either verified or honestly marked unavailable."
             : filter === "unchecked" ? "Every published price has been through a person."
             : "Try another filter."}
@@ -214,7 +214,7 @@ function PricingRow({ row, token, busy, open, onToggle, onAct }) {
        box for one tool, repeated forty-six times. The weight is carried by a
        single status bar down the left edge instead, so the eye can run down the
        column and see what needs attention without reading a word. */
-    <div className="relative border border-ink/25 rounded-card bg-paper overflow-hidden">
+    <div className="relative border border-rule rounded-card bg-paper overflow-hidden">
       <span aria-hidden="true"
         className={`absolute inset-y-0 left-0 w-1 ${
           row.pendingReview ? "bg-accent"
@@ -227,7 +227,7 @@ function PricingRow({ row, token, busy, open, onToggle, onAct }) {
             <h3 className="font-display text-lg font-semibold leading-tight">{row.name}</h3>
             <StatusChip status={row.status} score={row.confidence} />
             {row.isManualOverride && (
-              <span className="inline-flex items-center gap-1 font-mono text-nano uppercase tracking-[.12em] text-ink2 border-2 border-ink/30 rounded-ui px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 font-mono text-nano uppercase tracking-[.12em] text-ink2 border border-rule rounded-ui px-2 py-0.5">
                 <Lock size={10} aria-hidden="true" /> set by hand
               </span>
             )}
@@ -264,7 +264,7 @@ function PricingRow({ row, token, busy, open, onToggle, onAct }) {
           bordered card, and the two verbs carry the weight instead of three
           equally-loud outlined blocks. */}
       {row.pendingReview && (
-        <div className="border-t border-ink/20 bg-accent/[.06] px-4 pl-5 py-3.5">
+        <div className="border-t border-rule bg-accent/[.06] px-4 pl-5 py-3.5">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">
             <p className="text-sm text-pretty min-w-0 flex-1">
               Read <strong className="font-semibold tabular-nums">
@@ -323,14 +323,14 @@ function RowDetail({ row, token, logs, busy, onAct }) {
   const id = (k) => "pr-" + row.id + "-" + k;
 
   return (
-    <div className="border-t-2 border-ink p-4 space-y-5">
+    <div className="border-t border-rule p-4 space-y-5">
       {plans.length > 0 && (
         <div>
           <p className="font-mono text-label uppercase tracking-[.14em] text-accentDeep mb-2">What we read</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-ink/15">
+                <tr className="border-b border-rule">
                   <th scope="col" className="text-left font-mono text-nano uppercase tracking-wide text-ink2 pb-1.5 pr-3">Plan</th>
                   <th scope="col" className="text-right font-mono text-nano uppercase tracking-wide text-ink2 pb-1.5 px-3">Price</th>
                   <th scope="col" className="text-left font-mono text-nano uppercase tracking-wide text-ink2 pb-1.5 pl-3">Read from</th>
@@ -338,7 +338,7 @@ function RowDetail({ row, token, logs, busy, onAct }) {
               </thead>
               <tbody>
                 {plans.map((p, i) => (
-                  <tr key={p.name + i} className="border-b border-ink/10 last:border-0 align-top">
+                  <tr key={p.name + i} className="border-b border-rule last:border-0 align-top">
                     <th scope="row" className="text-left font-normal py-1.5 pr-3 whitespace-nowrap">{p.name}</th>
                     <td className="text-right tabular-nums py-1.5 px-3 whitespace-nowrap">
                       {p.isCustom ? "custom" : money(p.price, p.currency)}
@@ -371,7 +371,7 @@ function RowDetail({ row, token, logs, busy, onAct }) {
         </div>
       )}
 
-      <div className="border-2 border-ink rounded-card bg-paper2/30 p-3 space-y-3">
+      <div className="border border-rule rounded-card bg-paper2/30 p-3 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="font-mono text-label uppercase tracking-[.14em] text-ink2">Set it by hand</p>
           {row.isManualOverride && (

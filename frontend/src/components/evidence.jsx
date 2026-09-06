@@ -31,7 +31,7 @@ export function ConfidenceBadge({ confidence, className = "" }) {
   const platforms = confidence.sources === 1 ? "1 platform" : `${confidence.sources} platforms`;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-mono text-nano uppercase tracking-[.12em] px-2 py-1 rounded-ui border-2 tabular-nums ${CONFIDENCE_TONE[confidence.level]} ${className}`}
+      className={`inline-flex items-center gap-1.5 font-mono text-nano uppercase tracking-[.12em] px-2 py-1 rounded-ui border tabular-nums ${CONFIDENCE_TONE[confidence.level]} ${className}`}
       title={confidence.reasons.join(" · ")}
     >
       {thin && <AlertTriangle size={11} aria-hidden="true" />}
@@ -45,9 +45,9 @@ export function ExternalRatings({ external, toolName }) {
   const { sources, totalReviews, confidence, disagreement } = external;
 
   return (
-    <section aria-labelledby="ext-ratings" className="border-2 border-ink rounded-card bg-paper overflow-hidden"
-      style={{ boxShadow: "5px 5px 0 var(--shadow-cast)" }}>
-      <div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6 border-b-2 border-ink">
+    <section aria-labelledby="ext-ratings" className="border border-rule rounded-card bg-paper overflow-hidden"
+      >
+      <div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6 border-b border-rule">
         <div className="min-w-0">
           <h2 id="ext-ratings" className="font-display text-xl sm:text-2xl font-semibold leading-tight mb-1">
             What users say elsewhere
@@ -92,7 +92,7 @@ export function ExternalRatings({ external, toolName }) {
 
       {/* §34 — say it plainly rather than smoothing it into an average */}
       {disagreement && (
-        <div className="flex items-start gap-3 p-4 sm:px-6 border-t-2 border-ink bg-accent/[.06]">
+        <div className="flex items-start gap-3 p-4 sm:px-6 border-t border-rule bg-accent/[.06]">
           <Info size={16} className="text-accentDeep shrink-0 mt-0.5" aria-hidden="true" />
           <p className="text-sm leading-snug text-pretty">
             <strong>Platforms disagree about {toolName}.</strong>{" "}

@@ -266,22 +266,22 @@ export default function Compare() {
               if (!t) {
                 return (
                   <button key={`empty-${i}`} type="button" onClick={() => setPickerOpen(true)}
-                    className="group flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-card border-2 border-dashed border-ink/35 text-ink2 hover:border-accent hover:text-accentDeep transition-colors">
+                    className="group flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-card border border-dashed border-rule text-ink2 hover:border-accent hover:text-accentDeep transition-colors">
                     <Plus size={20} strokeWidth={2.5} aria-hidden="true" />
                     <span className="font-mono text-micro uppercase tracking-[.14em]">Add a tool</span>
                   </button>
                 );
               }
-              const color = t.category?.colorPrimary || "#1C1714";
+              const color = t.category?.colorPrimary || "#0E1116";
               return (
-                <div key={t.slug} className="relative flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-card border-2 border-ink bg-paper px-2 py-3"
-                  style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+                <div key={t.slug} className="relative flex flex-col items-center justify-center gap-2 min-h-[104px] sm:min-h-[124px] rounded-card border border-rule bg-paper px-2 py-3"
+                  >
                   <button type="button" onClick={() => drop(t.slug)} aria-label={`Remove ${t.name}`}
                     className="absolute top-1.5 right-1.5 grid place-items-center w-8 h-8 rounded-full text-ink2 hover:text-accentDeep hover:bg-paper2 transition-colors">
                     <X size={15} strokeWidth={2.5} aria-hidden="true" />
                   </button>
                   <span aria-hidden="true"
-                    className="grid place-items-center w-11 h-11 sm:w-12 sm:h-12 rounded-ui border-2 border-ink font-display font-bold text-lg text-white"
+                    className="grid place-items-center w-11 h-11 sm:w-12 sm:h-12 rounded-ui border border-rule font-display font-bold text-lg text-white"
                     style={{ background: color }}>
                     {t.logoMono || t.name[0]}
                   </span>
@@ -296,12 +296,12 @@ export default function Compare() {
             <div className="mb-8">
               {!pickerOpen ? (
                 <button type="button" onClick={() => setPickerOpen(true)}
-                  className="inline-flex items-center gap-2 min-h-touch font-mono text-xs uppercase tracking-wide border-2 border-ink rounded-ui px-4 bg-paper hover:bg-paper2 transition-colors">
+                  className="inline-flex items-center gap-2 min-h-touch font-mono text-xs uppercase tracking-wide border border-rule rounded-ui px-4 bg-paper hover:bg-paper2 transition-colors">
                   <Search size={14} strokeWidth={2.5} aria-hidden="true" /> Find a tool
                 </button>
               ) : (
-                <div className="border-2 border-ink rounded-card bg-paper overflow-hidden" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
-                  <div className="flex items-center gap-3 px-4 border-b-2 border-ink">
+                <div className="border border-rule rounded-card bg-paper overflow-hidden" >
+                  <div className="flex items-center gap-3 px-4 border-b border-rule">
                     <Search size={17} strokeWidth={2.5} aria-hidden="true" className="text-accentDeep shrink-0" />
                     <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Escape") setPickerOpen(false); if (e.key === "Enter" && pool[0]) add(pool[0].slug); }}
@@ -323,8 +323,8 @@ export default function Compare() {
                         <button type="button" onClick={() => add(t.slug)}
                           className="w-full flex items-center gap-3 px-4 py-2.5 min-h-touch text-left hover:bg-paper2 transition-colors">
                           <span aria-hidden="true"
-                            className="grid place-items-center w-9 h-9 shrink-0 rounded-ui border-2 border-ink font-display font-bold text-sm text-white"
-                            style={{ background: t.category?.colorPrimary || "#1C1714" }}>
+                            className="grid place-items-center w-9 h-9 shrink-0 rounded-ui border border-rule font-display font-bold text-sm text-white"
+                            style={{ background: t.category?.colorPrimary || "#0E1116" }}>
                             {t.logoMono || t.name[0]}
                           </span>
                           <span className="min-w-0 flex-1">
@@ -363,14 +363,14 @@ export default function Compare() {
                   : <>{navigatorHasShare() ? <Share2 size={13} aria-hidden="true" /> : <LinkIcon size={13} aria-hidden="true" />} Share</>}
               </button>
               <button onClick={() => setPicked([])}
-                className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
+                className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors">
                 Clear
               </button>
             </div>
           </div>
 
           {/* ===== the sheet ===== */}
-          <Reveal key={picked.join("-")} className="cmp-wrap border-2 border-ink rounded-card bg-paper">
+          <Reveal key={picked.join("-")} className="cmp-wrap border border-rule rounded-card bg-paper">
             <table className="cmp w-full text-sm border-collapse">
               <caption className="sr-only">
                 {rows.map((r) => r.name).join(" versus ")} compared across {visible.length} attributes
@@ -381,8 +381,8 @@ export default function Compare() {
                   {rows.map((t) => (
                     <th key={t.slug} scope="col" className="cmp-head">
                       <span aria-hidden="true"
-                        className="grid place-items-center w-11 h-11 mx-auto mb-2 rounded-ui border-2 border-ink font-display font-bold text-white"
-                        style={{ background: t.category?.colorPrimary || "#1C1714" }}>
+                        className="grid place-items-center w-11 h-11 mx-auto mb-2 rounded-ui border border-rule font-display font-bold text-white"
+                        style={{ background: t.category?.colorPrimary || "#0E1116" }}>
                         {t.logoMono || t.name[0]}
                       </span>
                       <Link to={`/tools/${t.slug}`}
@@ -399,7 +399,7 @@ export default function Compare() {
                   return (
                     <tr key={row.key} className={row.catch ? "cmp-catch" : ""}>
                       <th scope="row" className="cmp-label">
-                        {row.catch && <span aria-hidden="true" className="text-accent mr-1.5">✦</span>}
+                        {row.catch && <span aria-hidden="true" className="inline-block align-middle mr-2 w-1.5 h-1.5 bg-accent" />}
                         {row.label}
                       </th>
                       {rows.map((t) => {
@@ -429,7 +429,7 @@ export default function Compare() {
                           feel like. Outlined, and it says where it goes. */}
                       <button onClick={() => goAffiliate(t, "compare")} aria-describedby="aff-note-compare"
                         className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-[.1em]
-                          border-2 border-ink rounded-ui px-4 bg-paper hover:bg-ink hover:text-paper transition-colors">
+                          border border-rule rounded-ui px-4 bg-paper hover:bg-ink hover:text-paper transition-colors">
                         Visit {t.name} <ArrowUpRight size={13} aria-hidden="true" />
                       </button>
                     </td>
@@ -440,13 +440,12 @@ export default function Compare() {
           </Reveal>
 
           <p id="aff-note-compare" className="font-mono text-label uppercase tracking-[.12em] text-ink2 mt-4 text-pretty">
-            <span className="text-accent" aria-hidden="true">✦</span>{" "}
             The "Get it" links are partner links. They never affect the ranking.{" "}
             <Link to="/disclosure" className="underline underline-offset-2 hover:text-accentDeep transition-colors">How we make money</Link>
           </p>
         </>
       ) : all.length > 0 && (
-        <div className="border-2 border-dashed border-ink/30 rounded-card px-6 py-12 text-center">
+        <div className="border border-dashed border-rule rounded-card px-6 py-12 text-center">
           <p className="font-display text-xl sm:text-2xl font-semibold text-balance mb-2">
             {picked.length === 1 ? "One more and we can compare." : "Nothing on the bench yet."}
           </p>

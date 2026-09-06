@@ -20,7 +20,7 @@ import { useState } from "react";
  */
 export function ToolLogo({ tool, size = 48, className = "", labelled = false }) {
   const [failed, setFailed] = useState(false);
-  const color = tool?.category?.colorPrimary || "#1C1714";
+  const color = tool?.category?.colorPrimary || "#0E1116";
   const mono = tool?.logoMono || tool?.name?.[0] || "?";
   const showImage = tool?.logoUrl && !failed;
 
@@ -33,7 +33,7 @@ export function ToolLogo({ tool, size = 48, className = "", labelled = false }) 
 
   return (
     <span
-      className={`grid place-items-center shrink-0 rounded-ui border-2 border-ink overflow-hidden ${className}`}
+      className={`grid place-items-center shrink-0 rounded-ui border border-rule overflow-hidden ${className}`}
       style={box}
       {...(labelled ? {} : { "aria-hidden": "true" })}
     >

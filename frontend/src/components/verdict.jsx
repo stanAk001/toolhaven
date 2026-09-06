@@ -34,7 +34,7 @@ export function AudienceFit({ verdict }) {
       <h2 id="fit" className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-4">Who it’s for</h2>
       <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
         {best.length > 0 && (
-          <div className="border-2 border-ink rounded-card bg-paper p-5">
+          <div className="border border-rule rounded-card bg-paper p-5">
             <h3 className="font-display text-lg font-semibold mb-3">Best for</h3>
             <ul className="space-y-2">
               {best.map((x) => (
@@ -47,7 +47,7 @@ export function AudienceFit({ verdict }) {
           </div>
         )}
         {not.length > 0 && (
-          <div className="border-2 border-ink rounded-card bg-paper2/40 p-5">
+          <div className="border border-rule rounded-card bg-paper2/40 p-5">
             <h3 className="font-display text-lg font-semibold mb-3">Not ideal for</h3>
             <ul className="space-y-2">
               {not.map((x) => (
@@ -105,14 +105,14 @@ export function RealityCheck({ verdict }) {
   const Icon = v.Icon;
 
   return (
-    <section aria-labelledby="reality" className="mb-10 border-2 border-ink rounded-card bg-paper overflow-hidden">
+    <section aria-labelledby="reality" className="mb-10 border border-rule rounded-card bg-paper overflow-hidden">
       <h2 id="reality" className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep px-5 pt-5 pb-3">
         Reality check
       </h2>
       <dl className="px-5 pb-5 space-y-4">
         <div>
           <dt className="font-mono text-label uppercase tracking-wide text-ink2 mb-1">They say</dt>
-          <dd className="font-display text-lg leading-snug italic text-pretty">{verdict.companyClaim}</dd>
+          <dd className="font-display text-lg leading-snug text-pretty">{verdict.companyClaim}</dd>
         </div>
         {verdict.claimEvidence && (
           <div>
@@ -120,7 +120,7 @@ export function RealityCheck({ verdict }) {
             <dd className="text-sm leading-relaxed text-pretty">{verdict.claimEvidence}</dd>
           </div>
         )}
-        <div className="flex items-center gap-2 pt-3 border-t-2 border-ink/10">
+        <div className="flex items-center gap-2 pt-3 border-t border-rule">
           <Icon size={16} className={v.tone + " shrink-0"} aria-hidden="true" />
           <span className={"font-mono text-xs uppercase tracking-wide " + v.tone}>{v.label}</span>
         </div>
@@ -140,7 +140,7 @@ export function CostAndSwitching({ verdict }) {
       <h2 id="cost" className="sr-only">Cost and switching</h2>
 
       {costs.length > 0 && (
-        <div className="border-2 border-ink rounded-card bg-paper p-5">
+        <div className="border border-rule rounded-card bg-paper p-5">
           <h3 className="font-mono text-micro uppercase tracking-[.16em] text-accentDeep mb-3">Cost considerations</h3>
           <ul className="space-y-2">
             {costs.map((c) => (
@@ -154,9 +154,9 @@ export function CostAndSwitching({ verdict }) {
       )}
 
       {sw && (
-        <div className="border-2 border-ink rounded-card bg-paper p-5">
+        <div className="border border-rule rounded-card bg-paper p-5">
           <h3 className="font-mono text-micro uppercase tracking-[.16em] text-accentDeep mb-3">Switching difficulty</h3>
-          <span className={"inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wide px-3 py-1.5 rounded-full border-2 mb-3 " + sw.tone}>
+          <span className={"inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wide px-3 py-1.5 rounded-full border mb-3 " + sw.tone}>
             <Scale size={13} aria-hidden="true" /> {sw.label}
           </span>
           <p className="text-sm text-ink2 leading-snug text-pretty">{verdict.switchingNote || sw.note}</p>
@@ -185,7 +185,7 @@ export function AlternativeFinder({ alternatives = [], editorial, toolName }) {
         {alternatives.map((a) => (
           <li key={a.slug}>
             <Link to={"/tools/" + a.slug}
-              className="tactile group flex gap-3 h-full border-2 border-ink rounded-card bg-paper p-4">
+              className="tactile group flex gap-3 h-full border border-rule rounded-card bg-paper p-4">
               <ToolLogo tool={a} size={40} />
               <span className="min-w-0 flex-1">
                 {a.reason && (
@@ -213,8 +213,8 @@ export function FinalVerdict({ verdict, toolName }) {
   if (!verdict.finalVerdict && !verdict.biggestStrength && !verdict.biggestTradeoff && !verdict.valueAssessment) return null;
 
   return (
-    <section aria-labelledby="final" className="mb-10 border-2 border-ink rounded-card bg-paper overflow-hidden tactile-lg">
-      <div className="border-b-2 border-ink px-5 sm:px-6 py-4">
+    <section aria-labelledby="final" className="mb-10 border border-rule rounded-card bg-paper overflow-hidden tactile-lg">
+      <div className="border-b border-rule px-5 sm:px-6 py-4">
         <h2 id="final" className="font-display text-xl sm:text-2xl font-semibold leading-tight text-balance">
           The Toolhaven verdict on {toolName}
         </h2>

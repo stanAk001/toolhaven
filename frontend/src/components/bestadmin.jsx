@@ -15,7 +15,7 @@ import {
   saveBestEntries, saveBestFaqs, getTools, getCategories,
 } from "../api/client.js";
 
-const field = "w-full border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
+const field = "w-full border border-rule rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
 const label = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
 export function BestAdmin({ token }) {
@@ -72,13 +72,13 @@ export function BestAdmin({ token }) {
 
       <div className="space-y-3">
         {lists.map((l) => (
-          <div key={l.id} className="border-2 border-ink rounded-card bg-paper p-4 sm:p-5"
-            style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+          <div key={l.id} className="border border-rule rounded-card bg-paper p-4 sm:p-5"
+            >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <h3 className="font-display text-lg sm:text-xl font-semibold leading-tight">{l.title}</h3>
-                  <span className={`font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border-2 ${
+                  <span className={`font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border ${
                     l.isPublished ? "border-green-700 text-green-700" : "border-ink/40 text-ink2"}`}>
                     {l.isPublished ? "Live" : "Draft"}
                   </span>
@@ -91,16 +91,16 @@ export function BestAdmin({ token }) {
               <div className="flex items-center gap-2 shrink-0">
                 {l.isPublished && (
                   <Link to={`/best/${l.slug}`} target="_blank" aria-label={`View ${l.title}`}
-                    className="grid place-items-center w-11 h-11 rounded-full border-2 border-ink hover:bg-paper2 transition-colors">
+                    className="grid place-items-center w-11 h-11 rounded-full border border-rule hover:bg-paper2 transition-colors">
                     <ExternalLink size={15} aria-hidden="true" />
                   </Link>
                 )}
                 <button onClick={() => setEditingId(l.id)}
-                  className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
+                  className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors">
                   Edit
                 </button>
                 <button onClick={() => remove(l)} aria-label={`Delete ${l.title}`}
-                  className="grid place-items-center w-11 h-11 rounded-full border-2 border-ink text-accentDeep hover:bg-paper2 transition-colors">
+                  className="grid place-items-center w-11 h-11 rounded-full border border-rule text-accentDeep hover:bg-paper2 transition-colors">
                   <X size={15} aria-hidden="true" />
                 </button>
               </div>
@@ -262,28 +262,28 @@ function BestEditor({ id, token, onClose }) {
 
       <div className="space-y-3 mb-4">
         {entries.map((e, i) => (
-          <div key={e.toolId} className="border-2 border-ink rounded-card bg-paper p-4">
+          <div key={e.toolId} className="border border-rule rounded-card bg-paper p-4">
             <div className="flex items-start gap-3 mb-3">
               <span aria-hidden="true" className="font-mono text-xs tabular-nums text-ink2 pt-3 w-6 shrink-0">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span aria-hidden="true"
-                className="w-10 h-10 grid place-items-center rounded-ui border-2 border-ink font-display font-bold text-sm text-white shrink-0"
-                style={{ background: e.color || "#1C1714" }}>
+                className="w-10 h-10 grid place-items-center rounded-ui border border-rule font-display font-bold text-sm text-white shrink-0"
+                style={{ background: e.color || "#0E1116" }}>
                 {e.logoMono || e.name[0]}
               </span>
               <span className="font-display text-lg font-semibold leading-tight flex-1 min-w-0 pt-1.5">{e.name}</span>
               <span className="flex items-center gap-1 shrink-0">
                 <button onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${e.name} up`}
-                  className="grid place-items-center w-10 h-10 rounded-full border-2 border-ink disabled:opacity-30 hover:bg-paper2 transition-colors">
+                  className="grid place-items-center w-10 h-10 rounded-full border border-rule disabled:opacity-30 hover:bg-paper2 transition-colors">
                   <ArrowUp size={14} aria-hidden="true" />
                 </button>
                 <button onClick={() => move(i, 1)} disabled={i === entries.length - 1} aria-label={`Move ${e.name} down`}
-                  className="grid place-items-center w-10 h-10 rounded-full border-2 border-ink disabled:opacity-30 hover:bg-paper2 transition-colors">
+                  className="grid place-items-center w-10 h-10 rounded-full border border-rule disabled:opacity-30 hover:bg-paper2 transition-colors">
                   <ArrowDown size={14} aria-hidden="true" />
                 </button>
                 <button onClick={() => setEntries((p) => p.filter((_, n) => n !== i))} aria-label={`Remove ${e.name}`}
-                  className="grid place-items-center w-10 h-10 rounded-full border-2 border-ink text-accentDeep hover:bg-paper2 transition-colors">
+                  className="grid place-items-center w-10 h-10 rounded-full border border-rule text-accentDeep hover:bg-paper2 transition-colors">
                   <X size={14} aria-hidden="true" />
                 </button>
               </span>
@@ -301,7 +301,7 @@ function BestEditor({ id, token, onClose }) {
         {entries.length === 0 && <p className="text-ink2">No picks yet — add tools below.</p>}
       </div>
 
-      <div className="border-2 border-ink rounded-card bg-paper2/40 p-4 mb-8">
+      <div className="border border-rule rounded-card bg-paper2/40 p-4 mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Search size={16} strokeWidth={2.5} aria-hidden="true" className="text-accentDeep shrink-0" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tools to add…"
@@ -310,7 +310,7 @@ function BestEditor({ id, token, onClose }) {
         <div className="flex flex-wrap gap-2">
           {pool.map((t) => (
             <button key={t.id} onClick={() => addTool(t)}
-              className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-3 bg-paper hover:bg-paper2 transition-colors">
+              className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-3 bg-paper hover:bg-paper2 transition-colors">
               <Plus size={12} aria-hidden="true" /> {t.name}
             </button>
           ))}
@@ -322,7 +322,7 @@ function BestEditor({ id, token, onClose }) {
       <h3 className="font-display text-xl font-semibold mb-4">Questions</h3>
       <div className="space-y-3 mb-4">
         {faqs.map((f, i) => (
-          <div key={i} className="border-2 border-ink rounded-card bg-paper p-4">
+          <div key={i} className="border border-rule rounded-card bg-paper p-4">
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0 space-y-3">
                 <input className={field} placeholder="Question" aria-label={`Question ${i + 1}`}
@@ -333,7 +333,7 @@ function BestEditor({ id, token, onClose }) {
                   onChange={(e) => setFaqs((p) => p.map((x, n) => (n === i ? { ...x, answer: e.target.value } : x)))} />
               </div>
               <button onClick={() => setFaqs((p) => p.filter((_, n) => n !== i))} aria-label={`Remove question ${i + 1}`}
-                className="grid place-items-center w-10 h-10 shrink-0 rounded-full border-2 border-ink text-accentDeep hover:bg-paper2 transition-colors">
+                className="grid place-items-center w-10 h-10 shrink-0 rounded-full border border-rule text-accentDeep hover:bg-paper2 transition-colors">
                 <X size={14} aria-hidden="true" />
               </button>
             </div>
@@ -341,7 +341,7 @@ function BestEditor({ id, token, onClose }) {
         ))}
       </div>
       <button onClick={() => setFaqs((p) => [...p, { question: "", answer: "" }])}
-        className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
+        className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors">
         <Plus size={13} aria-hidden="true" /> Add a question
       </button>
     </div>

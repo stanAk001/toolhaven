@@ -20,9 +20,8 @@ function parseItems(alt = "") {
 function Frame({ caption, children }) {
   return (
     <figure className="my-9">
-      <div className="relative rounded-card border-2 border-ink bg-paper2/40 p-5 md:p-7 overflow-hidden"
-        style={{ boxShadow: "5px 5px 0 var(--shadow-cast)" }}>
-        <span className="halftone absolute inset-0 opacity-[.06] pointer-events-none" aria-hidden="true" />
+      <div className="relative rounded-card border border-rule bg-paper2/40 p-5 md:p-7 overflow-hidden"
+        >
         <div className="relative">{children}</div>
       </div>
       {caption && (
@@ -40,7 +39,7 @@ function Steps({ items, color }) {
         <Fragment key={i}>
           <li className="flex-1 flex flex-col items-center text-center gap-2 px-2">
             <span className="grid place-items-center w-11 h-11 rounded-full text-white font-display font-bold text-lg shrink-0"
-              style={{ background: color, boxShadow: "2px 2px 0 var(--shadow-cast)" }}>{i + 1}</span>
+              style={{ background: color }}>{i + 1}</span>
             <span className="font-display font-semibold leading-tight">{it.label}</span>
             {it.caption && <span className="font-mono text-label text-ink2 leading-snug">{it.caption}</span>}
           </li>
@@ -63,7 +62,7 @@ function Bars({ items, color }) {
         return (
           <div key={i} className="flex items-center gap-3">
             <span className="w-24 sm:w-32 shrink-0 font-mono text-label sm:text-xs uppercase tracking-wide truncate">{it.label}</span>
-            <div className="flex-1 h-6 rounded-ui border-2 border-ink bg-paper overflow-hidden">
+            <div className="flex-1 h-6 rounded-ui border border-rule bg-paper overflow-hidden">
               <div className="h-full rounded-r-full transition-all" style={{ width: `${Math.max(8, (val / max) * 100)}%`, background: color }} />
             </div>
             <span className="w-7 text-right font-mono text-xs tabular-nums">{val}</span>
@@ -77,7 +76,7 @@ function Bars({ items, color }) {
 // Two contenders, head to head, with an inked VS between.
 function Versus({ items, color }) {
   const card = (t, key) => (
-    <div key={key} className="rounded-card border-2 border-ink bg-paper p-4 flex flex-col gap-1.5" style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
+    <div key={key} className="rounded-card border border-rule bg-paper p-4 flex flex-col gap-1.5" >
       <span className="inline-flex items-center gap-2 font-display text-lg font-semibold leading-tight">
         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} />{t.label}
       </span>
@@ -100,9 +99,9 @@ function Tiers({ items, color }) {
       {items.map((it, i) => {
         const last = i === items.length - 1;
         return (
-          <div key={i} className="flex-1 rounded-card border-2 border-ink bg-paper p-4 text-center"
-            style={{ boxShadow: "2px 2px 0 var(--shadow-cast)", minHeight: `${88 + i * 16}px` }}>
-            <span className="block font-mono text-nano uppercase tracking-[.18em] mb-1" style={{ color: last ? "#E8431F" : undefined }}>
+          <div key={i} className="flex-1 rounded-card border border-rule bg-paper p-4 text-center"
+            style={{ minHeight: `${88 + i * 16}px` }}>
+            <span className="block font-mono text-nano uppercase tracking-[.18em] mb-1" style={{ color: last ? "#1F5EFF" : undefined }}>
               {last ? "Top tier" : `Tier ${i + 1}`}
             </span>
             <span className="block font-display text-lg font-semibold leading-tight">{it.label}</span>
@@ -119,7 +118,7 @@ function Stack({ items, color }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
       {items.map((it, i) => (
-        <div key={i} className="rounded-card border-2 border-ink bg-paper p-3.5 flex items-start gap-2.5" style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
+        <div key={i} className="rounded-card border border-rule bg-paper p-3.5 flex items-start gap-2.5" >
           <span className="grid place-items-center w-9 h-9 rounded-ui text-white font-display font-bold shrink-0" style={{ background: color }}>
             {it.label[0]}
           </span>
@@ -135,7 +134,7 @@ function Stack({ items, color }) {
 
 const TYPES = { steps: Steps, bars: Bars, vs: Versus, tiers: Tiers, stack: Stack };
 
-export function BlogFigure({ src = "", alt = "", title = "", color = "#1C1714" }) {
+export function BlogFigure({ src = "", alt = "", title = "", color = "#0E1116" }) {
   const type = (src.split("fig:")[1] || "stack").trim();
   const Cmp = TYPES[type] || Stack;
   const items = parseItems(alt);

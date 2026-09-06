@@ -26,9 +26,9 @@ export function ScorePanel({ score, toolName }) {
   const partial = score.assessed < score.total;
 
   return (
-    <section aria-labelledby="th-score" className="border-2 border-ink rounded-card bg-paper overflow-hidden"
-      style={{ boxShadow: "5px 5px 0 var(--shadow-cast)" }}>
-      <div className="flex items-start gap-5 p-5 sm:p-6 border-b-2 border-ink">
+    <section aria-labelledby="th-score" className="border border-rule rounded-card bg-paper overflow-hidden"
+      >
+      <div className="flex items-start gap-5 p-5 sm:p-6 border-b border-rule">
         <div className="shrink-0 text-center">
           <div className="font-display font-semibold leading-none tracking-tight tabular-nums text-[clamp(2.75rem,9vw,4rem)]">
             {score.overall.toFixed(1)}

@@ -6,14 +6,17 @@ import { getCategories, subscribe } from "../api/client.js";
 import { ThemeToggle } from "./theme.jsx";
 import { useScrolled, Reveal } from "./motion.jsx";
 
+// Seven, and that is the ceiling. Adding Guides made it nine and the two-word
+// labels started breaking mid-phrase — Contact went to the footer, where it
+// already lived, rather than letting the masthead get any denser.
 const NAV = [
   ["/tools", "All tools"],
   ["/best", "Best of"],
+  ["/guides", "Guides"],
   ["/compare", "Compare"],
   ["/stacks", "Stacks"],
   ["/blog", "Blog"],
   ["/about", "About"],
-  ["/contact", "Contact"],
 ];
 
 // A single nav link, set in the display serif. Its text flips to paper while the
@@ -23,7 +26,10 @@ function NavItem({ to, label, innerRef, onEnter }) {
   return (
     <NavLink to={to} ref={innerRef} onMouseEnter={onEnter}
       className={({ isActive }) =>
-        `relative z-10 px-4 py-2 font-display text-nav font-medium leading-none transition-colors duration-200 ${isActive ? "text-white italic" : "text-ink hover:text-white"}`}>
+        // whitespace-nowrap because the sliding pill is measured from these
+        // boxes: a label that breaks across two lines makes the pill the wrong
+        // height, and "All tools" was doing exactly that at every width.
+        `relative z-10 whitespace-nowrap px-4 py-2 font-display text-nav font-medium leading-none transition-colors duration-200 ${isActive ? "text-paper font-semibold" : "text-ink hover:text-paper"}`}>
       {label}
     </NavLink>
   );
@@ -54,9 +60,9 @@ function DesktopNav() {
   useEffect(settle, [loc.pathname]);
 
   return (
-    <nav ref={navRef} onMouseLeave={settle} className="hidden md:flex items-center gap-1 relative">
+    <nav ref={navRef} onMouseLeave={settle} className="hidden lg:flex items-center gap-1 relative">
       <span aria-hidden="true"
-        className="absolute top-1 bottom-1 rounded-ui bg-accent transition-[left,width,opacity] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]"
+        className="absolute top-1 bottom-1 rounded-ui bg-ink transition-[left,width,opacity] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]"
         style={{ left: bar.left, width: bar.width, opacity: bar.on ? 1 : 0 }} />
       {NAV.map(([to, label]) => (
         <NavItem key={to} to={to} label={label}
@@ -90,11 +96,11 @@ export function Navbar() {
   }, [open]);
 
   return (
-    <header className={`border-b-2 border-ink sticky top-0 z-40 transition-all duration-300 ${scrolled ? "nav-scrolled bg-paper/80 supports-[backdrop-filter]:bg-paper/70 backdrop-blur-md" : "bg-paper"}`}>
+    <header className={`border-b border-rule sticky top-0 z-40 transition-all duration-300 ${scrolled ? "nav-scrolled bg-paper/80 supports-[backdrop-filter]:bg-paper/70 backdrop-blur-md" : "bg-paper"}`}>
       <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between gap-2">
         <Link to="/" className="group font-mono font-bold tracking-[.18em] sm:tracking-[.2em] text-base sm:text-lg inline-flex items-center min-h-touch">
           TOOLHAVEN
-          <span className="ml-1 text-accent transition-transform duration-300 group-hover:rotate-12 group-hover:scale-125">✦</span>
+          <span aria-hidden="true" className="ml-2 w-2 h-2 bg-accent transition-colors duration-200 group-hover:bg-ink" />
         </Link>
         <div className="flex items-center gap-2">
           <DesktopNav />
@@ -103,19 +109,19 @@ export function Navbar() {
               phone those two boxes were the heaviest thing in the header and
               read as loose furniture; as one object with a rule down the middle
               they read as a control that was designed. */}
-          <div className="inline-flex items-stretch rounded-ui border-2 border-ink bg-paper overflow-hidden
-            divide-x-2 divide-ink shadow-press-sm transition-transform hover:-translate-y-0.5">
+          <div className="inline-flex items-stretch rounded-ui border border-rule bg-paper overflow-hidden
+            divide-x divide-rule">
             <button type="button" onClick={() => window.dispatchEvent(new Event("toolhaven:search"))}
               aria-label="Search (Ctrl or Cmd + K)"
               className="inline-flex items-center justify-center gap-2 px-3 min-h-touch min-w-touch hover:bg-paper2 transition-colors">
               <Search size={15} strokeWidth={2.5} aria-hidden="true" />
-              <span className="hidden lg:inline font-mono text-micro uppercase tracking-wide">Search</span>
-              <kbd className="hidden lg:inline font-mono text-micro bg-paper2 border border-ink rounded-tight px-1 leading-tight">⌘K</kbd>
+              <span className="hidden xl:inline font-mono text-micro uppercase tracking-wide">Search</span>
+              <kbd className="hidden xl:inline font-mono text-nano bg-paper2 border border-rule rounded-tight px-1.5 py-0.5 leading-none text-ink2">⌘K</kbd>
             </button>
             <ThemeToggle />
           </div>
           {/* the bars fold into an X when open */}
-          <button className="md:hidden relative z-50 w-11 h-11 -mr-2" onClick={() => setOpen(!open)}
+          <button className="lg:hidden relative z-50 w-11 h-11 -mr-2" onClick={() => setOpen(!open)}
             aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}>
           <span className={`absolute left-2.5 right-2.5 h-0.5 bg-ink transition-all duration-300 ease-[cubic-bezier(.2,.8,.2,1)] ${open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-[14px]"}`} />
           <span className={`absolute left-2.5 right-2.5 top-1/2 -translate-y-1/2 h-0.5 bg-ink transition-all duration-200 ${open ? "opacity-0 scale-x-0" : "opacity-100"}`} />
@@ -133,7 +139,7 @@ export function Navbar() {
           zero height and the menu silently opened as nothing. A portal puts it
           out of reach of anything the header's styling does now or later. */}
       {open && createPortal(
-        <div className="md:hidden fixed inset-x-0 top-16 bottom-0 z-30 bg-paper flex flex-col fade-in overflow-y-auto overscroll-contain">
+        <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-30 bg-paper flex flex-col fade-in overflow-y-auto overscroll-contain">
           {/* Set as the issue's contents rather than six shouted words: each
               entry folioed, ruled off, and closed by its own arrow. Smaller type
               buys the structure that makes it read as a printed page — and the
@@ -142,9 +148,9 @@ export function Navbar() {
             <p aria-hidden="true" className="font-mono text-micro uppercase tracking-[.2em] text-ink2 mb-1">
               <span className="text-accent mr-1.5">№</span> In this issue
             </p>
-            <ul className="border-t border-ink/20">
+            <ul className="border-t border-rule">
               {NAV.map(([to, label], i) => (
-                <li key={to} className="border-b border-ink/20">
+                <li key={to} className="border-b border-rule">
                   <NavLink to={to} style={{ animationDelay: `${70 + i * 45}ms` }}
                     className={({ isActive }) =>
                       `menu-rise group relative flex items-center gap-4 min-h-[3rem] transition-colors ${isActive ? "text-accentDeep" : "hover:text-accentDeep"}`}>
@@ -157,7 +163,7 @@ export function Navbar() {
                           className={`font-mono text-micro tabular-nums w-6 shrink-0 ${isActive ? "text-accent" : "text-ink2/60"}`}>
                           {String(i + 1).padStart(2, "0")}
                         </span>
-                        <span className={`flex-1 font-display text-2xl font-semibold leading-tight tracking-tight ${isActive ? "italic" : ""}`}>
+                        <span className={`flex-1 font-display text-2xl font-semibold leading-tight tracking-tight ${isActive ? "font-bold" : ""}`}>
                           {label}
                         </span>
                         <span aria-hidden="true"
@@ -179,15 +185,15 @@ export function Navbar() {
           {/* the categories ride the same scrolling rail as the directory —
               wrapped, eight chips cost four rows and push the panel off a short
               phone; on one line they cost one */}
-          <div className="border-t-2 border-ink px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="border-t border-rule px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <p aria-hidden="true" className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-2.5">
               Browse by category
             </p>
             <div className="rail">
               {cats.map((c) => (
                 <Link key={c.slug} to={`/categories/${c.slug}`}
-                  style={{ "--cat": c.colorPrimary, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
-                  className="group/m inline-flex items-center gap-1.5 font-mono text-label uppercase tracking-wide whitespace-nowrap px-3 min-h-touch border-2 border-ink rounded-ui bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)] active:text-white active:bg-[var(--cat)]">
+                  style={{ "--cat": c.colorPrimary }}
+                  className="group/m inline-flex items-center gap-1.5 font-mono text-label uppercase tracking-wide whitespace-nowrap px-3 min-h-touch border border-rule rounded-ui bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)] active:text-white active:bg-[var(--cat)]">
                   <span className="w-2 h-2 rounded-full bg-[var(--cat)] shrink-0 transition-colors group-hover/m:bg-white" />
                   {c.name}
                 </Link>
@@ -217,8 +223,8 @@ function Newsletter() {
 
   return (
     <form onSubmit={submit} className="w-full max-w-md">
-      <div className="flex items-center gap-2 border-2 border-ink rounded-ui bg-paper pl-5 pr-1.5 py-1.5 transition-transform duration-200 focus-within:-translate-y-0.5"
-        style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+      <div className="flex items-center gap-2 border border-rule rounded-ui bg-paper pl-5 pr-1.5 py-1.5 transition-transform duration-200 focus-within:-translate-y-0.5"
+        >
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com" aria-label="Email address" autoComplete="email"
           className="flex-1 min-w-0 h-11 bg-transparent outline-none text-base" />
@@ -232,7 +238,7 @@ function Newsletter() {
         {status === "error" && <span className="text-accentDeep">Enter a valid email address.</span>}
       </div>
       <p className="font-mono text-micro uppercase tracking-[.18em] text-ink2 inline-flex items-center gap-1.5">
-        <span className="text-accent">✦</span> Free · No spam · Unsubscribe anytime
+        Free · No spam · Unsubscribe anytime
       </p>
     </form>
   );
@@ -264,15 +270,14 @@ export function Footer() {
   useEffect(() => { getCategories().then(setCats).catch(() => {}); }, []);
 
   return (
-    <footer className="relative border-t-2 border-ink mt-16 sm:mt-24 overflow-hidden bg-paper">
-      <span aria-hidden="true" className="newsfield absolute inset-0 pointer-events-none" />
+    <footer className="relative border-t border-rule mt-16 sm:mt-24 overflow-hidden bg-paper">
       <div className="relative max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-14">
         <div className="grid lg:grid-cols-[1.3fr_1fr] gap-10 sm:gap-12 lg:gap-20">
           {/* identity · mission · signup — one voice, the left half */}
           <div>
             <Link to="/" className="group inline-block">
               <span className="font-display text-wordmark font-semibold block">
-                <span className="transition-colors duration-500 group-hover:text-transparent group-hover:[-webkit-text-stroke:1.5px_#1C1714]">Toolhaven</span>
+                <span className="transition-colors duration-500 group-hover:text-transparent group-hover:[-webkit-text-stroke:1.5px_#0E1116]">Toolhaven</span>
                 <span className="text-accent inline-block transition-transform duration-300 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:-translate-y-2 group-hover:rotate-12">.</span>
               </span>
             </Link>
@@ -291,8 +296,8 @@ export function Footer() {
               <div className="flex flex-wrap gap-2">
                 {cats.map((c) => (
                   <Link key={c.slug} to={`/categories/${c.slug}`}
-                    style={{ "--cat": c.colorPrimary, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
-                    className="group/c inline-flex items-center gap-1.5 font-mono text-label uppercase tracking-wide px-3 py-1.5 min-h-touch md:min-h-[28px] border-2 border-ink rounded-ui bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)]">
+                    style={{ "--cat": c.colorPrimary }}
+                    className="group/c inline-flex items-center gap-1.5 font-mono text-label uppercase tracking-wide px-3 py-1.5 min-h-touch md:min-h-[28px] border border-rule rounded-ui bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-[var(--cat)] hover:border-[var(--cat)]">
                     <span className="w-2 h-2 rounded-full bg-[var(--cat)] transition-colors group-hover/c:bg-white" />
                     {c.name}
                   </Link>
@@ -302,24 +307,22 @@ export function Footer() {
           </div>
         </div>
 
-        {/* The colophon — an inked baseline bar lifted on a risograph-offset accent
-            shadow, so the legal small-print reads as a deliberate masthead footer
-            instead of grey text lost in the dot field behind it. */}
-        <div className="relative mt-14 bg-ink text-paper rounded-card border-2 border-ink px-6 py-6 md:px-8"
-          style={{ boxShadow: "7px 7px 0 #E8431F" }}>
-          {/* a faint halftone tooth over the ink, and a stamped folio in the corner */}
-          <div className="halftone absolute inset-0 rounded-card opacity-[.07] pointer-events-none" aria-hidden="true" />
+        {/* The colophon. An inverted panel is enough to mark the legal
+            small-print as a deliberate footer rather than grey text adrift. */}
+        <div className="relative mt-14 bg-ink text-paper rounded-card border border-rule px-6 py-6 md:px-8"
+          >
           <span aria-hidden="true"
-            className="absolute -top-3 right-5 font-mono text-micro uppercase tracking-[.2em] bg-accent text-white px-2.5 py-1 border-2 border-ink rotate-3 select-none">
+            className="absolute top-0 right-6 -translate-y-1/2 font-mono text-nano uppercase tracking-[.2em]
+              bg-ink text-paper/70 px-2 py-1 select-none">
             Vol. {new Date().getFullYear()}
           </span>
 
           <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-            {/* legal links, separated by the house ✦ mark, each with an accent underline that wipes in */}
+            {/* legal links, separated by a hairline slash, each with an accent underline that wipes in */}
             <nav className="flex flex-wrap items-center font-mono text-label uppercase tracking-[.18em]">
               {[["/how-we-review", "How We Review"], ["/disclosure", "Affiliate Disclosure"], ["/privacy", "Privacy"], ["/terms", "Terms"]].map(([to, label], i) => (
                 <span key={to} className="inline-flex items-center">
-                  {i > 0 && <span aria-hidden="true" className="text-accent px-3 select-none">✦</span>}
+                  {i > 0 && <span aria-hidden="true" className="px-3 select-none text-ink2/40">/</span>}
                   <Link to={to}
                     className="relative inline-flex items-center min-h-touch md:min-h-[28px] md:py-0.5 text-paper/80 hover:text-white transition-colors
                       after:absolute after:left-0 after:right-0 after:bottom-2 md:after:bottom-0 after:h-0.5 after:bg-accent
@@ -334,7 +337,7 @@ export function Footer() {
             <Link to="/disclosure"
               className="group/d self-start lg:self-auto inline-flex items-center gap-2.5 font-mono text-micro uppercase tracking-[.16em]
                 text-paper/75 hover:text-white border border-paper/25 hover:border-accent rounded-ui pl-2 pr-4 py-1.5 transition-colors">
-              <span className="grid place-items-center w-5 h-5 rounded-full bg-accent text-white text-label leading-none transition-transform duration-300 group-hover/d:rotate-12">✦</span>
+              <span aria-hidden="true" className="w-1.5 h-1.5 bg-accent" />
               Affiliate disclosure
             </Link>
           </div>
@@ -343,10 +346,10 @@ export function Footer() {
           <div className="relative mt-6 pt-5 border-t border-paper/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3
             font-mono text-micro uppercase tracking-[.2em] text-paper/55">
             <p className="inline-flex items-center gap-2">
-              <span className="text-accent text-xs">✦</span>
+              <span aria-hidden="true" className="w-1.5 h-1.5 bg-accent" />
               © {new Date().getFullYear()} Toolhaven — The honest tools guide
             </p>
-            <p className="text-accent/90">No paid rankings. Ever.</p>
+            <p className="text-paper">No paid rankings. Ever.</p>
           </div>
         </div>
       </div>

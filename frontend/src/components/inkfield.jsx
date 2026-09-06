@@ -22,11 +22,11 @@ export function InkField({ className = "", gap = 17, ink = null, accent = null }
       const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
       return v ? `rgb(${v})` : fallback;
     };
-    let inkColor = ink || readVar("--ink", "#1C1714");
-    let accentColor = accent || readVar("--accent", "#E8431F");
+    let inkColor = ink || readVar("--ink", "#0E1116");
+    let accentColor = accent || readVar("--accent", "#1F5EFF");
     const themeObs = new MutationObserver(() => {
-      inkColor = ink || readVar("--ink", "#1C1714");
-      accentColor = accent || readVar("--accent", "#E8431F");
+      inkColor = ink || readVar("--ink", "#0E1116");
+      accentColor = accent || readVar("--accent", "#1F5EFF");
       if (reduce) staticFrame();
     });
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });

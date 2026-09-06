@@ -70,7 +70,7 @@ export function useScrolled(threshold = 8) {
 // An endless editorial ticker. We render the list twice so that when the track
 // has slid exactly one copy to the left, it lines back up seamlessly. Hover to
 // pause and actually read it.
-export function Marquee({ items, sep = "✦", className = "" }) {
+export function Marquee({ items, sep = "·", className = "" }) {
   const run = [...items, ...items];
   return (
     <div className={`marquee ${className}`} aria-hidden="true">

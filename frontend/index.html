@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F1EADD" />
+    <meta name="theme-color" content="#FCFCFD" />
     <!-- set the saved edition before first paint so there's no flash of the wrong theme -->
     <script>
       try {
@@ -34,7 +34,17 @@
     <meta name="twitter:image" content="/og.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <!--
+      Archivo for everything set in type, IBM Plex Mono for anything that is a
+      measurement. Both are on the wide side of a grotesque, which keeps dense
+      tables legible at small sizes — the thing this site does most.
+
+      What went: Fraunces, Hanken Grotesk and Space Mono. A high-contrast serif
+      display over warm cream with a terracotta accent is the single most
+      recognisable machine-generated look going, and no amount of spacing work
+      inside it reads as art-directed.
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

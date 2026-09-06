@@ -4,8 +4,8 @@ import { ArrowUpRight, Search } from "lucide-react";
 import { getCategories, getTools, getTestimonials, getToolRails } from "../api/client.js";
 import { useData } from "../lib/helpers.jsx";
 import { CategoryCard, ToolCard, SkeletonGrid } from "../components/ui.jsx";
-import { Reveal, Marquee, DrawUnderline } from "../components/motion.jsx";
-import { CropMarks, LedgerBoard, SectionHead, VerdictSeal } from "../components/editorial.jsx";
+import { Reveal } from "../components/motion.jsx";
+import { LedgerBoard, SectionHead, VerdictSeal } from "../components/editorial.jsx";
 import { Seo, orgSchema, siteSchema } from "../lib/seo.jsx";
 import { TestimonialWall } from "../components/testimonials.jsx";
 import { ToolRail } from "../components/rails.jsx";
@@ -46,7 +46,7 @@ function CoverSearch({ categories }) {
         <label htmlFor="cover-search" className="block font-mono text-micro uppercase tracking-[.2em] text-ink2 mb-2">
           Search the index
         </label>
-        <div className="flex items-center gap-3 border-b-2 border-ink pb-2 focus-within:border-accent transition-colors">
+        <div className="flex items-center gap-3 border-b border-rule pb-2 focus-within:border-accent transition-colors">
           <Search size={18} strokeWidth={2.5} aria-hidden="true" className="shrink-0 text-accentDeep" />
           <input
             id="cover-search"
@@ -103,16 +103,12 @@ export default function Home() {
         schema={[orgSchema(), siteSchema()]}
       />
       {/* ===== The cover ===== */}
-      <section className="relative border-b-2 border-ink overflow-hidden">
-        {/* screened newsprint behind the cover — a printed texture, not a toy:
-            it holds still so the headline is the only thing asking for attention */}
-        <span aria-hidden="true" className="newsfield absolute inset-0 pointer-events-none" />
+      <section className="relative border-b border-rule overflow-hidden">
         <div className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
-          {/* one board, and the only thing on the cover that moves */}
+          {/* the four figures the cover opens on, printed on one ruled line */}
           <LedgerBoard
             tools={toolStats.data?.total ?? null}
-            categories={(cats.data || []).length || null}
-            palette={(cats.data || []).map((c) => c.colorPrimary)} />
+            categories={(cats.data || []).length || null} />
 
           <Reveal stagger className="grid lg:grid-cols-12 gap-10 mt-10 sm:mt-12 lg:mt-16">
             {/* cover headline */}
@@ -120,10 +116,7 @@ export default function Home() {
               <p className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-4 sm:mb-5">Cover story / Why we exist</p>
               <h1 className="font-display text-hero font-semibold text-balance">
                 Finding the right tool shouldn't cost you a week of{" "}
-                <span className="relative inline-block italic text-accent">
-                  open tabs.
-                  <DrawUnderline />
-                </span>
+<span className="text-accent">open tabs.</span>
               </h1>
 
               {/* The cover said what we are and why we exist, and then left the
@@ -138,8 +131,8 @@ export default function Home() {
                 column. It used to hang off the baseline, which worked when the
                 headline was the only thing in the main column and left a hole
                 above the lede once the search line was added. */}
-            <div className="lg:col-span-4 lg:border-l-2 lg:border-ink lg:pl-7 flex flex-col justify-start lg:pt-2">
-              <p className="drop-cap text-base sm:text-lg leading-relaxed mb-4 text-pretty">
+            <div className="lg:col-span-4 lg:border-l lg:border-rule lg:pl-7 flex flex-col justify-start lg:pt-2">
+              <p className="text-base sm:text-lg leading-relaxed mb-4 text-pretty">
                 There are thousands of tools out there, and almost every "review" you find is quietly an ad.
                 This is the opposite — we read the fine print, try the things ourselves, and tell you plainly
                 what's worth your money.
@@ -147,23 +140,26 @@ export default function Home() {
               <p className="font-mono text-micro uppercase tracking-wide text-ink2 mb-6">
                 Ten minutes, not ten tabs. Downsides listed every time.
               </p>
-              {/* the action and the promise, struck side by side */}
-              <div className="flex items-center justify-between gap-3">
+              {/* the action, then the two policies it is offered under */}
+              <div className="flex flex-col items-start gap-5">
                 <Link to="/tools" className="island whitespace-nowrap shrink-0">
                   Read the reviews
                   <span className="island-dot"><ArrowUpRight size={16} strokeWidth={2.5} /></span>
                 </Link>
-                <VerdictSeal size={80} className="text-ink" />
+                <VerdictSeal className="w-full" />
               </div>
             </div>
           </Reveal>
         </div>
-        <CropMarks />
       </section>
 
-      {/* ticker — an inky band of promises running past like a press sheet */}
-      <Marquee items={TICKER}
-        className="border-b-2 border-ink bg-ink text-paper py-3 font-mono text-xs uppercase tracking-[.18em]" />
+      {/* the standing promises — stated once, not scrolled past */}
+      <div className="border-b border-rule bg-ink text-paper">
+        <ul className="max-w-6xl mx-auto px-5 sm:px-6 py-3 flex flex-wrap items-center gap-x-6 gap-y-1.5
+          font-mono text-nano sm:text-micro uppercase tracking-[.16em] text-paper/80">
+          {TICKER.map((t) => <li key={t}>{t}</li>)}
+        </ul>
+      </div>
 
       {/* categories */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
@@ -222,8 +218,7 @@ export default function Home() {
       </section>
 
       {(praise.loading || (praise.data || []).length > 0) && (
-        <section className="relative border-y-2 border-ink bg-paper2/30 overflow-hidden">
-          <span aria-hidden="true" className="newsfield absolute inset-0 pointer-events-none" />
+        <section className="relative border-y border-rule bg-paper2/30 overflow-hidden">
           <div className="relative max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
             <SectionHead folio="03" kicker="Letters to the editor" title="What readers tell us"
               action={<span className="font-mono text-xs uppercase text-accentDeep whitespace-nowrap">Unedited &amp; unpaid</span>} />
@@ -234,9 +229,8 @@ export default function Home() {
 
       {/* CTA band */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12">
-        <Reveal className="relative border-2 border-ink rounded-card p-7 sm:p-10 md:p-16 text-center bg-paper overflow-hidden"
-          style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
-          <div className="halftone absolute inset-0 opacity-[.22] pointer-events-none" aria-hidden="true" />
+        <Reveal className="relative border border-rule rounded-card p-7 sm:p-10 md:p-16 text-center bg-paper overflow-hidden"
+          >
           <div className="relative">
             {/* Three real tools, laid out as printed plates the way you'd actually
                 deal them onto a desk to compare. The band used to say "head to
@@ -245,14 +239,12 @@ export default function Home() {
               <div className="flex justify-center items-center mb-6 sm:mb-7" aria-hidden="true">
                 {headToHead.map((t, i) => (
                   <span key={t.slug}
-                    className="grid place-items-center w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-card border-2 border-ink font-display font-bold text-xl sm:text-2xl text-white transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-1"
+                    className="grid place-items-center w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-card border border-rule font-display font-bold text-xl sm:text-2xl text-white transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-1"
                     style={{
-                      background: t.category?.colorPrimary || "#1C1714",
-                      boxShadow: "4px 4px 0 var(--shadow-cast)",
+                      background: t.category?.colorPrimary || "#0E1116",
                       transform: `rotate(${[-7, 1, 7][i]}deg)`,
                       marginLeft: i ? "-0.75rem" : 0,
-                      zIndex: 3 - i,
-                    }}>
+                      zIndex: 3 - i }}>
                     {t.logoMono || t.name[0]}
                   </span>
                 ))}
@@ -268,10 +260,10 @@ export default function Home() {
 
       {/* vendor CTA — convert founders who want their tool reviewed */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 pb-16 sm:pb-20">
-        <Reveal className="rounded-card border-2 border-ink bg-ink text-paper p-7 sm:p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6"
-          style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
+        <Reveal className="rounded-card border border-rule bg-ink text-paper p-7 sm:p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6"
+          >
           <div>
-            <p className="font-mono text-micro uppercase tracking-[.2em] text-accent mb-2">Built a tool?</p>
+            <p className="font-mono text-micro uppercase tracking-[.2em] text-paper/70 mb-2">Built a tool?</p>
             <h2 className="font-display text-2xl md:text-3xl font-semibold leading-tight max-w-lg text-balance">Get it in front of buyers who actually trust the verdict.</h2>
             <p className="text-paper/70 mt-2 max-w-md text-pretty">An honest review, a buying audience, and no pay-to-play. Submit yours in five minutes.</p>
           </div>

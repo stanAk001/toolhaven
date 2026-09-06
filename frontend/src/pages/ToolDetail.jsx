@@ -37,7 +37,6 @@ export default function ToolDetail() {
   const headline = (tool?.external?.sources || [])
     .slice().sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))[0] || null;
   const color = tool.category?.colorPrimary || "#7C3AED";
-  const accent = tool.category?.colorAccent || "#00F5FF";
   const go = () => goAffiliate(tool, `tool/${tool.slug}`);
 
   const trail = [
@@ -65,32 +64,33 @@ export default function ToolDetail() {
       <div className="max-w-4xl mx-auto px-5 sm:px-6 pt-5">
         <Breadcrumbs trail={trail} />
       </div>
-      {/* hero — a generated review-cover banner in the tool's category colour */}
+      {/* The masthead for the review.
+          It used to be a full-bleed banner flooded with the category's colour,
+          a radial accent wash over that, and the tool's initial set at 200px
+          bleeding off the corner in 10% white. Three decorative layers, and the
+          tool's own logo — the one mark that actually identifies it — competed
+          with all of them. The page now opens the way a reference entry opens:
+          the name, the sentence that says what it is, and the colour reduced to
+          the rule that files it under its category. */}
       <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-8 sm:pb-10">
-        <figure className="relative overflow-hidden rounded-card border-2 border-ink"
-          style={{ background: color, boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
-          {/* accent wash, print tooth, and the monogram bleeding off the corner */}
-          <span aria-hidden="true" className="absolute inset-0"
-            style={{ background: `radial-gradient(130% 130% at 100% 0%, ${accent}66, transparent 55%)` }} />
-          <span aria-hidden="true" className="halftone absolute inset-0 opacity-20 mix-blend-multiply" />
-          <span aria-hidden="true"
-            className="absolute -bottom-10 -right-4 font-display text-monogram font-bold text-white/10 select-none">{tool.logoMono || tool.name[0]}</span>
+        <div className="relative rounded-card border border-rule bg-surface overflow-hidden">
+          <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px]" style={{ background: color }} />
 
-          <div className="relative p-5 sm:p-6 md:p-9">
-            <div className="flex items-center justify-between gap-4 mb-7 font-mono text-label uppercase tracking-[.18em] text-white/90">
-              <Link to={`/categories/${tool.category?.slug}`} className="inline-flex items-center gap-1.5 min-h-[28px] hover:text-white transition-colors">
+          <div className="relative p-5 sm:p-6 md:p-8 pt-6 sm:pt-7">
+            <div className="flex items-center justify-between gap-4 mb-6 font-mono text-nano uppercase tracking-[.16em] text-ink2">
+              <Link to={`/categories/${tool.category?.slug}`}
+                className="inline-flex items-center gap-1.5 min-h-[28px] hover:text-ink transition-colors">
                 ← {tool.category?.name}
               </Link>
-              <span className="hidden sm:inline text-white/70">Honest review · Downsides included</span>
+              <span className="hidden sm:inline">Honest review · Downsides included</span>
             </div>
 
             <div className="flex items-start gap-4 sm:gap-5">
               <ToolLogo tool={tool} size={72} labelled
-                className="!rounded-card w-16 h-16 sm:w-20 sm:h-20"
-                />
+                className="!rounded-card w-14 h-14 sm:w-[72px] sm:h-[72px] shrink-0" />
               <div className="min-w-0">
-                <h1 className="font-display text-display font-semibold text-white text-balance">{tool.name}</h1>
-                <p className="text-base sm:text-lg text-white/85 mt-2 max-w-measure text-pretty">{tool.description}</p>
+                <h1 className="font-display text-display font-semibold text-balance">{tool.name}</h1>
+                <p className="text-base sm:text-lg text-ink2 mt-2 max-w-measure text-pretty">{tool.description}</p>
               </div>
             </div>
 
@@ -99,7 +99,7 @@ export default function ToolDetail() {
                   five empty stars reads as "rated zero", which is a claim we
                   have no basis for. */}
               {tool.reviewCount > 0 && (
-                <span className="inline-flex items-center bg-paper border-2 border-ink rounded-ui px-3 py-1.5">
+                <span className="inline-flex items-center bg-paper2 border border-rule rounded-ui px-3 py-1.5">
                   <Stars r={tool.rating} size={14} />
                 </span>
               )}
@@ -110,12 +110,14 @@ export default function ToolDetail() {
               {/* No partner-link badge here by design. The disclosure runs
                   in the footer of every page and in full at /disclosure;
                   repeating it beside the button made the page read like an ad. */}
-              <button onClick={go} className="stamp-paper sm:ml-auto">
+              {/* The one action this page exists to offer, so it carries the
+                  signal colour rather than the quiet chassis. */}
+              <button onClick={go} className="stamp sm:ml-auto">
                 Get {tool.name} <ArrowUpRight size={18} aria-hidden="true" />
               </button>
             </div>
           </div>
-        </figure>
+        </div>
       </section>
 
       <div className="max-w-4xl mx-auto px-5 sm:px-6">
@@ -128,7 +130,7 @@ export default function ToolDetail() {
         <SocialProof facts={tool.facts || []} tool={tool} />
       </div>
 
-      <section className="max-w-4xl mx-auto px-5 sm:px-6 grid md:grid-cols-3 gap-10 py-8 border-t-2 border-ink">
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 grid md:grid-cols-3 gap-10 py-8 border-t border-rule">
         <div className="md:col-span-2">
           {/* Renders nothing unless this tool has actually been assessed. */}
           {tool.score && (
@@ -137,15 +139,15 @@ export default function ToolDetail() {
             </div>
           )}
 
-          <h2 className="font-mono text-xs uppercase tracking-wide mb-3" style={{ color }}>What it is</h2>
-          <p className="drop-cap font-display text-xl leading-relaxed mb-8">{tool.fullDescription || tool.description}</p>
+          <h2 className="font-mono text-xs uppercase tracking-[.14em] text-ink2 mb-3">What it is</h2>
+          <p className="font-display text-xl leading-relaxed mb-8">{tool.fullDescription || tool.description}</p>
 
           {tool.features?.length > 0 && (
             <>
-              <h2 className="font-mono text-xs uppercase tracking-wide mb-3" style={{ color }}>Key features</h2>
+              <h2 className="font-mono text-xs uppercase tracking-[.14em] text-ink2 mb-3">Key features</h2>
               <ul className="grid sm:grid-cols-2 gap-3 mb-8">
                 {tool.features.map((f) => (
-                  <li key={f.id} className="flex gap-2 text-sm"><Check size={16} style={{ color }} className="mt-0.5 shrink-0" aria-hidden="true" />
+                  <li key={f.id} className="flex gap-2 text-sm"><Check size={16} className="mt-0.5 shrink-0 text-accentDeep" aria-hidden="true" />
                     <span><b>{f.featureName}.</b> {f.description}</span></li>
                 ))}
               </ul>
@@ -154,10 +156,10 @@ export default function ToolDetail() {
 
           {tool.pros?.length > 0 && (
             <>
-              <h2 className="font-mono text-xs uppercase tracking-wide mb-3" style={{ color }}>What's good</h2>
+              <h2 className="font-mono text-xs uppercase tracking-[.14em] text-ink2 mb-3">What's good</h2>
               <ul className="grid sm:grid-cols-2 gap-3 mb-8">
                 {tool.pros.map((p) => (
-                  <li key={p.id} className="flex gap-2 text-sm"><Check size={16} style={{ color }} className="mt-0.5 shrink-0" aria-hidden="true" />
+                  <li key={p.id} className="flex gap-2 text-sm"><Check size={16} className="mt-0.5 shrink-0 text-accentDeep" aria-hidden="true" />
                     <span>{p.text}</span></li>
                 ))}
               </ul>
@@ -183,11 +185,11 @@ export default function ToolDetail() {
 
           {tool.testimonials?.length > 0 && (
             <>
-              <h2 className="font-mono text-xs uppercase tracking-wide mb-3" style={{ color }}>What people say</h2>
+              <h2 className="font-mono text-xs uppercase tracking-[.14em] text-ink2 mb-3">What people say</h2>
               <div className="space-y-4 mb-4">
                 {tool.testimonials.map((t) => (
                   <blockquote key={t.id} className="border-l-4 pl-4" style={{ borderColor: color }}>
-                    <p className="font-display text-lg italic">“{t.content}”</p>
+                    <p className="font-display text-lg">“{t.content}”</p>
                     <footer className="font-mono text-xs text-ink2 mt-1">— {t.userName}{t.userTitle ? `, ${t.userTitle}` : ""}</footer>
                   </blockquote>
                 ))}
@@ -199,7 +201,7 @@ export default function ToolDetail() {
 
           {/* The share row a maker sends to their own audience — the loop that
               brings people here who've never heard of the site. */}
-          <div className="border-t-2 border-ink mt-10 pt-6">
+          <div className="border-t border-rule mt-10 pt-6">
             <ShareBar
               context="tool"
               title={`${tool.name} — an honest review on Toolhaven`}
@@ -209,7 +211,7 @@ export default function ToolDetail() {
 
         {/* sticky aside — the printed verdict card */}
         <aside className="md:sticky md:top-24 self-start">
-          <div className="border-2 border-ink bg-paper rounded-card overflow-hidden" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
+          <div className="border border-rule bg-paper rounded-card overflow-hidden" >
             {/* colour cap, tying the card to its category */}
             <div className="h-2.5" style={{ background: color }} />
             <div className="p-5">
@@ -256,7 +258,7 @@ export default function ToolDetail() {
       </section>
 
       {tool.hasEditorialAlternatives && (
-        <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-8 sm:pt-10 border-t-2 border-ink">
+        <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-8 sm:pt-10 border-t border-rule">
           <AlternativeFinder
             alternatives={tool.alternatives}
             editorial
@@ -266,7 +268,7 @@ export default function ToolDetail() {
       )}
 
       {tool.related?.length > 0 && (
-        <section className="max-w-4xl mx-auto px-5 sm:px-6 py-8 sm:py-10 border-t-2 border-ink">
+        <section className="max-w-4xl mx-auto px-5 sm:px-6 py-8 sm:py-10 border-t border-rule">
           <h2 className="font-display text-2xl font-semibold mb-5">Related tools</h2>
           <Reveal stagger className="grid grid-cols-2 gap-3 sm:gap-4">
             {tool.related.map((t) => <ToolCard key={t.slug} tool={t} />)}
@@ -284,7 +286,7 @@ export default function ToolDetail() {
               {tool.related.map((t) => (
                 <li key={t.slug}>
                   <Link to={`/compare/${pairSlug(tool.slug, t.slug)}`}
-                    className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 bg-paper hover:bg-paper2 transition-colors">
+                    className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 bg-paper hover:bg-paper2 transition-colors">
                     {tool.name} vs {t.name}
                   </Link>
                 </li>

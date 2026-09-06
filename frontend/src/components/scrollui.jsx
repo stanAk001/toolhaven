@@ -34,9 +34,9 @@ export function BackToTop() {
     // with the header and floated on top of the open menu
     <button type="button" aria-label="Back to top"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className={`lift fixed right-5 sm:right-6 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-20 grid place-items-center w-12 h-12 rounded-full bg-ink text-paper border-2 border-ink
+      className={`lift fixed right-5 sm:right-6 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-20 grid place-items-center w-12 h-12 rounded-full bg-ink text-paper border border-rule
         transition-all duration-300 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
-      style={{ boxShadow: "3px 3px 0 #E8431F" }}>
+      >
       <span className="text-lg leading-none">↑</span>
     </button>
   );

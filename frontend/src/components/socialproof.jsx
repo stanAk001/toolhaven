@@ -39,7 +39,7 @@ export function SocialProof({ facts = [], tool }) {
   if (!verified.length && !hasCommunity && !hasScore) return null;
 
   return (
-    <section aria-labelledby="proof" className="border-y-2 border-ink py-5 my-8">
+    <section aria-labelledby="proof" className="border-y border-rule py-5 my-8">
       <h2 id="proof" className="sr-only">Evidence and adoption</h2>
 
       <ul className="flex flex-wrap items-stretch gap-x-8 gap-y-5">
@@ -109,7 +109,6 @@ export function LastVerified({ facts = [] }) {
   const newest = new Date(Math.max(...dates));
   return (
     <p className="font-mono text-micro uppercase tracking-[.12em] text-ink2 mt-6">
-      <span className="text-accent" aria-hidden="true">✦</span>{" "}
       Product information last verified{" "}
       {newest.toLocaleDateString(undefined, { month: "long", year: "numeric" })}.
       Pricing and features change — check the vendor before buying.

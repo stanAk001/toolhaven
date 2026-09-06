@@ -1,44 +1,50 @@
-// Night Edition toggle — flips the whole site between the warm Day paper and the
-// dark Night press run by setting [data-theme] on <html>, persists the choice,
-// and briefly enables a global colour transition so the switch cross-fades
-// rather than snapping. The initial theme is set pre-paint in index.html.
+// The Day/Night toggle. It sets [data-theme] on <html>, persists the choice and
+// briefly enables a global colour transition so the switch cross-fades rather
+// than snapping. The initial theme is set pre-paint in index.html.
+//
+// It used to carry its own copy of both palettes and write them onto <html> as
+// inline custom properties. Inline properties beat every stylesheet rule, so
+// this file — not index.css — was deciding what colour the site was, and any
+// change to the tokens was silently overridden at runtime. The palettes now
+// live in exactly one place: the :root and [data-theme="night"] blocks in
+// index.css. This file only says *which* of them applies.
 import { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 
-// Build the favicon as a themed data-URI SVG (same mark as public/favicon.svg,
-// recoloured for the edition) so the tab icon follows Day/Night.
+// The favicon is drawn from the same tokens the page is using, read back off
+// the document, so the tab mark cannot drift from the palette the way the
+// hardcoded copy did.
 function faviconFor(night) {
-  const bg = night ? "#181512" : "#F1EADD";
-  const fg = night ? "#F0E9DC" : "#1C1714";
-  const accent = night ? "#F55C38" : "#E8431F";
+  const read = (name, fallback) => {
+    try {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      // Tokens are stored as "R G B" channels so Tailwind's opacity modifiers work.
+      return /^\d+\s+\d+\s+\d+$/.test(v) ? `rgb(${v.split(/\s+/).join(",")})` : (v || fallback);
+    } catch { return fallback; }
+  };
+  const bg = read("--paper", night ? "#101317" : "#FCFCFD");
+  const fg = read("--ink", night ? "#E8EAED" : "#0E1116");
+  const accent = read("--accent", night ? "#5B8AFF" : "#1F5EFF");
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">` +
-    `<rect width="32" height="32" rx="6" fill="${bg}"/>` +
-    `<rect x="3" y="3" width="26" height="26" rx="4.5" fill="none" stroke="${fg}" stroke-width="2"/>` +
-    `<text x="16" y="23.5" font-family="Georgia,serif" font-size="22" font-weight="700" text-anchor="middle" fill="${fg}">T</text>` +
-    `<path d="M25.2 4.8l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" fill="${accent}"/>` +
+    `<rect width="32" height="32" rx="3" fill="${bg}"/>` +
+    `<rect x="2.5" y="2.5" width="27" height="27" rx="2" fill="none" stroke="${fg}" stroke-width="1.5"/>` +
+    `<text x="15" y="23" font-family="Archivo,Helvetica,Arial,sans-serif" font-size="19" font-weight="700" ` +
+    `letter-spacing="-0.5" text-anchor="middle" fill="${fg}">T</text>` +
+    `<rect x="23.5" y="6.5" width="4" height="4" fill="${accent}"/>` +
     `</svg>`;
   return "data:image/svg+xml," + encodeURIComponent(svg);
 }
-
-// The two palettes, applied as inline CSS variables straight onto <html>. Inline
-// custom properties beat any stylesheet rule, so the theme flips even if the
-// [data-theme] CSS didn't load — as long as utilities read rgb(var(--x)).
-const THEMES = {
-  day: { "--paper": "241 234 221", "--paper2": "231 221 203", "--ink": "28 23 20", "--ink2": "106 95 82", "--accent": "232 67 31", "--accent-deep": "184 54 23", "--shadow-cast": "#1C1714", "--flap-bg": "28 23 20", "--flap-fg": "241 234 221" },
-  night: { "--paper": "24 21 18", "--paper2": "35 30 26", "--ink": "240 233 220", "--ink2": "166 154 137", "--accent": "245 92 56", "--accent-deep": "248 130 92", "--shadow-cast": "#000000", "--flap-bg": "8 7 6", "--flap-fg": "240 233 220" },
-};
 
 function applyTheme(theme) {
   const el = document.documentElement;
   el.dataset.theme = theme;
   el.style.colorScheme = theme === "night" ? "dark" : "light";
-  const vars = THEMES[theme] || THEMES.day;
-  for (const k in vars) el.style.setProperty(k, vars[k]);
   setThemeChrome(theme);
 }
 
-// Repaint the browser chrome (tab favicon + address-bar theme-color) to match.
+// Repaint the browser chrome (tab favicon + address-bar colour) to match. Read
+// after the attribute lands so the values come from the theme now in force.
 function setThemeChrome(theme) {
   const night = theme === "night";
   let icon = document.querySelector('link[rel="icon"]');
@@ -48,7 +54,7 @@ function setThemeChrome(theme) {
 
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) { meta = document.createElement("meta"); meta.name = "theme-color"; document.head.appendChild(meta); }
-  meta.content = night ? "#181512" : "#F1EADD";
+  meta.content = night ? "#101317" : "#FCFCFD";
 }
 
 export function ThemeToggle() {
@@ -78,7 +84,7 @@ export function ThemeToggle() {
       title={night ? "Day edition" : "Night edition"}
       className="inline-flex items-center justify-center gap-1.5 px-3 min-h-touch min-w-touch
         hover:bg-paper2 transition-colors">
-      {night ? <Sun size={16} strokeWidth={2.5} aria-hidden="true" /> : <Moon size={16} strokeWidth={2.5} aria-hidden="true" />}
+      {night ? <Sun size={16} strokeWidth={2} aria-hidden="true" /> : <Moon size={16} strokeWidth={2} aria-hidden="true" />}
       <span className="hidden lg:inline font-mono text-micro uppercase tracking-wide">{night ? "Day" : "Night"}</span>
     </button>
   );

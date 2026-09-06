@@ -4,47 +4,42 @@
 // piece actually covers: decorative and informative in one move.
 import { Link } from "react-router-dom";
 
-const ROT = [-3, 2, -2, 3, -1, 2, -3, 1];
 
 export function ArticleCover({ post }) {
   const c = post.category || {};
-  const color = c.colorPrimary || "#1C1714";
-  const accent = c.colorAccent || "#E8431F";
+  const color = c.colorPrimary || "#0E1116";
   const tools = (post.toolLinks || []).map((l) => l.tool).filter(Boolean);
   const ghost = (c.name || "Read").split(" ")[0];
 
   return (
-    <figure className="relative overflow-hidden rounded-card border-2 border-ink mb-8"
-      style={{ background: color, boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
-      {/* a wash of the category's accent, the print tooth, and the category word bleeding off the corner */}
-      <span aria-hidden="true" className="absolute inset-0"
-        style={{ background: `radial-gradient(130% 130% at 100% 0%, ${accent}66, transparent 55%)` }} />
-      <span aria-hidden="true" className="halftone absolute inset-0 opacity-20 mix-blend-multiply" />
-      <span aria-hidden="true"
-        className="absolute -bottom-6 -right-3 font-display text-ghost font-semibold text-white/10 select-none">{ghost}</span>
+    <figure className="relative overflow-hidden rounded-card border border-rule bg-surface mb-8">
+      {/* The category's colour as the rule that files the piece, not as a
+          ground. This used to be a full flood of it, a radial accent wash over
+          that, and the category word set huge in 10% white bleeding off the
+          corner — three layers of decoration under one line of type. */}
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px]" style={{ background: color }} />
 
-      <div className="relative p-5 sm:p-6 md:p-9">
-        <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-[.2em] text-white/90">
-          <span className="w-2 h-2 rounded-full bg-white" />
+      <div className="relative p-5 sm:p-6 md:p-8 pt-6">
+        <span className="inline-flex items-center gap-2 font-mono text-nano uppercase tracking-[.16em] text-ink2">
+          <span aria-hidden="true" className="w-1.5 h-1.5" style={{ background: color }} />
           {c.name || "Field notes"}{post.readTime ? ` · ${post.readTime} min read` : ""}
         </span>
 
         {tools.length > 0 ? (
           <div className="mt-7">
-            <p className="font-mono text-micro uppercase tracking-[.2em] text-white/70 mb-3">The tools in this piece</p>
+            <p className="font-mono text-nano uppercase tracking-[.16em] text-ink2 mb-3">The tools in this piece</p>
             <div className="flex flex-wrap gap-2.5">
               {tools.map((t, i) => (
                 <span key={t.slug} title={t.name}
-                  style={{ "--r": `${ROT[i % ROT.length]}deg`, boxShadow: "2px 2px 0 var(--shadow-cast)" }}
-                  className="grid place-items-center min-w-[3rem] h-12 px-2.5 rounded-ui bg-paper border-2 border-ink
-                    font-display text-xl font-semibold text-ink rotate-[var(--r)] transition-transform duration-300 hover:rotate-0 hover:-translate-y-0.5">
+                  className="grid place-items-center min-w-[3rem] h-12 px-2.5 rounded-tight bg-paper2 border border-rule
+                    font-mono text-base font-semibold text-ink2">
                   {t.logoMono || (t.name || "?")[0]}
                 </span>
               ))}
             </div>
           </div>
         ) : (
-          <span aria-hidden="true" className="block mt-6 font-display font-semibold text-white" style={{ fontSize: "64px" }}>{ghost[0]}</span>
+          <span aria-hidden="true" className="block mt-6 font-display text-3xl font-semibold text-ink2/40">{ghost}</span>
         )}
       </div>
     </figure>
@@ -53,14 +48,14 @@ export function ArticleCover({ post }) {
 
 // The footer rail of tools the article references — monogram tiles that link
 // through to each tool's page, so a reader can act on the piece immediately.
-export function ToolRail({ links = [], color = "#1C1714" }) {
+export function ToolRail({ links = [], color = "#0E1116" }) {
   return (
     <div className="flex flex-wrap gap-3">
       {links.map((l) => (
         <Link key={l.id} to={`/tools/${l.tool.slug}`}
-          className="group/r inline-flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-ui border-2 border-ink bg-paper
+          className="group/r inline-flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-ui border border-rule bg-paper
             transition-transform duration-200 hover:-translate-y-0.5"
-          style={{ boxShadow: "2px 2px 0 var(--shadow-cast)" }}>
+          >
           <span className="grid place-items-center w-8 h-8 rounded-full font-display text-sm font-semibold text-white shrink-0"
             style={{ background: l.tool.category?.colorPrimary || color }}>
             {l.tool.logoMono || l.tool.name[0]}

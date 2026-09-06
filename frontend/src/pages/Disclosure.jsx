@@ -32,14 +32,14 @@ export default function Disclosure() {
       ]} />
 
       <Reveal stagger className="space-y-5 text-lg leading-relaxed">
-        <p className="drop-cap">Let's be direct, because this is exactly where most "review" sites get shifty. Toolhaven is free to read because some of our outbound links are <strong>affiliate links</strong>: if you sign up for a tool through one, the company pays us a small commission. You pay the same price you'd pay going direct — sometimes less, since we chase the deals.</p>
+        <p className="text-lg leading-relaxed">Let's be direct, because this is exactly where most "review" sites get shifty. Toolhaven is free to read because some of our outbound links are <strong>affiliate links</strong>: if you sign up for a tool through one, the company pays us a small commission. You pay the same price you'd pay going direct — sometimes less, since we chase the deals.</p>
 
         <h2 id="not-buy" className="font-display text-2xl font-semibold pt-4 scroll-mt-28">What that money does <span className="text-accentDeep">not</span> buy</h2>
         <p>This is the part that matters, so we'll be blunt:</p>
         <ul className="space-y-2 pl-1">
-          <li className="flex gap-3"><span className="text-accent font-bold shrink-0">✦</span><span>It does not buy a good review. We publish the <strong>downsides of every tool</strong> — including the ones that pay us the most.</span></li>
-          <li className="flex gap-3"><span className="text-accent font-bold shrink-0">✦</span><span>It does not buy a ranking. We run <strong>zero paid placements</strong>. No company can buy its way up a list or onto one.</span></li>
-          <li className="flex gap-3"><span className="text-accent font-bold shrink-0">✦</span><span>It does not buy our silence. If a tool is wrong for you, we say so — commission or not. Telling you to walk away is the most useful thing we can do.</span></li>
+          <li className="flex gap-3"><span aria-hidden="true" className="shrink-0 mt-[.5em] w-1.5 h-1.5 bg-accent" /><span>It does not buy a good review. We publish the <strong>downsides of every tool</strong> — including the ones that pay us the most.</span></li>
+          <li className="flex gap-3"><span aria-hidden="true" className="shrink-0 mt-[.5em] w-1.5 h-1.5 bg-accent" /><span>It does not buy a ranking. We run <strong>zero paid placements</strong>. No company can buy its way up a list or onto one.</span></li>
+          <li className="flex gap-3"><span aria-hidden="true" className="shrink-0 mt-[.5em] w-1.5 h-1.5 bg-accent" /><span>It does not buy our silence. If a tool is wrong for you, we say so — commission or not. Telling you to walk away is the most useful thing we can do.</span></li>
         </ul>
 
         <h2 id="why-links" className="font-display text-2xl font-semibold pt-4 scroll-mt-28">Why affiliate links instead of ads</h2>

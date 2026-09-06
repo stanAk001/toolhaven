@@ -65,7 +65,7 @@ export function ToolRail({ title, kicker, basis, tools = [], to, minimum = 3 }) 
 function RailCard({ tool }) {
   return (
     <Link to={`/tools/${tool.slug}`}
-      className="group flex flex-col h-full rounded-card bg-paper border-2 border-ink shadow-press p-3 sm:p-4
+      className="group flex flex-col h-full rounded-card bg-paper border border-rule shadow-press p-3 sm:p-4
         transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-press-lg">
       <div className="flex items-start justify-between gap-2 mb-2.5 sm:mb-3">
         <ToolLogo tool={tool} size={32} className="sm:hidden" />

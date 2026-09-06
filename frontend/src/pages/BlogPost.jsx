@@ -24,7 +24,7 @@ export default function BlogPost() {
       </>
     );
   }
-  const color = post.category?.colorPrimary || "#1C1714";
+  const color = post.category?.colorPrimary || "#0E1116";
   const trail = [
     { label: "Home", to: "/" },
     { label: "Blog", to: "/blog" },
@@ -32,7 +32,7 @@ export default function BlogPost() {
     { label: post.title, to: `/blog/${post.slug}` },
   ];
 
-  // the first paragraph gets the inked drop-cap; the rest read straight
+  // the first paragraph gets the inked; the rest read straight
   let firstParagraph = true;
 
   return (
@@ -72,7 +72,7 @@ export default function BlogPost() {
               }
               const drop = firstParagraph;
               firstParagraph = false;
-              return <p className={drop ? "drop-cap text-pretty" : "text-pretty"}>{children}</p>;
+              return <p className={drop ? "text-pretty" : "text-pretty"}>{children}</p>;
             },
             img: ({ src, alt, title }) => <BlogFigure src={src} alt={alt} title={title} color={color} />,
             // section heads get a category-coloured tab so the article reads in chapters
@@ -83,21 +83,20 @@ export default function BlogPost() {
               </h2>
             ),
             a: ({ children, href }) => (
-              <a href={href} className="underline decoration-2 underline-offset-2 font-medium" style={{ color }}>{children}</a>
+              <a href={href} className="text-accentDeep underline underline-offset-2 font-medium">{children}</a>
             ),
             li: ({ children }) => <li className="ml-5 list-disc marker:text-accent">{children}</li>,
             blockquote: ({ children }) => (
-              <blockquote className="my-8 pl-6 border-l-4 font-display text-xl md:text-2xl font-medium italic leading-snug"
+              <blockquote className="my-8 pl-6 border-l-2 border-rule font-display text-xl md:text-2xl font-medium leading-snug"
                 style={{ borderColor: color }}>{children}</blockquote>
             ),
-            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-          }}>
+            strong: ({ children }) => <strong className="font-semibold">{children}</strong> }}>
           {post.content}
         </ReactMarkdown>
       </div>
 
       {post.toolLinks?.length > 0 && (
-        <Reveal className="mt-14 border-t-2 border-ink pt-6">
+        <Reveal className="mt-14 border-t border-rule pt-6">
           <h3 className="font-mono text-xs uppercase tracking-[.18em] text-accentDeep mb-5">Tools mentioned in this piece</h3>
           <ToolRail links={post.toolLinks} color={color} />
         </Reveal>

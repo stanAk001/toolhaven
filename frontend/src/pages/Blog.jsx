@@ -66,7 +66,7 @@ export default function Blog() {
 
       {loading ? <SkeletonGrid count={6} className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" />
         : shown.length === 0 ? (
-          <div className="border-2 border-dashed border-ink/30 rounded-card px-6 py-14 text-center">
+          <div className="border border-dashed border-rule rounded-card px-6 py-14 text-center">
             <p className="font-display text-xl sm:text-2xl font-semibold text-balance mb-2">
               Nothing filed under that yet.
             </p>
@@ -87,7 +87,7 @@ export default function Blog() {
 function Tab({ on, color, onClick, children }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={on}
-      className={`inline-flex items-center font-mono text-xs uppercase tracking-wide px-4 min-h-touch rounded-ui border-2 border-ink whitespace-nowrap transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
-      style={on ? { background: color || "#1C1714" } : undefined}>{children}</button>
+      className={`inline-flex items-center font-mono text-xs uppercase tracking-wide px-4 min-h-touch rounded-ui border border-rule whitespace-nowrap transition-colors ${on ? "text-white" : "bg-paper hover:bg-paper2"}`}
+      style={on ? { background: color || "#0E1116" } : undefined}>{children}</button>
   );
 }

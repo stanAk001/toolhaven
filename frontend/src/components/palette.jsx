@@ -80,15 +80,14 @@ export function CommandPalette() {
     <div className="fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[12vh]"
       role="dialog" aria-modal="true" aria-label="Search Toolhaven">
       <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm fade-in" onClick={close} aria-hidden="true" />
-      <div className="relative w-full max-w-xl bg-paper border-2 border-ink rounded-card overflow-hidden" style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
-        <span className="halftone absolute inset-0 opacity-[.05] pointer-events-none" aria-hidden="true" />
+      <div className="relative w-full max-w-xl bg-paper border border-rule rounded-card overflow-hidden" >
 
-        <div className="relative flex items-center gap-3 px-5 py-4 border-b-2 border-ink">
+        <div className="relative flex items-center gap-3 px-5 py-4 border-b border-rule">
           <Search size={18} strokeWidth={2.5} className="text-accentDeep shrink-0" aria-hidden="true" />
           <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKeyDown}
             placeholder="Search tools, categories, pages…" aria-label="Search"
             className="flex-1 min-w-0 bg-transparent outline-none text-lg" />
-          <kbd className="font-mono text-nano uppercase tracking-wide bg-paper2 border-2 border-ink rounded px-2 py-1 shrink-0">Esc</kbd>
+          <kbd className="font-mono text-nano uppercase tracking-wide bg-paper2 border border-rule rounded px-2 py-1 shrink-0">Esc</kbd>
         </div>
 
         <ul className="relative max-h-[52vh] overflow-auto py-2">
@@ -101,8 +100,8 @@ export function CommandPalette() {
             <li key={it.kind + it.to}>
               <button type="button" onMouseEnter={() => setActive(i)} onClick={() => go(it)}
                 className={`w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors ${i === clamped ? "bg-paper2" : ""}`}>
-                <span className="grid place-items-center w-9 h-9 rounded-ui border-2 border-ink font-display font-semibold text-white shrink-0"
-                  style={{ background: it.color || "#1C1714" }}>{it.mono || (it.kind === "page" ? "→" : (it.label[0] || "?"))}</span>
+                <span className="grid place-items-center w-9 h-9 rounded-ui border border-rule font-display font-semibold text-white shrink-0"
+                  style={{ background: it.color || "#0E1116" }}>{it.mono || (it.kind === "page" ? "→" : (it.label[0] || "?"))}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-display font-semibold leading-tight truncate">{it.label}</span>
                   <span className="block font-mono text-label uppercase tracking-wide text-ink2 truncate">{it.sub}</span>
@@ -113,7 +112,7 @@ export function CommandPalette() {
           ))}
         </ul>
 
-        <div className="relative flex items-center justify-between gap-3 px-5 py-2.5 border-t-2 border-ink font-mono text-micro uppercase tracking-[.16em] text-ink2">
+        <div className="relative flex items-center justify-between gap-3 px-5 py-2.5 border-t border-rule font-mono text-micro uppercase tracking-[.16em] text-ink2">
           <span>↑↓ move · ↵ open · esc close</span>
           <span className="text-accentDeep">Toolhaven index</span>
         </div>

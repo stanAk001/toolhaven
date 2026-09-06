@@ -23,9 +23,12 @@ const Privacy = lazy(() => import("./pages/Privacy.jsx"));
 const Disclosure = lazy(() => import("./pages/Disclosure.jsx"));
 const Terms = lazy(() => import("./pages/Terms.jsx"));
 const Submit = lazy(() => import("./pages/Submit.jsx"));
+const SubmissionStatus = lazy(() => import("./pages/SubmissionStatus.jsx"));
 const Stacks = lazy(() => import("./pages/Stacks.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
 const BestIndex = lazy(() => import("./pages/BestIndex.jsx"));
+const GuidesIndex = lazy(() => import("./pages/GuidesIndex.jsx"));
+const BuyingGuide = lazy(() => import("./pages/BuyingGuide.jsx"));
 const BestList = lazy(() => import("./pages/BestList.jsx"));
 const HowWeReview = lazy(() => import("./pages/HowWeReview.jsx"));
 
@@ -64,7 +67,7 @@ export default function App() {
       <BackToTop />
       <CommandPalette />
       <RouteSweep />
-      <div className="grain min-h-dvh flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <main className="flex-1">
           {/* The fallback is a held page, not a spinner. A split chunk on a
@@ -87,6 +90,10 @@ export default function App() {
             <Route path="/best" element={<BestIndex />} />
             <Route path="/best/:slug" element={<BestList />} />
             <Route path="/how-we-review" element={<HowWeReview />} />
+            {/* Hardware, kept in its own namespace so a guide never reads as
+                part of the software index. */}
+            <Route path="/guides" element={<GuidesIndex />} />
+            <Route path="/guides/:slug" element={<BuyingGuide />} />
 
             {/* The tool page already *is* the review — full write-up, features,
                 pros, the catch, rating and reader reviews. A separate /reviews
@@ -106,6 +113,9 @@ export default function App() {
             <Route path="/disclosure" element={<Disclosure />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/submit" element={<Submit />} />
+            {/* Reached by the token in the confirmation email. Private by
+                obscurity of the token, and marked noindex on the page. */}
+            <Route path="/submission/:token" element={<SubmissionStatus />} />
             <Route path="/stacks" element={<Stacks />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />

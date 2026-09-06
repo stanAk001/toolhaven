@@ -31,6 +31,19 @@ export const compareTools = (slugs) =>
 export const getTestimonials = (params) => api.get("/testimonials", { params }).then((r) => r.data);
 export const getPosts = (params) => api.get("/blog", { params }).then((r) => r.data);
 export const getToolRails = () => api.get("/tools/rails").then((r) => r.data);
+// buying guides
+export const getGuides = () => api.get("/guides").then((r) => r.data);
+export const getGuide = (slug) => api.get(`/guides/${slug}`).then((r) => r.data);
+
+// buying guides — the editor's desk
+export const listGuidesAdmin = (token) => api.get("/admin/guides", adminHeaders(token)).then((r) => r.data);
+export const getGuideAdmin = (id, token) => api.get(`/admin/guides/${id}`, adminHeaders(token)).then((r) => r.data);
+export const createGuide = (body, token) => api.post("/admin/guides", body, adminHeaders(token)).then((r) => r.data);
+export const updateGuide = (id, body, token) => api.patch(`/admin/guides/${id}`, body, adminHeaders(token)).then((r) => r.data);
+export const deleteGuide = (id, token) => api.delete(`/admin/guides/${id}`, adminHeaders(token)).then((r) => r.data);
+export const saveGuidePicks = (id, picks, token) => api.put(`/admin/guides/${id}/picks`, { picks }, adminHeaders(token)).then((r) => r.data);
+export const saveGuideFaqs = (id, faqs, token) => api.put(`/admin/guides/${id}/faqs`, { faqs }, adminHeaders(token)).then((r) => r.data);
+
 export const getBestLists = () => api.get("/best").then((r) => r.data);
 export const getBestList = (slug) => api.get(`/best/${slug}`).then((r) => r.data);
 
@@ -94,6 +107,29 @@ export const getPost = (slug) => api.get(`/blog/${slug}`).then((r) => r.data);
 export const subscribe = (body) => api.post("/newsletter/subscribe", body).then((r) => r.data);
 export const sendContact = (body) => api.post("/contact", body).then((r) => r.data);
 export const submitTool = (body) => api.post("/submissions", body).then((r) => r.data);
+
+// The raw file is the request body — no multipart, no parsing dependency, and
+// the size cap is enforced by the server before a byte reaches the handler.
+export const uploadImage = (file) =>
+  api.post("/uploads", file, {
+    headers: {
+      "content-type": file.type || "application/octet-stream",
+      "x-filename": file.name || "",
+    },
+  }).then((r) => r.data);
+
+// The submitter's own view of their submission. The token in the URL is the
+// credential — there are no accounts.
+export const trackSubmission = (token) =>
+  api.get(`/submissions/track/${token}`).then((r) => r.data);
+export const updateSubmission_public = (token, body) =>
+  api.patch(`/submissions/track/${token}`, body).then((r) => r.data);
+
+// Editor-only review desk
+export const getSubmission = (id, token) =>
+  api.get(`/submissions/${id}`, adminHeaders(token)).then((r) => r.data);
+export const reviewSubmission = (id, body, token) =>
+  api.patch(`/submissions/${id}`, body, adminHeaders(token)).then((r) => r.data);
 
 // editor-only — token sent as a header
 export const listSubmissions = (token) =>

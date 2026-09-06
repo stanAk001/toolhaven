@@ -44,7 +44,7 @@ const STATIC = [
  * live rows are listed: a sitemap that points at inactive tools or unpublished
  * drafts teaches the crawler the file is unreliable. */
 r.get("/", ah(async (_req, res) => {
-  const [tools, categories, posts, lists] = await Promise.all([
+  const [tools, categories, posts, guides, lists] = await Promise.all([
     prisma.tool.findMany({
       where: { isActive: true },
       select: { slug: true, updatedAt: true, categoryId: true },
@@ -53,6 +53,10 @@ r.get("/", ah(async (_req, res) => {
     prisma.category.findMany({ select: { slug: true } }),
     prisma.blogPost.findMany({
       where: { isPublished: true },
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.buyingGuide.findMany({
+      where: { status: "published" },
       select: { slug: true, updatedAt: true },
     }),
     prisma.bestList.findMany({
@@ -100,6 +104,10 @@ r.get("/", ah(async (_req, res) => {
     ...posts.map((p) => ({ loc: `/blog/${p.slug}`, lastmod: p.updatedAt, changefreq: "monthly", priority: "0.7" })),
     // best-of pages carry the highest commercial intent on the site
     ...lists.map((l) => ({ loc: `/best/${l.slug}`, lastmod: l.updatedAt, changefreq: "weekly", priority: "0.9" })),
+    // Buying guides. Only published ones are queried, so a draft is never
+    // handed to a crawler that would then find a 404 where the sitemap
+    // promised a page.
+    ...guides.map((g) => ({ loc: `/guides/${g.slug}`, lastmod: g.updatedAt, changefreq: "monthly", priority: "0.8" })),
     // "x vs y" — high intent, and the query a buyer types last before deciding
     ...pairs.map((p) => ({ loc: `/compare/${p.slug}`, lastmod: p.updatedAt, changefreq: "weekly", priority: "0.8" })),
   ];

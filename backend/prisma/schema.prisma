@@ -25,7 +25,8 @@ model Category {
   subcategories Subcategory[]
   blogPosts     BlogPost[]
   bestLists     BestList[]
-  clicks        AffiliateClick[]
+  clicks        AffiliateClick[]
+  buyingGuides BuyingGuide[]
 }
 
 model Subcategory {
@@ -316,8 +317,122 @@ model ToolSubmission {
   socialLinks String[] // X, LinkedIn, GitHub…
   screenshots String[] // image URLs
 
-  status    String   @default("pending") // pending | reviewing | listed | declined
+  // The review workflow.
+  //
+  // "approved" and "published" are deliberately separate states. Approving is a
+  // judgement — this belongs on the site; publishing is an act — it is on the
+  // site now. Collapsing them means an editor cannot say yes to a tool while
+  // still writing the entry, and it makes "your tool is live" a lie for however
+  // long that takes.
+  //
+  //   pending → under_review → approved → published
+  //                         ↘ changes_requested → (resubmitted) → pending
+  //                         ↘ declined
+  status String @default("pending")
+
+  // Timestamps per transition rather than one mutable field, so the history is
+  // legible from the row itself and cannot be overwritten by the next change.
+  submittedAt      DateTime  @default(now())
+  reviewStartedAt  DateTime?
+  approvedAt       DateTime?
+  publishedAt      DateTime?
+  declinedAt       DateTime?
+  changesRequestedAt DateTime?
+  lastStatusChange DateTime  @default(now())
+
+  reviewerNote     String?   // internal, never leaves the admin
+  submitterMessage String?   // sent to them verbatim in the status email
+  resubmitCount    Int       @default(0)
+
+  // An unguessable handle for the status page. Toolhaven has no accounts, so
+  // this is what lets a submitter check on their own submission — the link goes
+  // out in the receipt email and is the only way in.
+  publicToken String? @unique
+
+  // Set once the submission becomes a real listing, so the two stop being
+  // separate stories the moment they are the same thing.
+  publishedToolId Int?
+
+  logoUploadId Int?
+  logoUpload   Upload? @relation(fields: [logoUploadId], references: [id])
+
+  events     SubmissionEvent[]
+  emailEvents EmailEvent[]
+
   createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+/// A file held in the database.
+///
+/// Render's filesystem is ephemeral — anything written to disk is gone on the
+/// next deploy — and Toolhaven has no object storage. Logos are small and few,
+/// so they live here as bytes and are served by the API with long cache
+/// headers. If this ever outgrows Postgres, the serving URL stays the same and
+/// only the storage behind it changes.
+model Upload {
+  id        Int      @id @default(autoincrement())
+  data      Bytes
+  mimeType  String
+  byteSize  Int
+  width     Int?
+  height    Int?
+  filename  String?
+  // Identical bytes are stored once. A resubmitted logo is usually the same
+  // file, and this makes replacing one free.
+  sha256    String   @unique
+  createdAt DateTime @default(now())
+
+  submissions ToolSubmission[]
+  guideOgImages BuyingGuide[] @relation("GuideOgImage")
+  guidePickImages GuidePick[] @relation("GuidePickImage")
+  guidePickPhotos GuidePickPhoto[]
+
+  @@index([createdAt])
+}
+
+/// The audit trail. Append-only: a row is written for every transition, so
+/// "when did this change and who moved it" is answerable long after the fact.
+model SubmissionEvent {
+  id           Int            @id @default(autoincrement())
+  submissionId Int
+  submission   ToolSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  type       String   // created | status-changed | resubmitted | published | note-added
+  fromStatus String?
+  toStatus   String?
+  actor      String   @default("editor") // editor | submitter | system
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([submissionId, createdAt])
+}
+
+/// Every automated email, recorded before it is trusted.
+///
+/// The point is the unique constraint: one send per submission per event. A
+/// double-clicked Approve button, a retried request or a redeploy mid-flight
+/// would otherwise mail the same person twice, and a system that repeats itself
+/// reads as broken no matter how good the message is.
+model EmailEvent {
+  id           Int            @id @default(autoincrement())
+  submissionId Int
+  submission   ToolSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  eventType String   // received | under-review | approved | published | changes-requested | declined
+  recipient String
+  status    String   @default("sent") // sent | failed
+  messageId String?
+  error     String?
+  sentAt    DateTime @default(now())
+
+  // Only successful sends occupy the slot; a failure is recorded and can be
+  // retried, which is why this is not simply @@unique([submissionId, eventType]).
+  @@unique([submissionId, eventType, status])
+  @@index([submissionId])
 }
 
 // ── Affiliate partners ────────────────────────────────────────────────────
@@ -581,4 +696,147 @@ model PricingVerificationLog {
 
   @@index([toolId, createdAt])
   @@index([outcome])
+}
+
+// ─── Buying guides ───────────────────────────────────────────────────────
+// Editorial hardware recommendations, kept deliberately separate from the tool
+// index: a monitor is not software, and letting the two share a model would
+// mean every tool query carrying columns about ASINs.
+//
+// Two rules are built into the shape of these tables. There is no field for a
+// price, because Amazon's prices move hourly and a number printed here would be
+// wrong within the day — the link says "check current price" and means it. And
+// there is no field for a star rating or a review count, because we would be
+// copying Amazon's figures without their sample, which is borrowed authority
+// rather than evidence.
+
+model BuyingGuide {
+  id   Int    @id @default(autoincrement())
+  slug String @unique
+
+  title    String   // the editorial headline
+  standfirst String? // the paragraph under it: what problem this solves
+  intro    String?  @db.Text
+
+  /// How these were chosen. Shown on the page, because a recommendation with
+  /// no stated method is just an opinion with affiliate links attached.
+  methodology String? @db.Text
+
+  /// How many were actually considered. Entered by a person, and rendered only
+  /// when set — a fabricated "we tested 47 monitors" is exactly the kind of
+  /// borrowed credibility this whole section is meant to avoid.
+  productsConsidered Int?
+
+  finalWord String? @db.Text
+
+  status      String    @default("draft") // draft | published
+  publishedAt DateTime?
+
+  // SEO. Falls back to the editorial fields when left blank, so a guide is
+  // never published with an empty title tag.
+  seoTitle        String?
+  metaDescription String?
+  canonicalUrl    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImageId       Int?
+  ogImage         Upload?  @relation("GuideOgImage", fields: [ogImageId], references: [id])
+
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  picks GuidePick[]
+  faqs  GuideFaq[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+/// One recommended product inside a guide.
+model GuidePick {
+  id      Int         @id @default(autoincrement())
+  guideId Int
+  guide   BuyingGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  /// "Best overall", "Best budget", "Best for colour work". Free text rather
+  /// than an enum: the useful award is the one that describes this guide's
+  /// actual shape, not one of five we guessed in advance.
+  award String?
+
+  name  String
+  brand String?
+  model String?
+
+  imageId  Int?
+  image    Upload? @relation("GuidePickImage", fields: [imageId], references: [id])
+  imageAlt String?
+
+  /// Every photo for this pick, in the order they are shown. The first is the
+  /// lead image and is mirrored into imageId above, so anything still reading a
+  /// single image keeps working while this rolls out.
+  photos GuidePickPhoto[]
+
+  /// The editorial line. Ours, in our voice, and the reason the pick is here.
+  verdict     String? @db.Text
+  bestFor     String?
+  /// The honest counterweight — who should buy something else instead.
+  considerElseIf String?
+
+  /// Label/value pairs, ordered, as [{ label, value }].
+  specs Json?
+
+  pros String[]
+  cons String[]
+
+  /// The Amazon Associates link. Stored once, here, and the only outbound
+  /// commercial link on the page.
+  amazonUrl String?
+  asin      String?
+
+  reviewedAt DateTime?
+  orderIndex Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([guideId, orderIndex])
+}
+
+/// One photo on one pick.
+///
+/// A join model rather than an array of upload ids on the pick: a photo carries
+/// its own alt text and its own position, and an Int[] has nowhere to put
+/// either. Deleting a pick takes its photos with it. Deleting the underlying
+/// upload is restricted, because those bytes are de-duplicated by hash and may
+/// still be in use by another pick.
+model GuidePickPhoto {
+  id       Int       @id @default(autoincrement())
+  pickId   Int
+  pick     GuidePick @relation(fields: [pickId], references: [id], onDelete: Cascade)
+  uploadId Int
+  upload   Upload    @relation(fields: [uploadId], references: [id], onDelete: Restrict)
+
+  /// What the photo shows. Blank is allowed and means decorative; it is not
+  /// auto-filled with the product name, which would have a screen reader
+  /// announce the same words six times down a single pick.
+  alt      String?
+  position Int       @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([pickId, position])
+}
+
+model GuideFaq {
+  id      Int         @id @default(autoincrement())
+  guideId Int
+  guide   BuyingGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  question   String
+  answer     String @db.Text
+  orderIndex Int    @default(0)
+
+  @@index([guideId, orderIndex])
 }

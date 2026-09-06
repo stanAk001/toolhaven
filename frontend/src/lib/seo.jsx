@@ -63,10 +63,15 @@ const meta = (attr, key, content) =>
  */
 export function Seo({
   title, description = DEFAULT_DESCRIPTION, path, image = "/og.svg",
-  type = "website", noIndex = false, schema,
+  type = "website", noIndex = false, schema, canonical,
 }) {
   const fullTitle = title ? `${title} · ${SITE_NAME}` : DEFAULT_TITLE;
-  const url = absolute(path ?? (typeof window !== "undefined" ? window.location.pathname : "/"));
+  // An explicit canonical wins over the path. Buying guides can carry one set
+  // by an editor, which is what you need when the same recommendation exists
+  // somewhere else and this page should not compete with it.
+  const url = canonical
+    ? absolute(canonical)
+    : absolute(path ?? (typeof window !== "undefined" ? window.location.pathname : "/"));
   const img = absolute(image);
 
   useEffect(() => {

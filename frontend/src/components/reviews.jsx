@@ -26,7 +26,7 @@ function StarInput({ value, onChange }) {
 
 const EMPTY = { authorName: "", rating: 5, title: "", useCase: "", content: "", website: "" };
 
-export function ReviewsSection({ toolId, color = "#1C1714", initial = [] }) {
+export function ReviewsSection({ toolId, color = "#0E1116", initial = [] }) {
   const [reviews, setReviews] = useState(initial);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
@@ -49,24 +49,24 @@ export function ReviewsSection({ toolId, color = "#1C1714", initial = [] }) {
     catch (err) { setError(err?.response?.data?.error || "Couldn't post that — try again."); setStatus("error"); }
   };
 
-  const field = "w-full border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
+  const field = "w-full border border-rule rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
   const lab = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
   return (
     <section className="mt-10">
       <div className="flex items-center justify-between gap-4 mb-4">
-        <h2 className="font-mono text-xs uppercase tracking-wide" style={{ color }}>
+        <h2 className="font-mono text-xs uppercase tracking-[.14em] text-ink2">
           Reader reviews{reviews.length > 0 ? ` · ${reviews.length}` : ""}
         </h2>
         <button onClick={() => setOpen((o) => !o)}
-          className="font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-3 py-1.5 hover:bg-paper2 transition-colors">
+          className="font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-3 py-1.5 hover:bg-paper2 transition-colors">
           {open ? "Close" : "Write a review"}
         </button>
       </div>
 
       {open && status !== "sent" && (
         <Reveal as="form" onSubmit={submit} noValidate
-          className="border-2 border-ink rounded-card bg-paper p-5 mb-6 space-y-4" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+          className="border border-rule rounded-card bg-paper p-5 mb-6 space-y-4" >
           {/* honeypot */}
           <input type="text" name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} className="hidden" aria-hidden="true" />
           <div>
@@ -87,8 +87,8 @@ export function ReviewsSection({ toolId, color = "#1C1714", initial = [] }) {
       )}
 
       {status === "sent" && (
-        <div className="border-2 border-ink rounded-card bg-paper2/50 p-5 mb-6">
-          <p className="font-display text-lg font-semibold mb-1">Thanks — your review is in. ✦</p>
+        <div className="border border-rule rounded-card bg-paper2/50 p-5 mb-6">
+          <p className="font-display text-lg font-semibold mb-1">Thanks — your review is in.</p>
           <p className="text-ink2 text-sm">We read every review before it goes live (it keeps the fakes out). It'll appear here once approved.</p>
         </div>
       )}
@@ -98,7 +98,7 @@ export function ReviewsSection({ toolId, color = "#1C1714", initial = [] }) {
       ) : (
         <div className="space-y-5">
           {reviews.map((r) => (
-            <div key={r.id} className="border-b-2 border-ink/10 pb-5 last:border-0 last:pb-0">
+            <div key={r.id} className="border-b border-rule pb-5 last:border-0 last:pb-0">
               <div className="flex items-center justify-between gap-3 mb-1">
                 <Stars r={r.rating} size={15} showNum={false} />
                 <span className="font-mono text-label text-ink2">{new Date(r.createdAt).toLocaleDateString()}</span>

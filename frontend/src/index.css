@@ -5,29 +5,51 @@
 /* ===== Theme palettes =====
    The whole site is themed off these channel variables. The Day edition is the
    warm printed paper; the Night edition is the same press run in the dark. */
+/* ── The Instrument ───────────────────────────────────────────────────────
+ * A measuring tool, not a magazine.
+ *
+ * The old palette was warm cream, a serif display and a terracotta accent —
+ * which is, almost to the hex value, the house style every image generator and
+ * coding model reaches for. It cannot be rescued by spacing work: the palette
+ * is the tell.
+ *
+ * What replaces it is deliberately cool and quiet. The ground is a near-white
+ * with a faint blue bias so it reads as considered rather than as unpainted
+ * default; panels are pure white and separate from it by a hairline instead of
+ * a border and a drop shadow. One signal colour, used where something is
+ * genuinely being signalled and nowhere else.
+ */
 :root, [data-theme="day"] {
   color-scheme: light;
-  --paper: 241 234 221;       /* #F1EADD */
-  --paper2: 231 221 203;      /* #E7DDCB */
-  --ink: 28 23 20;            /* #1C1714 */
-  --ink2: 106 95 82;          /* #6A5F52 */
-  --accent: 232 67 31;        /* #E8431F */
-  --accent-deep: 184 54 23;   /* #B83617 */
-  --shadow-cast: #1C1714;     /* the hard offset behind printed tiles */
-  --flap-bg: 28 23 20;        /* split-flap tile face */
-  --flap-fg: 241 234 221;
+  --paper: 252 252 253;       /* #FCFCFD — the ground */
+  --paper2: 241 244 247;      /* #F1F4F7 — sunken fills, table stripes */
+  --surface: 255 255 255;     /* #FFFFFF — panels sit above the ground */
+  --ink: 14 17 22;            /* #0E1116 — near-black, faintly blue */
+  --ink2: 98 107 121;         /* #626B79 — secondary text */
+  --rule: 228 231 236;        /* #E4E7EC — every border on the site */
+  --accent: 31 94 255;        /* #1F5EFF — the one signal */
+  --accent-deep: 23 71 199;   /* #1747C7 — the same signal as text */
+  /* Kept so nothing referencing it breaks; the Instrument casts no shadows. */
+  --shadow-cast: transparent;
+  --flap-bg: 14 17 22;
+  --flap-fg: 252 252 253;
 }
+/* The same instrument at night. Not an inversion — the ground lifts off pure
+ * black so panels can sit above it, and the signal blue is lightened to hold
+ * its contrast against a dark field. */
 [data-theme="night"] {
   color-scheme: dark;
-  --paper: 24 21 18;          /* warm near-black ground */
-  --paper2: 35 30 26;         /* raised surface */
-  --ink: 240 233 220;         /* light foreground */
-  --ink2: 166 154 137;        /* muted light */
-  --accent: 245 92 56;        /* a touch brighter so it sings on dark */
-  --accent-deep: 248 130 92;
-  --shadow-cast: #000000;     /* black offset reads against the dark ground */
-  --flap-bg: 8 7 6;
-  --flap-fg: 240 233 220;
+  --paper: 16 19 23;          /* #101317 — the ground */
+  --paper2: 23 27 33;         /* #171B21 — sunken fills */
+  --surface: 26 30 37;        /* #1A1E25 — panels */
+  --ink: 232 234 237;         /* #E8EAED */
+  --ink2: 138 147 160;        /* #8A93A0 */
+  --rule: 38 43 51;           /* #262B33 */
+  --accent: 91 138 255;       /* #5B8AFF — lifted to carry on dark */
+  --accent-deep: 138 172 255; /* #8AACFF */
+  --shadow-cast: transparent;
+  --flap-bg: 8 10 13;
+  --flap-fg: 232 234 237;
 }
 html { scroll-behavior: smooth; }
 body {
@@ -57,7 +79,7 @@ h1, h2, h3, h4 { scroll-margin-top: 5rem; }
 
 /* One visible, on-brand focus ring for every keyboard user — an inked outline
    that matches the print aesthetic. Only shows for keyboard focus, not clicks. */
-:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 3px; }
+:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
 
 /* Tactile, intentional touch behaviour: no 300ms delay, no grey tap flash. */
 a, button, [role="button"], input, select, textarea {
@@ -68,14 +90,14 @@ a, button, [role="button"], input, select, textarea {
 /* ===== Finishing layer — the details that make it feel printed and considered ===== */
 
 /* Highlight in wet accent ink instead of the browser's default blue. */
-::selection { background: rgb(var(--accent)); color: rgb(var(--paper)); }
+::selection { background: rgb(var(--accent) / .18); color: rgb(var(--ink)); }
 
 /* Body copy: render with kerning and ligatures on, like real typesetting. */
 body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; font-kerning: normal; }
 
-/* Let Fraunces use its optical-size axis so big headlines tighten and refine,
-   and small serif text stays open and legible — the heart of a "set" look. */
-.font-display, h1, h2, h3, h4 { font-optical-sizing: auto; font-feature-settings: "ss01"; }
+/* Archivo has no optical-size axis, so this only turns on the alternates and
+   lets headings sit tighter than the default. */
+.font-display, h1, h2, h3, h4 { font-feature-settings: "ss01"; }
 
 /* ===== Typesetting details =====
    The difference between type that is placed and type that is set. */
@@ -91,10 +113,9 @@ p, li, blockquote { font-variant-numeric: proportional-nums; }
    columns of numbers line up and nothing jitters as values change. */
 .tabular-nums, [class*="tabular"] { font-variant-numeric: tabular-nums; }
 
-/* Display sizes carry too much letter-space at the defaults Fraunces ships for
-   text; the larger the setting, the tighter it wants to be. The type tokens set
-   tracking per step — this is the floor for anything that slips through. */
-h1, h2 { letter-spacing: -.015em; }
+/* A grotesque at display sizes wants pulling in; the type tokens set tracking
+   per step, and this is the floor for anything that slips past them. */
+h1, h2 { letter-spacing: -.02em; }
 
 /* Small mono labels are the opposite: uppercase at 11px needs air to read as a
    deliberate kicker rather than a cramped abbreviation. */
@@ -102,32 +123,17 @@ h1, h2 { letter-spacing: -.015em; }
 
 /* Optical correction for the drop cap: the glyph's own side bearing pushes the
    first line right, so pull it back to sit flush with the paragraph edge. */
-.drop-cap::first-letter { margin-left: -.05em; }
-
-/* A themed scrollbar so even the chrome belongs to the paper. */
-* { scrollbar-color: rgb(var(--ink)) rgb(var(--paper2)); scrollbar-width: thin; }
-::-webkit-scrollbar { width: 13px; height: 13px; }
-::-webkit-scrollbar-track { background: rgb(var(--paper2)); }
-::-webkit-scrollbar-thumb { background: rgb(var(--ink)); border: 3px solid rgb(var(--paper2)); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #B83617; }
-
-/* A soft, layered drop for elements that want depth without the hard print
-   shadow — used sparingly, where the offset stamp would feel too loud. */
-.shadow-soft { box-shadow: 0 1px 2px rgba(28,23,20,.04), 0 8px 24px -12px rgba(28,23,20,.25); }
-
-/* The reading-progress meter and the back-to-top dial both spring on the same
-   curve as the rest of the press furniture. */
-.lift { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s cubic-bezier(.2,.8,.2,1); }
-@media (hover: hover) and (pointer: fine) {
-  .lift:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 rgb(var(--accent)); }
+.drop-cap::first-letter {
+  /* No drop cap. It is a magazine device and this is a reference page. */
+  float: none; font-size: inherit; line-height: inherit; margin: 0; color: inherit;
 }
-.lift:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgb(var(--accent)); }
+.lift:active { transform: none; }
 
 /* Route sweep — a thin accent press-rule wipes across just under the sticky
    header on navigation, like a roller laying a line on the page. Editorial and
    quick; disabled under reduced-motion. Sits on the header's bottom edge. */
 /* 64px = the sticky header's h-16, so the rule lands exactly on its bottom edge. */
-.routesweep { top: 64px; height: 2px; overflow: hidden; }
+.routesweep { top: 64px; height: 1px; overflow: hidden; }
 .routesweep-bar {
   position: absolute; inset: 0; transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgb(var(--accent)) 35%, rgb(var(--accent)) 65%, transparent);
@@ -137,49 +143,55 @@ h1, h2 { letter-spacing: -.015em; }
 
 /* paper grain overlay */
 .grain::before {
-  content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
-  /* enough tooth to read as paper, not so much that it fogs the type */
-  opacity: .26; mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  content: none;
 }
 
 /* The rubber-stamp button: it sits proud of the page on a hard shadow, sinks
    when you press it, and lifts a touch on hover — like a real stamp on a desk. */
+/* Controls.
+ *
+ * The letterpress button — accent fill, hard 2px outline, offset shadow that
+ * slid on hover — is gone with the paper metaphor. What replaces it is a solid
+ * rectangle of the signal colour with a 3px radius: the shape a control has in
+ * software you trust, where the press is a colour change rather than a physical
+ * gesture. The mono uppercase label stays, because a control that says exactly
+ * what it does deserves to look like a label, not a slogan.
+ */
 .stamp {
-  @apply inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide
-         bg-accent text-white px-5 py-3 border-2 border-ink transition-transform;
-  box-shadow: 4px 4px 0 var(--shadow-cast);
+  @apply inline-flex items-center gap-2 font-mono font-medium text-sm
+         bg-accent text-white px-4 py-2.5 rounded-ui border border-transparent
+         transition-colors duration-150;
 }
 @media (hover: hover) and (pointer: fine) {
-  .stamp:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-cast); }
+  .stamp:hover { background: rgb(var(--accent-deep)); }
 }
-.stamp:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow-cast); }
+.stamp:active { background: rgb(var(--accent-deep)); }
 
-/* A paper-faced sibling of the stamp, for placing a primary action on top of a
-   coloured banner where the accent-red stamp would clash with the category hue. */
+/* The quiet sibling: same geometry, no fill. For secondary actions and for
+   anywhere the signal colour would be competing with something else. */
 .stamp-paper {
-  @apply inline-flex items-center gap-2 font-mono font-bold text-sm uppercase tracking-wide
-         bg-paper text-ink px-5 py-3 border-2 border-ink transition-transform;
-  box-shadow: 4px 4px 0 var(--shadow-cast);
+  @apply inline-flex items-center gap-2 font-mono font-medium text-sm
+         bg-surface text-ink px-4 py-2.5 rounded-ui border border-rule
+         transition-colors duration-150;
 }
 @media (hover: hover) and (pointer: fine) {
-  .stamp-paper:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-cast); }
+  .stamp-paper:hover { background: rgb(var(--paper2)); border-color: rgb(var(--ink2) / .4); }
 }
-.stamp-paper:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow-cast); }
 
-/* Any card or panel that should feel like a printed tile you can pick up.
-   The offset shadow grows as it rises on hover, then it taps back down when
-   pressed. Used by the tool cards, category cards and the CTA band. */
-.tactile {
-  box-shadow: 4px 4px 0 var(--shadow-cast);
-  transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s cubic-bezier(.2,.8,.2,1);
+/* Panels.
+ *
+ * A card used to be a printed tile that lifted off the page on hover. An
+ * instrument panel does not lift — it is fixed to the chassis. Separation comes
+ * from the hairline and the white surface against the cool ground, and hover
+ * is a border that darkens rather than a shadow that grows.
+ */
+.tactile,
+.tactile-lg {
+  transition: border-color .15s ease, background-color .15s ease;
 }
 @media (hover: hover) and (pointer: fine) {
-  .tactile:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--shadow-cast); }
-  .tactile-lg:hover { transform: translate(-3px,-3px); box-shadow: 11px 11px 0 var(--shadow-cast); }
+  .tactile:hover, .tactile-lg:hover { border-color: rgb(var(--ink2) / .35); }
 }
-.tactile:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--shadow-cast); }
-.tactile-lg { box-shadow: 6px 6px 0 var(--shadow-cast); }
 
 /* Nav links draw an underline in from the left on hover, and hold it open
    while the page is active. */
@@ -193,7 +205,7 @@ h1, h2 { letter-spacing: -.015em; }
 
 /* When you've scrolled, the sticky header drops a hard shadow so it reads as a
    sheet floating above the page rather than part of it. */
-.nav-scrolled { box-shadow: 0 4px 0 var(--shadow-cast); }
+.nav-scrolled { border-bottom-color: rgb(var(--rule)); box-shadow: 0 1px 0 rgb(var(--rule)); }
 
 /* The hand-drawn underline that sketches itself under the hero's accent words. */
 .draw {
@@ -221,8 +233,8 @@ h1, h2 { letter-spacing: -.015em; }
 /* The oversized opening capital that anchors a lede column, set in the same
    serif as the headlines and inked in the accent red. */
 .drop-cap::first-letter {
-  font-family: "Fraunces", serif; font-weight: 600; color: rgb(var(--accent));
-  float: left; font-size: 3.3em; line-height: .68; padding: .04em .1em 0 0;
+  /* No drop cap. It is a magazine device and this is a reference page. */
+  float: none; font-size: inherit; line-height: inherit; margin: 0; color: inherit;
 }
 
 /* The ghosted folio number sitting behind a section title. */
@@ -231,23 +243,23 @@ h1, h2 { letter-spacing: -.015em; }
 /* ===== Form controls =====
    A native <select> and <input type="range"> arrive wearing the operating
    system's clothes — a grey chevron, a blue thumb, a hairline track. On a page
-   set in Fraunces and Space Mono they are the loudest thing on it, and the
+   set large they become the loudest thing on the page, and the
    clearest sign nobody looked. These are the same controls with the paper's
    own furniture on them. */
 
 .field {
   appearance: none; -webkit-appearance: none;
-  background: rgb(var(--paper));
-  border: 2px solid rgb(var(--ink));
-  border-radius: .625rem;
+  background: rgb(var(--surface));
+  border: 1px solid rgb(var(--rule));
+  border-radius: 3px;
   padding: 0 2.25rem 0 .75rem;
   min-height: 2.75rem;
-  font-family: "Space Mono", monospace;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   font-size: .75rem; text-transform: uppercase; letter-spacing: .08em;
   color: rgb(var(--ink));
   cursor: pointer;
 }
-.field:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 3px; }
+.field:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
 /* our own caret, so it inks with the theme instead of staying OS grey */
 .field-wrap { position: relative; display: inline-flex; }
 .field-caret {
@@ -258,7 +270,7 @@ h1, h2 { letter-spacing: -.015em; }
 /* The slider, drawn as a press rule with a stamped thumb. --fill is written by
    the component so the travelled part of the track inks in. */
 .range { -webkit-appearance: none; appearance: none; background: transparent; height: 2.75rem; cursor: pointer; }
-.range:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 3px; border-radius: .25rem; }
+.range:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; border-radius: 3px; }
 
 .range::-webkit-slider-runnable-track {
   height: 4px; border-radius: 999px;
@@ -270,9 +282,9 @@ h1, h2 { letter-spacing: -.015em; }
   -webkit-appearance: none;
   width: 18px; height: 18px; margin-top: -7px;
   border-radius: 999px;
-  background: rgb(var(--paper));
-  border: 2px solid rgb(var(--ink));
-  box-shadow: 2px 2px 0 var(--shadow-cast);
+  background: rgb(var(--surface));
+  border: 1px solid rgb(var(--ink2) / .5);
+  box-shadow: 0 1px 2px rgb(14 17 22 / .12);
   transition: transform .15s ease;
 }
 .range:active::-webkit-slider-thumb { transform: scale(.92); }
@@ -281,8 +293,8 @@ h1, h2 { letter-spacing: -.015em; }
 .range::-moz-range-progress { height: 4px; border-radius: 999px; background: rgb(var(--accent)); }
 .range::-moz-range-thumb {
   width: 16px; height: 16px; border-radius: 999px;
-  background: rgb(var(--paper)); border: 2px solid rgb(var(--ink));
-  box-shadow: 2px 2px 0 var(--shadow-cast);
+  background: rgb(var(--surface)); border: 1px solid rgb(var(--ink2) / .5);
+  box-shadow: 0 1px 2px rgb(14 17 22 / .12);
 }
 
 /* The category rail. Nine pills of different widths wrapping into a ragged
@@ -349,7 +361,7 @@ h1, h2 { letter-spacing: -.015em; }
   background: rgb(var(--paper));
   text-align: left; vertical-align: middle;
   padding: .85rem 1rem;
-  font-family: "Space Mono", monospace;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   font-size: .6875rem; letter-spacing: .12em; text-transform: uppercase;
   color: rgb(var(--ink2));
   white-space: nowrap;
@@ -471,7 +483,7 @@ h1, h2 { letter-spacing: -.015em; }
    stamp would carry, turning once every half-minute — slow enough to read as a
    press mechanism rather than a loading spinner. */
 .seal-type {
-  font-family: "Space Mono", monospace;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: .16em;
@@ -486,38 +498,33 @@ h1, h2 { letter-spacing: -.015em; }
    rather than one mechanical lattice; the mask fades the field out toward the
    middle of the page so it never fights the copy sitting on top of it. */
 .newsfield {
-  background-image:
-    radial-gradient(rgb(var(--ink) / .16) 1px, transparent 1.6px),
-    radial-gradient(rgb(var(--ink) / .09) 1px, transparent 1.6px);
-  background-size: 18px 18px, 29px 29px;
-  background-position: 0 0, 9px 14px;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 15%, transparent 78%);
-  mask-image: radial-gradient(120% 90% at 50% 0%, #000 15%, transparent 78%);
+  /* Was a screened newsprint field. An instrument has no paper grain. */
+  display: none;
 }
 
 /* Risograph halftone — a field of tiny ink dots that gives flat areas the
    tooth of something actually run through a press. */
 .halftone {
-  background-image: radial-gradient(rgb(var(--ink) / .18) 1px, transparent 1.5px);
-  background-size: 7px 7px;
+  /* Was a halftone dot screen. Same reasoning as .newsfield. */
+  display: none;
 }
 
 /* The "island" CTA: an inked pill with its arrow tucked inside its own disc.
    The whole thing lifts on its shadow while the disc slides out — physical and
    kinetic rather than a flat link. */
+/* The primary call to action. Ink-filled, square, with the arrow riding in a
+   small disc — the one place a circle is allowed, because it is a target. */
 .island {
-  @apply inline-flex items-center gap-3 font-mono font-bold text-sm uppercase tracking-wide
-         bg-ink text-paper pl-6 pr-2 py-2 border-2 border-ink transition-transform;
-  box-shadow: 4px 4px 0 var(--shadow-cast);
+  @apply inline-flex items-center gap-3 font-mono font-medium text-sm
+         bg-ink text-paper pl-5 pr-1.5 py-1.5 rounded-ui border border-ink
+         transition-colors duration-150;
 }
 @media (hover: hover) and (pointer: fine) {
-  .island:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow-cast); }
-  .island:hover .island-dot { transform: translate(3px,-3px); }
+  .island:hover .island-dot { transform: translateX(2px); }
 }
-.island:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow-cast); }
 .island-dot {
-  @apply grid place-items-center w-9 h-9 rounded-full bg-accent text-white;
-  transition: transform .3s cubic-bezier(.2,.8,.2,1);
+  @apply grid place-items-center w-8 h-8 rounded-ui bg-accent text-white;
+  transition: transform .18s ease;
 }
 
 /* Loading skeletons — placeholder tiles in the next paper-tone up, with a soft
@@ -640,18 +647,8 @@ h1, h2 { letter-spacing: -.015em; }
 }
 
 /* ===== Phones =====
-   The press furniture is drawn for a broadsheet. At 375px the same ornaments
-   crowd the copy, so the offsets come down and the opening capital is reset a
-   size smaller — the page still reads as printed, just on a smaller sheet. */
-@media (max-width: 640px) {
-  .tactile { box-shadow: 3px 3px 0 var(--shadow-cast); }
-  .tactile-lg { box-shadow: 4px 4px 0 var(--shadow-cast); }
-  .stamp, .stamp-paper, .island { box-shadow: 3px 3px 0 var(--shadow-cast); }
-  .drop-cap::first-letter { font-size: 2.8em; line-height: .72; }
-  .marquee-item { @apply px-4; }
-  /* the ticker crosses a narrow screen far sooner, so slow it to stay readable */
-  .marquee-track { animation-duration: 38s; }
-}
+   Nothing here scales down any more. The chassis is hairlines and whitespace,
+   which already work at 375px, so the phone block is empty by design. */
 
 @keyframes reveal-up { to { opacity: 1; transform: none; filter: blur(0); } }
 @keyframes draw { to { stroke-dashoffset: 0; } }

@@ -1,8 +1,6 @@
-import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import { Star, ArrowUpRight } from "lucide-react";
 import { iconFor, priceLabel, priceLabelShort } from "../lib/helpers.jsx";
-import { Tilt } from "./motion.jsx";
 import { ToolLogo } from "./toollogo.jsx";
 import { useIntentPrefetch } from "../lib/prefetchlink.jsx";
 import { getTool, getCategory } from "../api/client.js";
@@ -22,7 +20,7 @@ export function Stars({ r = 0, size = 13, showNum = true }) {
 export function Loader({ label = "Loading…" }) {
   return (
     <div className="py-20 text-center font-mono text-sm text-ink2" role="status" aria-live="polite">
-      <span className="inline-block w-4 h-4 mr-2 align-middle border-2 border-ink border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+      <span className="inline-block w-4 h-4 mr-2 align-middle border border-rule border-t-transparent rounded-full animate-spin" aria-hidden="true" />
       {label}
     </div>
   );
@@ -31,7 +29,7 @@ export function Loader({ label = "Loading…" }) {
 // A single placeholder card that mirrors a ToolCard's shape while data loads.
 export function CardSkeleton() {
   return (
-    <div className="border-2 border-ink rounded-card p-4 sm:p-5 bg-paper" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+    <div className="border border-rule rounded-card p-4 sm:p-5 bg-paper" >
       {/* mirrors the card's own stack-then-inline header so nothing jumps on load */}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3 mb-4">
         <span className="skeleton w-10 h-10 sm:w-12 sm:h-12 rounded-ui" />
@@ -120,7 +118,7 @@ export function ToolCard({ tool, showCategory = true }) {
     <Link
       to={`/tools/${tool.slug}`}
       {...intent}
-      className="group relative flex flex-col h-full rounded-card bg-paper border-2 border-ink
+      className="group relative flex flex-col h-full rounded-card bg-paper border border-rule
         shadow-press transition-[transform,box-shadow] duration-200 ease-out
         hover:-translate-y-0.5 hover:shadow-press-lg focus-visible:-translate-y-0.5"
     >
@@ -158,7 +156,7 @@ export function ToolCard({ tool, showCategory = true }) {
               {tool.name}
             </h3>
             {showCategory && (
-              <span className="block font-mono text-nano uppercase tracking-[.12em] sm:tracking-[.16em] mt-1 sm:mt-1.5 truncate" style={{ color }}>
+              <span className="block font-mono text-nano uppercase tracking-[.12em] sm:tracking-[.16em] mt-1 sm:mt-1.5 truncate text-ink2">
                 {c.name}
               </span>
             )}
@@ -172,7 +170,7 @@ export function ToolCard({ tool, showCategory = true }) {
             It is how a spec sheet or a dictionary is set, it scans down a
             column far better than stacked labels, and it costs no decoration. */}
         {(tool.bestFor || tool.caveat) && (
-          <dl className="hidden sm:block border-t-2 border-ink/10 pt-3 mb-4 space-y-1.5">
+          <dl className="hidden sm:block border-t border-rule pt-3 mb-4 space-y-1.5">
             {tool.bestFor && (
               <div className="text-sm leading-snug line-clamp-2">
                 <dt className="inline font-mono text-nano uppercase tracking-[.12em] text-accentDeep whitespace-nowrap">Best for</dt>
@@ -193,7 +191,7 @@ export function ToolCard({ tool, showCategory = true }) {
         {/* Both halves are set to stay on one line. Uppercase tracking pushed
            this row onto two lines at three-up, which knocked the footers of a
            row out of alignment — the exact thing a grid is for. */}
-        <div className="flex items-center justify-between gap-2 mt-auto pt-2.5 sm:pt-3 border-t-2 border-ink/10">
+        <div className="flex items-center justify-between gap-2 mt-auto pt-2.5 sm:pt-3 border-t border-rule">
           <span className="font-mono text-nano text-ink2 tabular-nums whitespace-nowrap">{priceLabelShort(tool)}</span>
           <span className="font-mono text-nano text-ink shrink-0 whitespace-nowrap inline-flex items-center gap-1.5">
             <span className="hidden sm:inline">Read review</span>
@@ -205,197 +203,163 @@ export function ToolCard({ tool, showCategory = true }) {
   );
 }
 
-function CornerMarks() {
-  const base = "pointer-events-none absolute z-10 w-3.5 h-3.5 border-ink/70 transition-colors duration-300 group-hover:border-white/50";
+
+// CategoryRow — one line of the index.
+//
+// This used to flood the whole row with the category's colour on hover, invert
+// the copy to white, roll the name over to an italic copy of itself and drag a
+// magnetic arrow after the cursor. Four animations to say one thing: this row is
+// the one you are pointing at. A ground that shifts one step, a swatch that
+// widens and a rule that darkens do the same job without the row changing
+// colour scheme under the reader mid-scan. The category's colour is still on the
+// row — it is the swatch, where it identifies rather than decorates.
+export function CategoryRow({ category, n = 0, preview = [] }) {
+  const Icon = iconFor(category.iconKey);
+  const color = category.colorPrimary || "#0E1116";
+
   return (
-    <>
-      <span aria-hidden="true" className={`${base} top-2 left-2 border-t-2 border-l-2 rounded-tl-ui`} />
-      <span aria-hidden="true" className={`${base} top-2 right-2 border-t-2 border-r-2 rounded-tr-ui`} />
-      <span aria-hidden="true" className={`${base} bottom-2 left-2 border-b-2 border-l-2 rounded-bl-ui`} />
-      <span aria-hidden="true" className={`${base} bottom-2 right-2 border-b-2 border-r-2 rounded-br-ui`} />
-    </>
+    <Link to={`/categories/${category.slug}`}
+      className="group relative flex items-center gap-3 md:gap-5 border-b border-rule px-3 md:px-5 py-3.5 md:py-4
+        transition-colors duration-150 hover:bg-paper2">
+
+      {/* the category's colour, as a measured swatch rather than a wash */}
+      <span aria-hidden="true"
+        className="absolute left-0 inset-y-0 w-[3px] transition-[width] duration-200 ease-out group-hover:w-[5px]"
+        style={{ background: color }} />
+
+      <span className="font-mono text-xs tabular-nums w-6 md:w-8 shrink-0 text-ink2">
+        {String(n).padStart(2, "0")}
+      </span>
+
+      <span className="grid place-items-center w-8 h-8 shrink-0 rounded-tight border border-rule text-ink2
+        transition-colors group-hover:text-ink group-hover:border-ink2/40">
+        <Icon size={16} aria-hidden="true" />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <h3 className="font-display text-base md:text-lg font-semibold leading-tight tracking-tight truncate">
+          {category.name}
+        </h3>
+        <p className="text-xs md:text-sm text-ink2 mt-0.5 truncate">{category.description}</p>
+      </div>
+
+      {/* a sample of what is inside — always visible, not revealed on hover: a
+          reader scanning the index wants to see it without pointing at it */}
+      {preview.length > 0 && (
+        <div className="hidden lg:flex items-center gap-1 shrink-0">
+          {preview.slice(0, 3).map((t) => (
+            <span key={t.slug} title={t.name}
+              className="w-7 h-7 grid place-items-center rounded-tight border border-rule bg-surface
+                font-mono text-nano font-semibold text-ink2">
+              {t.logoMono || t.name[0]}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <span className="font-mono text-micro uppercase tracking-[.1em] tabular-nums text-ink2 hidden sm:block shrink-0 w-20 text-right">
+        {category.toolCount ?? 0} tools
+      </span>
+
+      <ArrowUpRight size={16} aria-hidden="true"
+        className="shrink-0 text-ink2 transition-[transform,color] duration-150 group-hover:text-ink
+          group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+    </Link>
   );
 }
 
-// CategoryRow — the broadsheet's contents index. A full-width row per category,
-// set in big display type; on hover the category's own colour floods in from the
-// left (with a halftone wash over it), the copy inverts to white, the icon tile
-// lights up, a few of that category's tool logos slide in, and the arrow trails
-// the cursor magnetically as it moves across the row.
-export function CategoryRow({ category, n = 0, preview = [] }) {
+// CategoryCard — the same information as a card, in the card language ToolCard
+// already established: a hairline frame and the category's colour as a head-rule
+// that thickens. It used to carry a 3D tilt, a colour flood rising from the
+// bottom, a 132px ghost icon bleeding off the corner, four crop-mark corners and
+// a full inversion of every text colour to white — five effects at once.
+export function CategoryCard({ category }) {
+  const intent = useIntentPrefetch(() => getCategory(category.slug), [category.slug]);
   const Icon = iconFor(category.iconKey);
-  const color = category.colorPrimary || "#7C3AED";
-  const arrowRef = useRef(null);
-
-  // The magnetic arrow: as the cursor crosses the row, the arrow drifts toward
-  // it. We write the transform straight to the node (cheap; no re-render) and a
-  // CSS transition smooths the chase. Skipped under reduced-motion.
-  const onMove = (e) => {
-    if (!arrowRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const rel = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 … 0.5
-    arrowRef.current.style.transform = `translateX(${(rel * 20).toFixed(1)}px)`;
-  };
-  const onLeave = () => { if (arrowRef.current) arrowRef.current.style.transform = ""; };
+  const color = category.colorPrimary || "#0E1116";
+  const preview = category.preview || [];
+  const total = category.toolCount ?? 0;
+  const extra = total - Math.min(preview.length, 5);        // five tiles shown
+  const extraNarrow = total - Math.min(preview.length, 3);  // three, on a half-width card
 
   return (
-    <Link to={`/categories/${category.slug}`} onMouseMove={onMove} onMouseLeave={onLeave}
-      className="group relative block border-b-2 border-ink overflow-hidden">
-      {/* the colour wipe + a printed halftone over it */}
+    <Link to={`/categories/${category.slug}`} {...intent}
+      className="group relative flex flex-col h-full rounded-card bg-surface border border-rule
+        shadow-press transition-[transform,box-shadow] duration-200 ease-out
+        hover:-translate-y-0.5 hover:shadow-press-lg focus-visible:-translate-y-0.5">
+
       <span aria-hidden="true"
-        className="absolute inset-0 origin-left scale-x-0 transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-x-100"
+        className="absolute inset-x-0 top-0 h-[3px] rounded-t-card origin-top transition-transform duration-200 ease-out group-hover:scale-y-[2.2]"
         style={{ background: color }} />
-      <span aria-hidden="true"
-        className="halftone absolute inset-0 opacity-0 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-25" />
 
-      <div className="relative flex items-center gap-3 md:gap-5 px-3 md:px-5 py-4 md:py-5 transition-colors duration-300 group-hover:text-white">
-        {/* a white rail grows up the left edge as the row lights up */}
-        <span aria-hidden="true"
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-0 bg-white transition-[height] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:h-3/5" />
-
-        <span className="font-mono text-xs md:text-sm tabular-nums w-6 md:w-9 shrink-0 text-ink2 transition-colors group-hover:text-white/60">
-          {String(n).padStart(2, "0")}
-        </span>
-        <span className="grid place-items-center w-10 h-10 shrink-0 border-2 border-ink text-white transition-colors duration-300 group-hover:bg-white/15 group-hover:border-white/40"
-          style={{ background: color }}>
-          <Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
-        </span>
-        <div className="min-w-0 flex-1">
-          {/* kinetic roll: the roman name lifts away, an italic copy rolls up */}
-          <h3 className="relative block overflow-hidden font-display text-lg md:text-2xl font-semibold leading-[1.15] tracking-tight whitespace-nowrap">
-            <span className="block transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:-translate-y-full">{category.name}</span>
-            <span aria-hidden="true"
-              className="absolute inset-0 block italic translate-y-full transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:translate-y-0">{category.name}</span>
-          </h3>
-          <p className="text-xs md:text-sm text-ink2 mt-0.5 truncate transition-colors group-hover:text-white/85">{category.description}</p>
+      <div className="flex flex-col h-full p-4 sm:p-6 pt-5 sm:pt-7">
+        <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
+          <span className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-tight text-white"
+            style={{ background: color }}>
+            <Icon size={18} aria-hidden="true" />
+          </span>
+          <span className="font-mono text-nano sm:text-micro uppercase tracking-[.12em] tabular-nums text-ink2 whitespace-nowrap pt-1">
+            {total} tools
+          </span>
         </div>
 
-        {/* a peek at the category's tools — logos slide in, stacked, on hover */}
+        <h3 className="font-display text-lg sm:text-2xl font-semibold mb-1 tracking-tight leading-tight">{category.name}</h3>
+        <p className="text-xs sm:text-sm text-ink2 leading-snug mb-4 line-clamp-3 sm:line-clamp-2">{category.description}</p>
+
+        {/* what is actually inside, as a contact strip. It wraps rather than
+            clips: below ~360px three tiles plus the count are wider than half a
+            screen, and a cut-off "+3" reads as a bug. */}
         {preview.length > 0 && (
-          <div className="hidden lg:flex items-center -space-x-2 shrink-0 opacity-0 translate-x-4 transition-[opacity,transform] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:opacity-100 group-hover:translate-x-0">
-            {preview.slice(0, 3).map((t, i) => (
+          <div className="flex flex-wrap items-center gap-1.5 mb-4 mt-auto">
+            {preview.slice(0, 5).map((t, i) => (
               <span key={t.slug} title={t.name}
-                className="w-8 h-8 grid place-items-center border-2 border-white bg-paper text-ink font-display font-bold text-xs"
-                style={{ transitionDelay: `${140 + i * 70}ms` }}>
+                className={`${i >= 3 ? "hidden sm:grid" : "grid"} place-items-center min-w-[1.75rem] h-7 px-1.5
+                  rounded-tight border border-rule bg-paper2 text-ink2 font-mono text-nano font-semibold leading-none`}>
                 {t.logoMono || t.name[0]}
               </span>
             ))}
+            {extraNarrow > 0 && <span className="sm:hidden font-mono text-nano text-ink2">+{extraNarrow}</span>}
+            {extra > 0 && <span className="hidden sm:inline font-mono text-nano text-ink2">+{extra}</span>}
           </div>
         )}
 
-        <span className="font-mono text-label uppercase tracking-wide tabular-nums text-ink2 hidden sm:block shrink-0 transition-colors group-hover:text-white/80">
-          {category.toolCount ?? 0} tools
-        </span>
-        {/* magnetic arrow, riding inside a disc that rings white on hover */}
-        <span ref={arrowRef} aria-hidden="true"
-          className="grid place-items-center w-9 h-9 shrink-0 rounded-full border-2 border-transparent transition-[transform,border-color,background-color] duration-300 ease-out group-hover:border-white/40 group-hover:bg-white/10 will-change-transform">
-          <span className="font-mono text-lg leading-none">→</span>
+        <span className="font-mono text-nano sm:text-micro uppercase tracking-[.12em] text-ink inline-flex items-center gap-1.5 mt-auto pt-3 border-t border-rule">
+          Explore
+          <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">&rarr;</span>
         </span>
       </div>
     </Link>
   );
 }
 
-export function CategoryCard({ category }) {
-  const intent = useIntentPrefetch(() => getCategory(category.slug), [category.slug]);
-  const Icon = iconFor(category.iconKey);
-  const color = category.colorPrimary || "#7C3AED";
-  const preview = category.preview || [];
-  const total = category.toolCount ?? 0;
-  const extra = total - Math.min(preview.length, 5);        // five tiles shown
-  const extraNarrow = total - Math.min(preview.length, 3);  // three, on a half-width card
-  return (
-    <Tilt className="h-full">
-      <Link to={`/categories/${category.slug}`} {...intent} style={{ transformStyle: "preserve-3d" }}
-        className="tactile tactile-lg group relative flex flex-col h-full rounded-card bg-paper border-2 border-ink p-4 sm:p-6">
-        {/* one move: the colour floods up and the type inverts onto it */}
-        <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[14px]">
-          <span className="absolute inset-0 origin-bottom scale-y-0 transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-y-100"
-            style={{ background: color }} />
-          <span className="absolute -right-6 -bottom-7 text-ink/[.06] transition-colors duration-500 group-hover:text-white/[.13]">
-            <Icon size={132} strokeWidth={1.2} />
-          </span>
-        </span>
-        <CornerMarks />
-
-        {/* the content rides forward on the Z-axis, floating above the plane */}
-        <div className="relative flex flex-col h-full transition-colors duration-300 group-hover:text-white" style={{ transform: "translateZ(34px)" }}>
-          <div className="flex items-center justify-between gap-2 mb-3 sm:mb-5">
-            <span className="grid place-items-center w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-ui border-2 border-ink text-white transition-colors duration-300 group-hover:bg-white/15 group-hover:border-white/40"
-              style={{ background: color }}>
-              <Icon size={22} aria-hidden="true" />
-            </span>
-            <span className="font-mono text-micro sm:text-xs tabular-nums text-ink2 whitespace-nowrap transition-colors group-hover:text-white/70">{category.toolCount ?? 0} tools</span>
-          </div>
-          <h3 className="font-display text-lg sm:text-2xl font-semibold mb-1 tracking-tight leading-tight">{category.name}</h3>
-          {/* clamped at two-up, full at wider widths — the copy is a taster, not the article */}
-          <p className="text-xs sm:text-sm text-ink2 leading-snug mb-4 line-clamp-3 sm:line-clamp-none transition-colors group-hover:text-white/85">{category.description}</p>
-
-          {/* the real tools inside, as a contact strip — colour tiles at rest that
-              flip to paper-white when the card floods on hover */}
-          {/* The strip wraps rather than clips: below ~360px three tiles plus the
-              count are wider than half a screen, and a cut-off "+3" reads as a bug. */}
-          {preview.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 mb-4 sm:mb-5 mt-auto">
-              {/* three tiles fit a half-width card, five fit a full one — the
-                  overflow count is stated for whichever set is actually shown */}
-              {preview.slice(0, 5).map((t, i) => (
-                <span key={t.slug} title={t.name} style={{ "--c": color }}
-                  className={`${i >= 3 ? "hidden sm:grid" : "grid"} place-items-center min-w-[1.75rem] sm:min-w-[1.9rem] h-7 sm:h-8 px-1.5 rounded-ui border-2 border-ink bg-[var(--c)] text-white font-display text-xs sm:text-sm font-bold leading-none
-                    transition-colors duration-300 group-hover:bg-white group-hover:text-ink group-hover:border-white`}>
-                  {t.logoMono || t.name[0]}
-                </span>
-              ))}
-              {extraNarrow > 0 && (
-                <span className="sm:hidden font-mono text-label text-ink2 transition-colors group-hover:text-white/75">+{extraNarrow}</span>
-              )}
-              {extra > 0 && (
-                <span className="hidden sm:inline font-mono text-label text-ink2 transition-colors group-hover:text-white/75">+{extra}</span>
-              )}
-            </div>
-          )}
-
-          <span className="font-mono text-label sm:text-xs uppercase tracking-wide inline-flex items-center gap-2 transition-colors group-hover:text-white">
-            Explore
-            <span className="grid place-items-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-ink transition-all duration-300 group-hover:border-white/50 group-hover:bg-white/10 group-hover:translate-x-1">→</span>
-          </span>
-        </div>
-      </Link>
-    </Tilt>
-  );
-}
-
-// PostCard — a blog post in the same card language as the tool/category cards:
-// rounded frame, aurora rim, colour flood, cursor spotlight, crop corners, 3D
-// parallax. Its ghost is a giant pilcrow ¶, the editor's mark.
+// PostCard — a blog post in the same language as the tool and category cards:
+// a hairline frame, the category's colour as a head-rule, and one movement on
+// hover. It used to carry a 3D tilt, a rising colour flood, a giant ghost
+// pilcrow and four crop-mark corners, all at once, to say the same thing.
 export function PostCard({ post }) {
   const c = post.category || {};
-  const color = c.colorPrimary || "#1C1714";
+  const color = c.colorPrimary || "#0E1116";
   return (
-    <Tilt className="h-full">
-      <Link to={`/blog/${post.slug}`} style={{ transformStyle: "preserve-3d" }}
-        className="tactile tactile-lg group relative flex flex-col h-full rounded-card bg-paper border-2 border-ink p-4 sm:p-5">
-        <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[14px]">
-          <span className="absolute inset-0 origin-bottom scale-y-0 transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-y-100"
-            style={{ background: color }} />
-          <span className="absolute -right-2 -bottom-16 font-display text-[120px] sm:text-[190px] font-bold leading-none text-ink/[.05] transition-colors duration-500 group-hover:text-white/[.13]"
-            aria-hidden="true">¶</span>
-        </span>
-        <CornerMarks />
+    <Link to={`/blog/${post.slug}`}
+      className="group relative flex flex-col h-full rounded-card bg-surface border border-rule
+        shadow-press transition-[transform,box-shadow] duration-200 ease-out
+        hover:-translate-y-0.5 hover:shadow-press-lg focus-visible:-translate-y-0.5">
 
-        <div className="relative flex flex-col h-full transition-colors duration-300 group-hover:text-white" style={{ transform: "translateZ(34px)" }}>
-          {c.name && (
-            <span className="font-mono text-label uppercase tracking-wide px-2 py-1 rounded-ui text-white border-2 border-transparent self-start mb-3 transition-colors group-hover:border-white/40"
-              style={{ background: color }}>{c.name}</span>
-          )}
-          <h3 className="font-display text-base sm:text-xl font-semibold mb-2 tracking-tight leading-tight">{post.title}</h3>
-          <p className="text-xs sm:text-sm text-ink2 leading-snug mb-4 line-clamp-3 transition-colors group-hover:text-white/85">{post.excerpt}</p>
-          <span className="font-mono text-label sm:text-xs text-ink2 inline-flex items-center justify-between gap-2 mt-auto w-full transition-colors group-hover:text-white/90">
-            {post.readTime ?? 5} min read
-            <span className="grid place-items-center w-6 h-6 sm:w-7 sm:h-7 shrink-0 rounded-full border-2 border-ink transition-all duration-300 group-hover:border-white/50 group-hover:bg-white/10 group-hover:translate-x-1">→</span>
-          </span>
-        </div>
-      </Link>
-    </Tilt>
+      <span aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-[3px] rounded-t-card origin-top transition-transform duration-200 ease-out group-hover:scale-y-[2.2]"
+        style={{ background: color }} />
+
+      <div className="flex flex-col h-full p-4 sm:p-5 pt-5 sm:pt-6">
+        {c.name && (
+          <span className="font-mono text-nano uppercase tracking-[.14em] mb-2 text-ink2">{c.name}</span>
+        )}
+        <h3 className="font-display text-base sm:text-xl font-semibold mb-2 tracking-tight leading-tight text-balance">{post.title}</h3>
+        <p className="text-xs sm:text-sm text-ink2 leading-snug mb-4 line-clamp-3">{post.excerpt}</p>
+        <span className="font-mono text-nano uppercase tracking-[.12em] text-ink2 inline-flex items-center justify-between gap-2 mt-auto w-full pt-3 border-t border-rule">
+          {post.readTime ?? 5} min read
+          <span aria-hidden="true" className="text-ink transition-transform duration-200 group-hover:translate-x-0.5">&rarr;</span>
+        </span>
+      </div>
+    </Link>
   );
 }

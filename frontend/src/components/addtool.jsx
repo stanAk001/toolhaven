@@ -15,8 +15,9 @@
 import { useState } from "react";
 import { Plus, X, Link2 } from "lucide-react";
 import { createTool } from "../api/client.js";
+import { ImageUpload } from "./imageupload.jsx";
 
-const field = "w-full border-2 border-ink rounded-ui bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
+const field = "w-full border border-rule rounded-ui bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
 const label = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 const hint = "font-mono text-nano text-ink2/80 mt-1";
 
@@ -41,6 +42,7 @@ const slugPreview = (s) => String(s || "").toLowerCase().trim()
 export function AddTool({ token, categories = [], onAdded }) {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState(BLANK);
+  const [logo, setLogo] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(null);
@@ -55,6 +57,7 @@ export function AddTool({ token, categories = [], onAdded }) {
       const { tool } = await createTool(f, token);
       setDone(tool);
       setF(BLANK);
+      setLogo(null);
       onAdded?.(tool);
     } catch (err) {
       setError(err?.response?.data?.error || "Couldn't add that one.");
@@ -66,7 +69,7 @@ export function AddTool({ token, categories = [], onAdded }) {
       <div className="mb-5">
         <button onClick={() => { setOpen(true); setDone(null); }}
           className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide
-            border-2 border-ink rounded-ui px-4 bg-paper hover:bg-ink hover:text-paper transition-colors">
+            border border-rule rounded-ui px-4 bg-paper hover:bg-ink hover:text-paper transition-colors">
           <Plus size={14} aria-hidden="true" /> Add a tool
         </button>
         {done && (
@@ -79,8 +82,8 @@ export function AddTool({ token, categories = [], onAdded }) {
   }
 
   return (
-    <form onSubmit={save} className="border-2 border-ink rounded-card bg-paper shadow-press mb-5 overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b-2 border-ink px-4 sm:px-5 py-3">
+    <form onSubmit={save} className="border border-rule rounded-card bg-paper shadow-press mb-5 overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-rule px-4 sm:px-5 py-3">
         <div>
           <h3 className="font-display text-xl font-semibold leading-tight">Add a tool</h3>
           <p className="font-mono text-nano uppercase tracking-[.14em] text-ink2 mt-0.5">
@@ -88,7 +91,7 @@ export function AddTool({ token, categories = [], onAdded }) {
           </p>
         </div>
         <button type="button" onClick={() => setOpen(false)} aria-label="Close"
-          className="grid place-items-center w-10 h-10 shrink-0 rounded-ui border-2 border-ink hover:bg-paper2 transition-colors">
+          className="grid place-items-center w-10 h-10 shrink-0 rounded-ui border border-rule hover:bg-paper2 transition-colors">
           <X size={15} aria-hidden="true" />
         </button>
       </div>
@@ -122,11 +125,11 @@ export function AddTool({ token, categories = [], onAdded }) {
             it verifies the file actually loads and stores it here rather than
             hotlinking someone else's CDN. The initials are the fallback for the
             handful of vendors that refuse automated requests. */}
-        <div className="border-2 border-ink/25 rounded-card bg-paper2/30 p-3.5">
+        <div className="border border-rule rounded-card bg-paper2/30 p-3.5">
           <p className="font-mono text-label uppercase tracking-[.14em] text-ink2 mb-3">Logo</p>
           <div className="flex items-start gap-3.5">
             <span aria-hidden="true"
-              className="grid place-items-center shrink-0 w-14 h-14 rounded-ui border-2 border-ink overflow-hidden bg-paper">
+              className="grid place-items-center shrink-0 w-14 h-14 rounded-ui border border-rule overflow-hidden bg-paper">
               {f.logoUrl
                 ? <img src={f.logoUrl} alt="" className="w-full h-full object-contain p-1.5"
                     onError={(e) => { e.currentTarget.style.display = "none"; }} />
@@ -136,18 +139,24 @@ export function AddTool({ token, categories = [], onAdded }) {
             </span>
 
             <div className="grid sm:grid-cols-3 gap-3 flex-1 min-w-0">
-              <div className="sm:col-span-2">
-                <label htmlFor="at-logo" className={label}>Image path or URL</label>
-                <input id="at-logo" className={field} value={f.logoUrl} onChange={set("logoUrl")}
-                  placeholder="/logos/zapier.svg — or leave blank" />
-                <p className={hint}>Blank is fine: run the logo fetcher and it reads it from their site</p>
+              {/* Was a path-or-URL box, which meant knowing where the file
+                  would end up before it existed. Upload it, drop it, or paste
+                  a screenshot of the mark straight off the vendor's site. */}
+              <div className="sm:col-span-3">
+                <ImageUpload
+                  value={logo}
+                  onChange={(v) => { setLogo(v); setF((p) => ({ ...p, logoUrl: v?.url || "" })); }}
+                  label="Upload the mark"
+                  hint="Or leave it: run the logo fetcher afterwards and it reads it off their site."
+                />
               </div>
               <div>
                 <label htmlFor="at-mono" className={label}>Initials</label>
                 <input id="at-mono" className={field} maxLength={3} value={f.logoMono} onChange={set("logoMono")}
                   placeholder={f.name.slice(0, 2) || "Zp"} />
+                <p className={hint}>Shown until a logo exists</p>
               </div>
-              <div className="sm:col-span-3">
+              <div className="sm:col-span-2">
                 <label htmlFor="at-alt" className={label}>Image description</label>
                 <input id="at-alt" className={field} value={f.logoAlt} onChange={set("logoAlt")}
                   placeholder={f.name ? `${f.name} logo` : "Zapier logo"} />
@@ -208,7 +217,7 @@ export function AddTool({ token, categories = [], onAdded }) {
 
         {/* The affiliate half. Folded away until it applies, so adding a tool
             you earn nothing from is not a form full of empty commercial fields. */}
-        <div className="border-2 border-ink/25 rounded-card bg-paper2/30 p-3.5">
+        <div className="border border-rule rounded-card bg-paper2/30 p-3.5">
           <label className="inline-flex items-center gap-2.5 cursor-pointer">
             <input type="checkbox" checked={f.isPartner} onChange={set("isPartner")} className="w-4 h-4 accent-current" />
             <span className="font-mono text-label uppercase tracking-[.14em]">

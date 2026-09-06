@@ -25,13 +25,13 @@ const TILTS = [-1.4, 0.9, -0.6, 1.3, -1, 0.7, -1.2, 1.1, -0.5];
 export function TestimonialCard({ t, tilt = 0, compact = false }) {
   return (
     <figure
-      style={{ "--tilt": `${tilt}deg`, boxShadow: compact ? "4px 4px 0 var(--shadow-cast)" : "5px 5px 0 var(--shadow-cast)" }}
-      className={`group/t relative bg-paper border-2 border-ink rounded-card flex flex-col
+      style={{ "--tilt": `${tilt}deg` }}
+      className={`group/t relative bg-paper border border-rule rounded-card flex flex-col
         rotate-[var(--tilt)] hover:rotate-0 hover:-translate-y-1 transition-transform duration-300 ease-[cubic-bezier(.2,.8,.2,1)]
         ${compact ? "p-4 sm:p-5" : "p-4 sm:p-6 md:p-7"}`}>
       {/* the thumbtack holding the clipping to the board */}
       <span aria-hidden="true"
-        className={`absolute -top-2.5 ${compact ? "left-4 sm:left-5 w-3.5 h-3.5" : "left-5 sm:left-7 w-3.5 h-3.5 sm:w-4 sm:h-4"} rounded-full bg-accent border-2 border-ink shadow-[1px_1px_0_var(--shadow-cast)]
+        className={`absolute -top-2.5 ${compact ? "left-4 sm:left-5 w-3.5 h-3.5" : "left-5 sm:left-7 w-3.5 h-3.5 sm:w-4 sm:h-4"} rounded-full bg-accent border border-rule
           transition-transform duration-300 group-hover/t:scale-110`} />
       {/* the oversized opening quote, ghosted into the corner like set type */}
       <span aria-hidden="true"
@@ -46,7 +46,7 @@ export function TestimonialCard({ t, tilt = 0, compact = false }) {
         {t.content}
       </blockquote>
 
-      <figcaption className={`flex items-center gap-2.5 sm:gap-3 border-t-2 border-ink/10 ${compact ? "mt-3.5 pt-3" : "mt-4 sm:mt-6 pt-3 sm:pt-4"}`}>
+      <figcaption className={`flex items-center gap-2.5 sm:gap-3 border-t border-rule ${compact ? "mt-3.5 pt-3" : "mt-4 sm:mt-6 pt-3 sm:pt-4"}`}>
         {/* the monogram disc only repeats the name beside it — below 360px that
             trade isn't worth the ~40px it steals from the byline */}
         <span aria-hidden="true"

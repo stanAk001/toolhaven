@@ -97,11 +97,11 @@ export default function ToolsDirectory() {
 
       {/* ===== the filter bar — one surface, three registers ===== */}
       <section aria-label="Filter the directory"
-        className="border-2 border-ink rounded-card bg-paper overflow-hidden mb-8"
-        style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+        className="border border-rule rounded-card bg-paper overflow-hidden mb-8"
+        >
 
         {/* search + the count it affects, on the same line */}
-        <div className="flex items-center gap-3 px-4 sm:px-5 border-b-2 border-ink">
+        <div className="flex items-center gap-3 px-4 sm:px-5 border-b border-rule">
           <Search size={18} strokeWidth={2.5} aria-hidden="true" className="shrink-0 text-accentDeep" />
           <input value={search} onChange={(e) => setSearch(e.target.value)}
             type="search" aria-label="Search tools" autoComplete="off" spellCheck={false}
@@ -127,7 +127,7 @@ export default function ToolsDirectory() {
             the middle. A filter you cannot see is not a filter, and the sliced
             chip was the single scruffiest thing on the page. Wrapping shows the
             whole index at every width; the chips are light enough to take it. */}
-        <div className="px-4 sm:px-5 py-3.5 border-b-2 border-ink">
+        <div className="px-4 sm:px-5 py-3.5 border-b border-rule">
           <div className="flex flex-wrap gap-x-1.5 gap-y-2" role="group" aria-label="Filter by category">
             <Chip on={active === "all"} onClick={() => setActive("all")}>All</Chip>
             {cats.map((c) => (
@@ -164,7 +164,7 @@ export default function ToolsDirectory() {
 
           {narrowed && (
             <button type="button" onClick={reset}
-              className="inline-flex items-center justify-center gap-1.5 min-h-touch w-full sm:w-auto sm:ml-auto font-mono text-micro uppercase tracking-[.12em] text-accentDeep hover:text-ink border-2 border-ink/25 sm:border-0 rounded-ui transition-colors">
+              className="inline-flex items-center justify-center gap-1.5 min-h-touch w-full sm:w-auto sm:ml-auto font-mono text-micro uppercase tracking-[.12em] text-accentDeep hover:text-ink border border-rule sm:border-0 rounded-ui transition-colors">
               <X size={13} strokeWidth={2.5} aria-hidden="true" /> Reset filters
             </button>
           )}
@@ -172,7 +172,7 @@ export default function ToolsDirectory() {
       </section>
 
       {loading ? <SkeletonGrid count={6} /> : grouped.length === 0 ? (
-        <div className="border-2 border-dashed border-ink/30 rounded-card px-6 py-14 text-center">
+        <div className="border border-dashed border-rule rounded-card px-6 py-14 text-center">
           <p className="font-display text-xl sm:text-2xl font-semibold text-balance mb-2">
             Nothing matches that combination.
           </p>
@@ -186,7 +186,7 @@ export default function ToolsDirectory() {
         grouped.map(([slug, g]) => (
           <section key={slug} className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <span aria-hidden="true" className="w-4 h-4 rotate-45 border-2 border-ink shrink-0" style={{ background: g.cat?.colorPrimary }} />
+              <span aria-hidden="true" className="w-4 h-4 rotate-45 border border-rule shrink-0" style={{ background: g.cat?.colorPrimary }} />
               <h2 className="font-display text-2xl md:text-3xl font-semibold">{g.cat?.name}</h2>
               <span aria-hidden="true" className="font-mono text-micro uppercase tracking-wide text-ink2 tabular-nums shrink-0">
                 {g.tools.length}
@@ -234,10 +234,10 @@ function Chip({ on, color, onClick, children }) {
     // the night edition's near-black background.
     <button type="button" onClick={onClick} aria-pressed={on}
       className={`group/chip inline-flex items-center gap-2 font-mono text-label uppercase tracking-[.06em]
-        px-3 min-h-touch sm:min-h-[36px] rounded-ui whitespace-nowrap transition-colors border-2
+        px-3 min-h-touch sm:min-h-[36px] rounded-ui whitespace-nowrap transition-colors border
         ${on
           ? (color ? "text-white" : "bg-ink text-paper border-ink")
-          : "border-ink/25 text-ink2 hover:text-ink hover:border-ink hover:bg-paper2"}`}
+          : "border-rule text-ink2 hover:text-ink hover:border-ink hover:bg-paper2"}`}
       style={on && color ? { background: color, borderColor: color } : undefined}>
       {color && (
         <span aria-hidden="true"

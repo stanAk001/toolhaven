@@ -111,7 +111,7 @@ export default function BestList() {
 
       {/* How the picks were made, stated before the picks themselves. */}
       {list.criteria && (
-        <section className="border-2 border-ink rounded-card bg-paper2/40 p-5 sm:p-6 mb-10">
+        <section className="border border-rule rounded-card bg-paper2/40 p-5 sm:p-6 mb-10">
           <h2 className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-3">How we chose</h2>
           <div className="prose-editorial max-w-measure text-sm">
             <ReactMarkdown>{list.criteria}</ReactMarkdown>
@@ -127,7 +127,7 @@ export default function BestList() {
       {entries.length > 0 && (
         <section className="mb-12">
           <SectionHead folio="01" kicker="At a glance" title="The shortlist" />
-          <div className="cmp-wrap border-2 border-ink rounded-card bg-paper">
+          <div className="cmp-wrap border border-rule rounded-card bg-paper">
             <table className="cmp w-full text-sm border-collapse">
               <caption className="sr-only">{list.title} — summary of all {entries.length} picks</caption>
               <thead>
@@ -162,16 +162,16 @@ export default function BestList() {
 
       {/* the picks in full */}
       <SectionHead folio="02" kicker="In detail" title="Every pick, and its catch" />
-      <Reveal stagger as="ol" className="border-t-2 border-ink mb-12">
+      <Reveal stagger as="ol" className="border-t border-rule mb-12">
         {entries.map((e, i) => <Entry key={e.id} entry={e} rank={i + 1} listSlug={list.slug} />)}
       </Reveal>
 
       {list.faqs?.length > 0 && (
         <section className="mb-12">
           <SectionHead folio="03" kicker="Before you pick" title="Common questions" />
-          <dl className="border-t border-ink/25">
+          <dl className="border-t border-rule">
             {list.faqs.map((f) => (
-              <div key={f.id} className="border-b border-ink/25 py-5">
+              <div key={f.id} className="border-b border-rule py-5">
                 <dt className="font-display text-lg sm:text-xl font-semibold mb-2 text-balance">{f.question}</dt>
                 <dd className="text-ink2 leading-relaxed text-pretty max-w-measure">{f.answer}</dd>
               </div>
@@ -187,7 +187,7 @@ export default function BestList() {
             {list.related.map((rl) => (
               <li key={rl.slug}>
                 <Link to={`/best/${rl.slug}`}
-                  className="tactile block h-full border-2 border-ink rounded-card bg-paper p-5 hover:bg-paper2/60 transition-colors">
+                  className="tactile block h-full border border-rule rounded-card bg-paper p-5 hover:bg-paper2/60 transition-colors">
                   <span className="font-display text-lg font-semibold leading-tight block mb-1">{rl.title}</span>
                   {rl.subtitle && <span className="text-sm text-ink2 leading-snug line-clamp-2">{rl.subtitle}</span>}
                 </Link>
@@ -197,12 +197,11 @@ export default function BestList() {
         </section>
       )}
 
-      <div className="border-t-2 border-ink mt-12 pt-6">
+      <div className="border-t border-rule mt-12 pt-6">
         <ShareBar context="best" title={list.title} />
       </div>
 
       <p className="font-mono text-label uppercase tracking-[.12em] text-ink2 mt-8 text-pretty">
-        <span className="text-accent" aria-hidden="true">✦</span>{" "}
         Some outbound links are partner links. They never affect the order of this list.{" "}
         <Link to="/disclosure" className="underline underline-offset-2 hover:text-accentDeep transition-colors">How we make money</Link>
       </p>
@@ -215,7 +214,7 @@ function Entry({ entry, rank, listSlug }) {
   const color = t.category?.colorPrimary || "#7C3AED";
 
   return (
-    <li className="border-b-2 border-ink py-6">
+    <li className="border-b border-rule py-6">
       <div className="flex items-start gap-4 sm:gap-6">
         <span aria-hidden="true"
           className="folio font-display font-semibold leading-[.72] text-ink/15 select-none shrink-0 tabular-nums text-[clamp(2rem,6vw,3.5rem)] w-[1.6em] text-right">
@@ -225,7 +224,7 @@ function Entry({ entry, rank, listSlug }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-2">
             <span aria-hidden="true"
-              className="w-10 h-10 grid place-items-center rounded-ui border-2 border-ink font-display font-bold text-sm text-white shrink-0"
+              className="w-10 h-10 grid place-items-center rounded-ui border border-rule font-display font-bold text-sm text-white shrink-0"
               style={{ background: color }}>
               {t.logoMono || t.name[0]}
             </span>
@@ -253,7 +252,7 @@ function Entry({ entry, rank, listSlug }) {
             <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 mb-3 max-w-measure">
               {t.pros.map((p) => (
                 <li key={p.id} className="flex gap-2 text-sm text-ink2">
-                  <span aria-hidden="true" className="text-accent shrink-0">✦</span>
+                  <span aria-hidden="true" className="shrink-0 mt-[.45em] w-1.5 h-1.5 bg-accent" />
                   <span>{p.text}</span>
                 </li>
               ))}

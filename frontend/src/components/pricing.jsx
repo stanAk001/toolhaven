@@ -39,7 +39,7 @@ const yesNo = (v) => (v
 function VerifiedLine({ pricing, tone = "dark" }) {
   const when = verifiedAgo(pricing.lastVerifiedAt);
   if (!when) return null;
-  const muted = tone === "dark" ? "text-white/70" : "text-ink2";
+  const muted = "text-ink2";
   return (
     <p className={`inline-flex items-center gap-1.5 font-mono text-label uppercase tracking-[.12em] ${muted}`}>
       <ShieldCheck size={12} aria-hidden="true" />
@@ -51,9 +51,9 @@ function VerifiedLine({ pricing, tone = "dark" }) {
 /** The plan ladder, as a table because that is what it is. */
 function PlanTable({ plans, tone = "dark" }) {
   if (!plans?.length) return null;
-  const line = tone === "dark" ? "border-white/20" : "border-ink/15";
-  const muted = tone === "dark" ? "text-white/60" : "text-ink2";
-  const body = tone === "dark" ? "text-white" : "text-ink";
+  const line = tone === "dark" ? "border-rule" : "border-rule";
+  const muted = tone === "dark" ? "text-ink2" : "text-ink2";
+  const body = tone === "dark" ? "text-ink" : "text-ink";
 
   return (
     <div className="overflow-x-auto -mx-1 px-1">
@@ -97,7 +97,7 @@ function PlanTable({ plans, tone = "dark" }) {
 function OfficialLink({ href, name, tone = "dark", strong = false }) {
   if (!href) return null;
   const cls = tone === "dark"
-    ? "text-white hover:text-white/75 underline-offset-4"
+    ? "text-ink hover:text-ink2 underline-offset-4"
     : "text-accentDeep hover:text-ink underline-offset-4";
   return (
     <a href={href} target="_blank" rel="noopener noreferrer nofollow"
@@ -130,14 +130,14 @@ export function PriceDisclosure({ tool }) {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls={panelId}
-        className="group inline-flex items-center gap-2.5 font-mono text-sm text-white tabular-nums
-          border-2 border-white/30 hover:border-white/70 focus-visible:border-white
+        className="group inline-flex items-center gap-2.5 font-mono text-sm text-ink tabular-nums
+          border border-rule hover:border-ink2/50 focus-visible:border-accent
           rounded-ui pl-3.5 pr-2.5 py-1.5 transition-colors min-h-touch sm:min-h-0"
       >
-        {verified && <span className="font-mono text-nano uppercase tracking-[.14em] text-white/60">from</span>}
+        {verified && <span className="font-mono text-nano uppercase tracking-[.14em] text-ink2">from</span>}
         <span className="font-semibold">{label}</span>
         {p?.freePlan && (
-          <span className="font-mono text-nano uppercase tracking-[.12em] text-white/60 border-l border-white/25 pl-2.5">
+          <span className="font-mono text-nano uppercase tracking-[.12em] text-ink2 border-l border-rule pl-2.5">
             free plan
           </span>
         )}
@@ -146,52 +146,52 @@ export function PriceDisclosure({ tool }) {
       </button>
 
       <div id={panelId} hidden={!open}
-        className="w-full mt-1 border-2 border-white/30 rounded-card bg-black/20 backdrop-blur-sm p-4 sm:p-5">
+        className="w-full mt-1 border border-rule rounded-card bg-paper2 p-4 sm:p-5">
         {verified || custom ? (
           <>
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 mb-4">
               <div>
-                <p className="font-mono text-label uppercase tracking-[.16em] text-white/60 mb-1">
+                <p className="font-mono text-label uppercase tracking-[.16em] text-ink2 mb-1">
                   {verified ? "Starting at" : "Pricing"}
                 </p>
-                <p className="font-display text-2xl sm:text-3xl font-semibold leading-none text-white tabular-nums">
+                <p className="font-display text-2xl sm:text-3xl font-semibold leading-none text-ink tabular-nums">
                   {verified ? p.headline : "Quoted on request"}
                 </p>
               </div>
               <VerifiedLine pricing={p} />
             </div>
 
-            <dl className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 pb-4 border-b border-white/20">
+            <dl className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 pb-4 border-b border-rule">
               <div>
-                <dt className="font-mono text-nano uppercase tracking-wide text-white/55 mb-1">Free plan</dt>
-                <dd className="font-mono text-sm text-white">{yesNo(p.freePlan)}</dd>
+                <dt className="font-mono text-nano uppercase tracking-wide text-ink2 mb-1">Free plan</dt>
+                <dd className="font-mono text-sm text-ink">{yesNo(p.freePlan)}</dd>
               </div>
               <div>
-                <dt className="font-mono text-nano uppercase tracking-wide text-white/55 mb-1">Free trial</dt>
-                <dd className="font-mono text-sm text-white">{yesNo(p.freeTrial)}</dd>
+                <dt className="font-mono text-nano uppercase tracking-wide text-ink2 mb-1">Free trial</dt>
+                <dd className="font-mono text-sm text-ink">{yesNo(p.freeTrial)}</dd>
               </div>
               {p.sourceLabel && (
                 <div className="col-span-2 sm:col-span-1">
-                  <dt className="font-mono text-nano uppercase tracking-wide text-white/55 mb-1">Source</dt>
-                  <dd className="font-mono text-sm text-white">{p.sourceLabel}</dd>
+                  <dt className="font-mono text-nano uppercase tracking-wide text-ink2 mb-1">Source</dt>
+                  <dd className="font-mono text-sm text-ink">{p.sourceLabel}</dd>
                 </div>
               )}
             </dl>
 
             <PlanTable plans={p.plans} />
 
-            <p className="text-xs text-white/65 leading-snug text-pretty mt-4 mb-3">
+            <p className="text-xs text-ink2 leading-snug text-pretty mt-4 mb-3">
               Plan prices move, and vendors localise them. Check before you commit.
             </p>
             <OfficialLink href={official} name={tool.name} />
           </>
         ) : (
           <>
-            <p className="font-mono text-label uppercase tracking-[.16em] text-white/60 mb-1.5">Pricing</p>
-            <p className="font-display text-xl sm:text-2xl font-semibold leading-tight text-white mb-2">
+            <p className="font-mono text-label uppercase tracking-[.16em] text-ink2 mb-1.5">Pricing</p>
+            <p className="font-display text-xl sm:text-2xl font-semibold leading-tight text-ink mb-2">
               Current pricing unavailable
             </p>
-            <p className="text-sm text-white/75 leading-snug text-pretty mb-4 max-w-md">
+            <p className="text-sm text-ink2 leading-snug text-pretty mb-4 max-w-md">
               We could not confidently verify {tool.name}&rsquo;s latest public pricing, so we are not
               going to print a figure. Their own page has the current numbers.
             </p>

@@ -56,7 +56,7 @@ export default function HowWeReview() {
       ]} />
 
       <div className="prose-editorial max-w-measure">
-        <p className="drop-cap">
+        <p className="text-lg leading-relaxed">
           Most software "reviews" are the vendor's own marketing page, reworded. The test we set ourselves is
           simple: could someone read a Toolhaven page, buy the thing, and feel we'd been straight with them?
           That means publishing the downsides of tools we recommend — including ones we earn a commission on.
@@ -65,9 +65,9 @@ export default function HowWeReview() {
 
       <span id="criteria" className="block scroll-mt-28" />
       <SectionHead folio="01" kicker="The criteria" title="What we actually assess" />
-      <dl className="border-t border-ink/25 mb-12">
+      <dl className="border-t border-rule mb-12">
         {CRITERIA.map(([term, detail], i) => (
-          <div key={term} className="border-b border-ink/25 py-4 flex gap-4 sm:gap-6">
+          <div key={term} className="border-b border-rule py-4 flex gap-4 sm:gap-6">
             <span aria-hidden="true" className="font-mono text-micro tabular-nums text-ink2/60 shrink-0 w-6 pt-1">
               {String(i + 1).padStart(2, "0")}
             </span>

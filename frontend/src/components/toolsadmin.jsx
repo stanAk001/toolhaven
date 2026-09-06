@@ -66,7 +66,7 @@ function ScoreEditor({ tool, token }) {
   };
 
   return (
-    <div className="border-t-2 border-ink p-4 space-y-4">
+    <div className="border-t border-rule p-4 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-mono text-label uppercase tracking-[.14em] text-accentDeep">
           Toolhaven Score · leave blank to not score a dimension
@@ -104,7 +104,7 @@ function ScoreEditor({ tool, token }) {
         </button>
         {tool.score && (
           <button onClick={clear}
-            className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 text-accentDeep hover:bg-paper2 transition-colors">
+            className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 text-accentDeep hover:bg-paper2 transition-colors">
             Withdraw score
           </button>
         )}
@@ -113,7 +113,7 @@ function ScoreEditor({ tool, token }) {
   );
 }
 
-const field = "w-full border-2 border-ink rounded-card bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
+const field = "w-full border border-rule rounded-card bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
 const label = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
 export function ToolsAdmin({ token }) {
@@ -148,7 +148,7 @@ export function ToolsAdmin({ token }) {
 
       {/* the one number worth leading with */}
       {unmonetised.length > 0 && (
-        <div className="flex items-start gap-3 border-2 border-ink rounded-card bg-accent/10 p-4 mb-5">
+        <div className="flex items-start gap-3 border border-rule rounded-card bg-accent/10 p-4 mb-5">
           <AlertTriangle size={18} className="text-accentDeep shrink-0 mt-0.5" aria-hidden="true" />
           <p className="text-sm text-pretty">
             <strong>{unmonetised.length} tool{unmonetised.length === 1 ? "" : "s"} already sending clicks with no affiliate link.</strong>{" "}
@@ -159,7 +159,7 @@ export function ToolsAdmin({ token }) {
         </div>
       )}
 
-      <div className="flex items-center gap-3 border-2 border-ink rounded-ui px-4 mb-5 bg-paper">
+      <div className="flex items-center gap-3 border border-rule rounded-ui px-4 mb-5 bg-paper">
         <Search size={16} strokeWidth={2.5} aria-hidden="true" className="text-accentDeep shrink-0" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tools…"
           aria-label="Search tools" className="flex-1 min-w-0 bg-transparent outline-none min-h-touch" />
@@ -212,27 +212,27 @@ function ToolRow({ tool, token, allTools, open, onToggle, onSaved }) {
   };
 
   return (
-    <div className="border-2 border-ink rounded-card bg-paper" style={{ boxShadow: "4px 4px 0 var(--shadow-cast)" }}>
+    <div className="border border-rule rounded-card bg-paper" >
       <div className="flex flex-wrap items-center gap-3 p-4">
         <span aria-hidden="true"
-          className="w-10 h-10 grid place-items-center rounded-ui border-2 border-ink font-display font-bold text-sm text-white shrink-0"
-          style={{ background: tool.category?.colorPrimary || "#1C1714" }}>
+          className="w-10 h-10 grid place-items-center rounded-ui border border-rule font-display font-bold text-sm text-white shrink-0"
+          style={{ background: tool.category?.colorPrimary || "#0E1116" }}>
           {tool.logoMono || tool.name[0]}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-display text-lg font-semibold leading-tight">{tool.name}</span>
             {tool.affiliateLink ? (
-              <span className="font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border-2 border-green-700 text-green-700">
+              <span className="font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border border-green-700 text-green-700">
                 Monetised
               </span>
             ) : (
-              <span className="font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border-2 border-ink/40 text-ink2">
+              <span className="font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border border-rule text-ink2">
                 No link
               </span>
             )}
             {!tool.isActive && (
-              <span className="font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border-2 border-accentDeep text-accentDeep">
+              <span className="font-mono text-nano uppercase tracking-wide px-2 py-0.5 rounded-ui border border-accentDeep text-accentDeep">
                 Hidden
               </span>
             )}
@@ -244,18 +244,18 @@ function ToolRow({ tool, token, allTools, open, onToggle, onSaved }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link to={`/tools/${tool.slug}`} target="_blank" aria-label={`View ${tool.name}`}
-            className="grid place-items-center w-11 h-11 rounded-full border-2 border-ink hover:bg-paper2 transition-colors">
+            className="grid place-items-center w-11 h-11 rounded-full border border-rule hover:bg-paper2 transition-colors">
             <ExternalLink size={15} aria-hidden="true" />
           </Link>
           <button onClick={onToggle} aria-expanded={open}
-            className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
+            className="inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors">
             {open ? "Close" : "Edit"}
           </button>
         </div>
       </div>
 
       {open && (
-        <div className="border-t-2 border-ink p-4 space-y-4">
+        <div className="border-t border-rule p-4 space-y-4">
           <div>
             <label htmlFor={`aff-${tool.id}`} className={label}>Affiliate link · where the buttons send people</label>
             <input id={`aff-${tool.id}`} className={field} value={form.affiliateLink || ""} onChange={set("affiliateLink")}
@@ -277,7 +277,7 @@ function ToolRow({ tool, token, allTools, open, onToggle, onSaved }) {
               is otherwise invisible until someone loads the page. */}
           <div className="flex items-start gap-3.5">
             <span aria-hidden="true"
-              className="grid place-items-center shrink-0 w-14 h-14 rounded-ui border-2 border-ink overflow-hidden bg-paper">
+              className="grid place-items-center shrink-0 w-14 h-14 rounded-ui border border-rule overflow-hidden bg-paper">
               {form.logoUrl
                 ? <img src={form.logoUrl} alt="" className="w-full h-full object-contain p-1.5" />
                 : <span className="font-display font-bold text-lg text-ink2">
@@ -403,7 +403,7 @@ export function ClicksAdmin({ token }) {
         <div className="flex gap-2">
           {[7, 30, 90].map((d) => (
             <button key={d} onClick={() => setDays(d)}
-              className={`inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-3 transition-colors ${
+              className={`inline-flex items-center min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-3 transition-colors ${
                 days === d ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
               {d}d
             </button>
@@ -443,7 +443,7 @@ export function ClicksAdmin({ token }) {
             </h3>
             <ul className="space-y-1.5 mb-8">
               {stats.byReferrer.map((r) => (
-                <li key={r.page} className="flex items-center justify-between gap-3 border-b border-ink/15 py-1.5">
+                <li key={r.page} className="flex items-center justify-between gap-3 border-b border-rule py-1.5">
                   <span className="font-mono text-xs truncate">{r.page}</span>
                   <span className="font-mono text-xs tabular-nums shrink-0">{r.clicks}</span>
                 </li>
@@ -453,7 +453,7 @@ export function ClicksAdmin({ token }) {
             <h3 className="font-mono text-label uppercase tracking-[.2em] text-accentDeep mb-3">By category</h3>
             <ul className="space-y-1.5">
               {stats.byCategory.map((c) => (
-                <li key={c.categoryId ?? "none"} className="flex items-center gap-2.5 border-b border-ink/15 py-1.5">
+                <li key={c.categoryId ?? "none"} className="flex items-center gap-2.5 border-b border-rule py-1.5">
                   <span aria-hidden="true" className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ background: c.color || "#6A5F52" }} />
                   <span className="text-sm flex-1 min-w-0 truncate">{c.name}</span>
@@ -515,7 +515,7 @@ export function FactsEditor({ tool, token }) {
   };
 
   return (
-    <div className="border-t-2 border-ink p-4 space-y-4">
+    <div className="border-t border-rule p-4 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-mono text-label uppercase tracking-[.14em] text-accentDeep">
           Verified facts · social proof
@@ -531,7 +531,7 @@ export function FactsEditor({ tool, token }) {
       </p>
 
       {rows.map((r, i) => (
-        <div key={i} className="border-2 border-ink rounded-card bg-paper2/30 p-3 space-y-3">
+        <div key={i} className="border border-rule rounded-card bg-paper2/30 p-3 space-y-3">
           <div className="flex items-start gap-2">
             <div className="grid sm:grid-cols-3 gap-2 flex-1 min-w-0">
               <div>
@@ -554,7 +554,7 @@ export function FactsEditor({ tool, token }) {
             </div>
             <button onClick={() => setRows((p) => p.filter((_, n) => n !== i))}
               aria-label={`Remove fact ${i + 1}`}
-              className="grid place-items-center w-10 h-10 shrink-0 mt-6 rounded-full border-2 border-ink text-accentDeep hover:bg-paper2 transition-colors">
+              className="grid place-items-center w-10 h-10 shrink-0 mt-6 rounded-full border border-rule text-accentDeep hover:bg-paper2 transition-colors">
               <X size={14} aria-hidden="true" />
             </button>
           </div>
@@ -585,7 +585,7 @@ export function FactsEditor({ tool, token }) {
 
       <div className="flex flex-wrap items-center gap-2">
         <button onClick={add}
-          className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
+          className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors">
           <Plus size={13} aria-hidden="true" /> Add a fact
         </button>
         <button onClick={save} disabled={status === "saving"} className="stamp text-xs disabled:opacity-60">
@@ -635,7 +635,7 @@ export function ExternalEditor({ tool, token }) {
   const total = rows.reduce((n, r) => n + (Number(r.reviewCount) || 0), 0);
 
   return (
-    <div className="border-t-2 border-ink p-4 space-y-4">
+    <div className="border-t border-rule p-4 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-mono text-label uppercase tracking-[.14em] text-accentDeep">
           External ratings · G2, Capterra, Trustpilot
@@ -654,7 +654,7 @@ export function ExternalEditor({ tool, token }) {
       </p>
 
       {rows.map((r, i) => (
-        <div key={i} className="border-2 border-ink rounded-card bg-paper2/30 p-3 space-y-3">
+        <div key={i} className="border border-rule rounded-card bg-paper2/30 p-3 space-y-3">
           <div className="flex items-start gap-2">
             <div className="grid sm:grid-cols-4 gap-2 flex-1 min-w-0">
               <div>
@@ -680,7 +680,7 @@ export function ExternalEditor({ tool, token }) {
             </div>
             <button onClick={() => setRows((p) => p.filter((_, n) => n !== i))}
               aria-label={`Remove ${r.sourceName || "rating"}`}
-              className="grid place-items-center w-10 h-10 shrink-0 mt-6 rounded-full border-2 border-ink text-accentDeep hover:bg-paper2 transition-colors">
+              className="grid place-items-center w-10 h-10 shrink-0 mt-6 rounded-full border border-rule text-accentDeep hover:bg-paper2 transition-colors">
               <X size={14} aria-hidden="true" />
             </button>
           </div>
@@ -706,7 +706,7 @@ export function ExternalEditor({ tool, token }) {
         <button onClick={() => setRows((p) => [...p, {
           sourceName: "", sourceUrl: "", rating: "", maxRating: 5, reviewCount: "", retrievedAt: today2(), summary: "",
         }])}
-          className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
+          className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors">
           <Plus size={13} aria-hidden="true" /> Add a platform
         </button>
         <button onClick={save} disabled={status === "saving"} className="stamp text-xs disabled:opacity-60">
@@ -785,7 +785,7 @@ export function VerdictEditor({ tool, token }) {
   };
 
   return (
-    <div className="border-t-2 border-ink p-4 space-y-4">
+    <div className="border-t border-rule p-4 space-y-4">
       <p className="font-mono text-label uppercase tracking-[.14em] text-accentDeep">Editorial verdict</p>
       <p className="text-sm text-ink2 text-pretty">
         Leave anything blank and it will not appear on the page. Write what you actually concluded —
@@ -822,7 +822,7 @@ export function VerdictEditor({ tool, token }) {
         </div>
       </div>
 
-      <div className="border-2 border-ink rounded-card bg-paper2/30 p-3 space-y-3">
+      <div className="border border-rule rounded-card bg-paper2/30 p-3 space-y-3">
         <p className="font-mono text-label uppercase tracking-[.14em] text-ink2">Reality check</p>
         <div>
           <label htmlFor={id("companyClaim")} className={label}>What the company claims</label>
@@ -931,7 +931,7 @@ export function AlternativesEditor({ tool, token, allTools }) {
   };
 
   return (
-    <div className="border-t-2 border-ink p-4 space-y-4">
+    <div className="border-t border-rule p-4 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-mono text-label uppercase tracking-[.14em] text-accentDeep">Alternatives</p>
         <p className="font-mono text-label uppercase tracking-wide text-ink2">{rows.length || "none"}</p>
@@ -967,7 +967,7 @@ export function AlternativesEditor({ tool, token, allTools }) {
           </div>
           <button onClick={() => setRows((p) => p.filter((_, n) => n !== i))}
             aria-label={"Remove alternative " + (i + 1)}
-            className="grid place-items-center w-10 h-10 shrink-0 mt-6 rounded-full border-2 border-ink text-accentDeep hover:bg-paper2 transition-colors">
+            className="grid place-items-center w-10 h-10 shrink-0 mt-6 rounded-full border border-rule text-accentDeep hover:bg-paper2 transition-colors">
             <X size={14} aria-hidden="true" />
           </button>
         </div>
@@ -977,7 +977,7 @@ export function AlternativesEditor({ tool, token, allTools }) {
 
       <div className="flex flex-wrap items-center gap-2">
         <button onClick={add}
-          className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border-2 border-ink rounded-ui px-4 hover:bg-paper2 transition-colors">
+          className="inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 hover:bg-paper2 transition-colors">
           <Plus size={13} aria-hidden="true" /> Add an alternative
         </button>
         <button onClick={save} disabled={status === "saving"} className="stamp text-xs disabled:opacity-60">

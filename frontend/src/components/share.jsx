@@ -13,7 +13,7 @@ import { Link2, Check, Share2 } from "lucide-react";
 import { track, EVENTS } from "../lib/analytics.js";
 
 const btn =
-  "inline-flex items-center justify-center gap-2 min-h-touch px-3.5 rounded-full border-2 border-ink " +
+  "inline-flex items-center justify-center gap-2 min-h-touch px-3.5 rounded-full border border-rule " +
   "font-mono text-label uppercase tracking-wide bg-paper hover:bg-paper2 transition-colors";
 
 /**

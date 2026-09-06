@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ScanSearch, Users, ShieldCheck, Send } from "lucide-react";
+import { ScanSearch, Users, ShieldCheck, Send, Check } from "lucide-react";
 import { submitTool } from "../api/client.js";
+import { ImageUpload } from "../components/imageupload.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
 import { Seo } from "../lib/seo.jsx";
@@ -22,7 +23,7 @@ const EMPTY = {
 
 function Promise({ icon: Icon, title, text }) {
   return (
-    <div className="tactile rounded-card border-2 border-ink bg-paper p-5">
+    <div className="tactile rounded-card border border-rule bg-paper p-5">
       <span className="grid place-items-center w-11 h-11 rounded-card bg-ink text-paper mb-3">
         <Icon size={20} strokeWidth={2} aria-hidden="true" />
       </span>
@@ -34,6 +35,10 @@ function Promise({ icon: Icon, title, text }) {
 
 export default function Submit() {
   const [form, setForm] = useState(EMPTY);
+  const [logo, setLogo] = useState(null);
+  // Kept so the success screen can hand over the tracking link straight away
+  // rather than making them wait for the email to land.
+  const [token, setToken] = useState(null);
   const [status, setStatus] = useState(null); // null | sending | sent | error
   const [error, setError] = useState("");
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -46,29 +51,50 @@ export default function Submit() {
       return;
     }
     setStatus("sending"); setError("");
-    try { await submitTool(form); setStatus("sent"); }
+    try {
+      const res = await submitTool({ ...form, logoUploadId: logo?.id ?? null });
+      setToken(res?.token || null);
+      setStatus("sent");
+    }
     catch (err) {
       setError(err?.response?.data?.error || "Something went wrong sending that. Please try again.");
       setStatus("error");
     }
   };
 
-  const field = "w-full border-2 border-ink rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
+  const field = "w-full border border-rule rounded-card bg-paper px-4 py-3 outline-none focus:border-accent transition-colors";
   const lab = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
 
   if (status === "sent") {
     return (
       <div className="max-w-2xl mx-auto px-5 sm:px-6 py-14 sm:py-20 fade-in text-center">
-        <div className="relative inline-grid place-items-center w-20 h-20 rounded-card bg-ink text-paper mb-7" style={{ boxShadow: "6px 6px 0 var(--shadow-cast)" }}>
-          <span className="font-display text-3xl">✦</span>
+        <div className="inline-grid place-items-center w-14 h-14 rounded-card bg-ink text-paper mb-7">
+          <Check size={24} strokeWidth={2.5} aria-hidden="true" />
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-semibold mb-4 leading-tight">Submission received.</h1>
         <p className="text-lg text-ink2 max-w-md mx-auto mb-8">
-          Thanks — <strong className="text-ink">{form.toolName}</strong> is in the queue. We read every submission and try the promising ones properly. If it's a fit, we'll be in touch at <strong className="text-ink">{form.email}</strong>. No spam, no chase emails.
+          Thanks — <strong className="text-ink">{form.toolName}</strong> is in the queue. A person reads every submission and tries the promising ones properly. We'll email <strong className="text-ink">{form.email}</strong> at every step. No spam, no chase emails.
         </p>
+
+        {/* The link, offered here as well as by email. Waiting on an email to
+            find out where your own submission went is a poor first impression,
+            and mail is the one part of this we cannot guarantee arrives. */}
+        {token && (
+          <div className="border border-rule rounded-card bg-paper p-5 mb-8 text-left max-w-md mx-auto">
+            <p className="font-mono text-label uppercase tracking-[.16em] text-accentDeep mb-2">Track it</p>
+            <p className="text-sm text-ink2 mb-4 text-pretty">
+              This link stays current as the status changes. It's also in the email — keep whichever you prefer.
+            </p>
+            <Link to={`/submission/${token}`} className="stamp w-full justify-center">
+              Open your submission →
+            </Link>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-3 justify-center">
-          <Link to="/tools" className="stamp">Browse the directory →</Link>
-          <button onClick={() => { setForm(EMPTY); setStatus(null); }} className="stamp-paper">Submit another</button>
+          <Link to="/tools" className="stamp-paper">Browse the directory →</Link>
+          <button onClick={() => { setForm(EMPTY); setLogo(null); setToken(null); setStatus(null); }}
+            className="stamp-paper">Submit another</button>
         </div>
       </div>
     );
@@ -88,7 +114,7 @@ export default function Submit() {
         <Promise icon={ShieldCheck} title="No pay-to-play" text="You can't buy a score or a ranking here. That's exactly why a good review carries weight." />
       </Reveal>
 
-      <div className="rounded-card border-2 border-ink bg-paper p-6 md:p-8" style={{ boxShadow: "8px 8px 0 var(--shadow-cast)" }}>
+      <div className="rounded-card border border-rule bg-paper p-6 md:p-8" >
         <h2 className="font-display text-2xl font-semibold mb-1">Tell us about your tool</h2>
         <p className="text-ink2 mb-6">Five minutes. The more honest the pitch, the better your odds.</p>
 
@@ -147,7 +173,7 @@ export default function Submit() {
               submissions. Filling it in is framed as what it is: the difference
               between waiting for a reviewer to research you and being ready to
               publish. */}
-          <details className="border-2 border-ink rounded-card bg-paper2/40 overflow-hidden group/d">
+          <details className="border border-rule rounded-card bg-paper2/40 overflow-hidden group/d">
             <summary className="flex items-center justify-between gap-3 px-4 min-h-touch cursor-pointer select-none list-none">
               <span className="font-mono text-label uppercase tracking-[.14em]">
                 Add detail <span className="text-ink2">— optional, speeds up review</span>
@@ -155,7 +181,7 @@ export default function Submit() {
               <span aria-hidden="true" className="text-accent transition-transform duration-300 group-open/d:rotate-45">+</span>
             </summary>
 
-            <div className="px-4 pb-4 pt-1 space-y-4 border-t-2 border-ink/15">
+            <div className="px-4 pb-4 pt-1 space-y-4 border-t border-rule">
               <p className="text-sm text-ink2 text-pretty">
                 The more of this we have, the less we have to go and find — and the sooner your page can go live.
               </p>
@@ -167,16 +193,19 @@ export default function Submit() {
                   value={form.description} onChange={set("description")} />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="s-company" className={lab}>Company / maker</label>
-                  <input id="s-company" className={field} value={form.companyName} onChange={set("companyName")} />
-                </div>
-                <div>
-                  <label htmlFor="s-logo" className={lab}>Logo URL</label>
-                  <input id="s-logo" className={field} placeholder="https://…" value={form.logoUrl} onChange={set("logoUrl")} />
-                </div>
+              <div>
+                <label htmlFor="s-company" className={lab}>Company / maker</label>
+                <input id="s-company" className={field} value={form.companyName} onChange={set("companyName")} />
               </div>
+
+              {/* Was a "Logo URL" field, which quietly assumed you had somewhere
+                  to host an image and knew how to get a direct link to it. */}
+              <ImageUpload
+                value={logo}
+                onChange={setLogo}
+                label="Tool logo"
+                hint="Optional, but a listing with a real mark looks like a real product."
+              />
 
               <div>
                 <label htmlFor="s-audience" className={lab}>Who is it for?</label>
