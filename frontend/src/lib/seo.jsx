@@ -10,12 +10,32 @@
 // that need to undo themselves on unmount. A dependency would be more code on
 // the wire than the feature.
 import { useEffect } from "react";
+import { resolveOrigin } from "./origin.js";
 
-// Absolute origin for canonicals and og:url. Set VITE_SITE_URL in production so
-// these don't point at a preview domain; falls back to wherever it's running.
-export const SITE_URL = (
-  import.meta.env.VITE_SITE_URL || (typeof window !== "undefined" ? window.location.origin : "")
-).replace(/\/$/, "");
+/**
+ * The one origin every canonical, og:url and schema URL is built from.
+ *
+ * It has to agree with the host that actually serves the site, because a
+ * canonical pointing anywhere else tells Google the page it is on is a
+ * duplicate of somewhere else.
+ *
+ * VITE_SITE_URL was set to the bare apex — https://toolhaven.net — while the
+ * site is served from www and the apex 308-redirects to www. So every page
+ * declared itself an alternate of a URL that redirects straight back to it.
+ * The sitemap said www, the canonical said apex, and Search Console reported
+ * "Alternate page with proper canonical tag" across the site.
+ *
+ * The configured value is therefore normalised rather than trusted. When it
+ * differs from the served origin by nothing but a "www.", the served origin
+ * wins: that is the host Google fetched, the host in the sitemap, and the host
+ * the redirect settles on. A genuinely different origin — a preview build, a
+ * staging domain — still honours the configured value, which is its purpose.
+ */
+const CONFIGURED = String(import.meta.env.VITE_SITE_URL || "").replace(/\/+$/, "");
+const SERVED = typeof window !== "undefined" ? window.location.origin : "";
+
+
+export const SITE_URL = resolveOrigin(CONFIGURED, SERVED);
 
 export const SITE_NAME = "Toolhaven";
 const DEFAULT_TITLE = "Toolhaven — Discover software worth using";
