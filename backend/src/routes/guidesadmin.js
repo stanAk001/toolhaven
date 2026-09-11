@@ -75,6 +75,35 @@ router.get("/", ah(async (_req, res) => {
   });
 }));
 
+// GET /api/admin/guides/uploads/recent — images not attached to any pick
+//
+// Every upload is kept even when nothing points at it (photos are restricted
+// from deletion, and bytes are de-duplicated by hash). That made a detached
+// photo recoverable — but only by someone who knew its id. This lists recent
+// ones so a photo that fell off a pick can be put back with a click instead of
+// being found on disk and uploaded again.
+//
+// Small images are left out: at under 300px wide they are logos, not product
+// photographs, and offering them in a product-photo tray is just noise.
+router.get("/uploads/recent", ah(async (req, res) => {
+  const days = Math.min(Math.max(Number(req.query.days) || 30, 1), 180);
+  const since = new Date(Date.now() - days * 86400000);
+  const attached = new Set((await prisma.guidePickPhoto.findMany({ select: { uploadId: true } }))
+    .map((r) => r.uploadId));
+  const rows = await prisma.upload.findMany({
+    where: { createdAt: { gte: since }, width: { gte: 300 } },
+    select: { id: true, width: true, height: true, byteSize: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+    take: 120,
+  });
+  res.json({
+    items: rows
+      .filter((u) => !attached.has(u.id))
+      .slice(0, 48)
+      .map((u) => ({ ...u, uploadId: u.id, url: `/api/uploads/${u.id}`, alt: "" })),
+  });
+}));
+
 // GET /api/admin/guides/:id — everything, drafts included
 router.get("/:id", ah(async (req, res, next) => {
   const g = await prisma.buyingGuide.findUnique({
@@ -84,14 +113,44 @@ router.get("/:id", ah(async (req, res, next) => {
         orderBy: { orderIndex: "asc" },
         // The gallery travels with the pick; without this the photos array
         // silently comes back empty and every pick loses its pictures.
-        include: { photos: { orderBy: { position: "asc" } } },
+        include: {
+          photos: {
+            orderBy: { position: "asc" },
+            include: { upload: { select: { width: true, height: true, byteSize: true } } },
+          },
+        },
       },
       faqs: { orderBy: { orderIndex: "asc" } },
       category: { select: { id: true, slug: true, name: true } },
     },
   });
   if (!g) { const e = new Error("Guide not found"); e.status = 404; return next(e); }
-  res.json({ guide: g });
+
+  // Every photo leaves here in exactly the shape POST /api/uploads returns —
+  // `id` is the image, and there is a `url` to draw it from.
+  //
+  // It used to leave as the raw join row, whose `id` is the *row's* id. The
+  // editor kept that, sent it back on the next save, and the save read it as an
+  // image id. A row id that matched no image was dropped, which is why adding a
+  // pick wiped the photos off every pick saved before it; a row id that happened
+  // to match a different image would have swapped in the wrong picture. One
+  // shape for a photo, everywhere, so there is nothing to confuse.
+  const guide = {
+    ...g,
+    picks: g.picks.map(({ photos, ...pick }) => ({
+      ...pick,
+      photos: photos.map((ph) => ({
+        id: ph.uploadId,
+        uploadId: ph.uploadId,
+        url: `/api/uploads/${ph.uploadId}`,
+        alt: ph.alt || "",
+        width: ph.upload?.width ?? null,
+        height: ph.upload?.height ?? null,
+        byteSize: ph.upload?.byteSize ?? null,
+      })),
+    })),
+  };
+  res.json({ guide });
 }));
 
 // POST /api/admin/guides — start a guide
@@ -217,7 +276,10 @@ router.put("/:id/picks", ah(async (req, res, next) => {
     // an admin route, but a typo should not write a dangling foreign key.
     const photos = (Array.isArray(r.photos) ? r.photos : [])
       .map((ph) => ({
-        uploadId: Number(ph?.id ?? ph?.uploadId),
+        // `uploadId` first. It can only ever mean the image; `id` has meant the
+        // image on a fresh upload and the join row on a reloaded one, and
+        // reading it first is what detached every previously saved photo.
+        uploadId: Number(ph?.uploadId ?? ph?.id),
         alt: text(ph?.alt, 200) ?? null,
       }))
       .filter((ph) => Number.isInteger(ph.uploadId) && ph.uploadId > 0)

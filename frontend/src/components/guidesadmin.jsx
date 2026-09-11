@@ -15,10 +15,10 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus, X, ChevronLeft, ChevronUp, ChevronDown, ExternalLink, Trash2, Copy, Wand2, Check, AlertCircle } from "lucide-react";
 import {
   listGuidesAdmin, getGuideAdmin, createGuide, updateGuide, deleteGuide,
-  saveGuidePicks, saveGuideFaqs, getCategories,
+  saveGuidePicks, saveGuideFaqs, getCategories, recentGuideUploads,
 } from "../api/client.js";
 import { PhotoSet } from "./photoset.jsx";
-import { parseListingTitle, asinFromUrl, labelsInUse, foldLabel } from "../lib/amazonpaste.js";
+import { parseListingTitle, asinFromUrl, labelsInUse, foldLabel, parseSpecTable, mergeSpecs, SPEC_TEMPLATES } from "../lib/amazonpaste.js";
 
 const field = "w-full border border-rule rounded-ui bg-paper px-3 py-2.5 outline-none focus:border-accent transition-colors";
 const label = "block font-mono text-label uppercase tracking-[.14em] text-ink2 mb-1.5";
@@ -186,6 +186,7 @@ function GuideEditor({ id, token, cats, onBack }) {
   // Keyed by the same names `busy` uses, so a button and its receipt cannot
   // drift apart.
   const [savedAt, setSavedAt] = useState({});
+  const [specNote, setSpecNote] = useState({});
   const [dirty, setDirty] = useState({});
   const [sectionError, setSectionError] = useState({});
   const clock = () => new Date().toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
@@ -231,9 +232,15 @@ function GuideEditor({ id, token, cats, onBack }) {
       setG(guide);
       setPicks((guide.picks || []).map((p) => ({
         ...p,
-        // The API sends the gallery already ordered, and falls back to the
-        // pick's single image for anything saved before galleries existed.
-        photos: p.photos || [],
+        // One photo shape in the editor, whatever the server sent: `id` is the
+        // image and there is a `url`. The API now sends that shape itself; this
+        // normalises anyway, because the bug it prevents — a join-row id being
+        // saved back as an image id — deletes photos silently, and a stale API
+        // or a cached response should not be able to bring it back.
+        photos: (p.photos || []).map((ph) => {
+          const img = ph.uploadId ?? ph.id;
+          return { ...ph, id: img, uploadId: img, url: ph.url || `/api/uploads/${img}` };
+        }),
         specs: Array.isArray(p.specs) && p.specs.length ? p.specs : [{ label: "", value: "" }],
         pros: (p.pros || []).join("\n"),
         cons: (p.cons || []).join("\n"),
@@ -597,6 +604,7 @@ function GuideEditor({ id, token, cats, onBack }) {
                 <PhotoSet
                   value={p.photos || []}
                   onChange={(next) => patchPick(i, "photos", next)}
+                  loadRecent={() => recentGuideUploads(token)}
                   label="Product photos"
                   hint="The manufacturer's own shots, or your own. Do not hotlink Amazon's — their terms forbid it and the links rot."
                 />
@@ -640,6 +648,53 @@ function GuideEditor({ id, token, cats, onBack }) {
                   across picks for a row to line up. */}
               <div className="mb-3">
                 <label className={label}>Specifications</label>
+
+                {/* Two ways in that are not typing one row at a time.
+                    Paste: the whole spec table, straight off the product page.
+                    Template: the labels every product of this kind is compared
+                    on, so a guide starts from the right rows. Both merge rather
+                    than replace — anything already typed is never overwritten. */}
+                <div className="grid sm:grid-cols-[1fr_auto] gap-2 mb-2.5">
+                  <textarea rows={2} className={field + " resize-y font-mono text-xs"}
+                    placeholder={"Paste the spec table here \u2014 copy the \u201cTechnical details\u201d or \u201cProduct information\u201d table off the product page"}
+                    onPaste={(e) => {
+                      const text = e.clipboardData?.getData("text") || "";
+                      if (!text.trim()) return;
+                      e.preventDefault();
+                      const known = [...new Set([...labelsInUse(picks, i), ...(p.specs || []).map((sp) => sp.label).filter(Boolean)])];
+                      const { rows, skipped } = parseSpecTable(text, known);
+                      if (!rows.length) {
+                        setSpecNote((n) => ({ ...n, [i]: "Couldn\u2019t read any label/value rows from that. Paste a table, or lines like \u201cRefresh rate: 165 Hz\u201d." }));
+                        return;
+                      }
+                      const { specs, added, filled, kept } = mergeSpecs(p.specs, rows);
+                      patchPick(i, "specs", specs);
+                      const bits = [
+                        added && `${added} added`,
+                        filled && `${filled} filled in`,
+                        kept && `${kept} already set, left alone`,
+                        skipped && `${skipped} skipped (ratings, IDs and lines that weren\u2019t specs)`,
+                      ].filter(Boolean);
+                      setSpecNote((n) => ({ ...n, [i]: bits.join(" \u00b7 ") }));
+                    }} />
+                  <select className={field + " sm:w-48"} defaultValue=""
+                    aria-label="Start from a template"
+                    onChange={(e) => {
+                      const list = SPEC_TEMPLATES[e.target.value];
+                      e.target.value = "";
+                      if (!list) return;
+                      const known = [...new Set([...labelsInUse(picks, i), ...(p.specs || []).map((sp) => sp.label).filter(Boolean)])];
+                      const { specs, added } = mergeSpecs(p.specs,
+                        list.map((l) => ({ label: foldLabel(l, known), value: "" })));
+                      patchPick(i, "specs", specs);
+                      setSpecNote((n) => ({ ...n, [i]: added ? `${added} rows added from the template \u2014 fill in the values.` : "Those rows are already here." }));
+                    }}>
+                    <option value="">Start from a template\u2026</option>
+                    {Object.keys(SPEC_TEMPLATES).map((k) => <option key={k} value={k}>{k}</option>)}
+                  </select>
+                </div>
+                {specNote[i] && <p className={hint + " mb-2"}>{specNote[i]}</p>}
+
                 <div className="space-y-2">
                   {(p.specs || []).map((sp, si) => (
                     <div key={si} className="flex gap-2">
@@ -677,6 +732,12 @@ function GuideEditor({ id, token, cats, onBack }) {
                         </button>
                       ))}
                   </div>
+                )}
+                {(p.specs || []).filter((sp) => sp.label || sp.value).length > 14 && (
+                  <p className="font-mono text-nano text-accentDeep mt-2">
+                    {(p.specs || []).filter((sp) => sp.label || sp.value).length} rows \u2014 only the first 14 are saved.
+                    Remove the ones a buyer wouldn\u2019t compare on.
+                  </p>
                 )}
                 <p className={hint}>Same label on every pick, and the row lines up in the comparison table.</p>
               </div>

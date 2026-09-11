@@ -128,8 +128,12 @@ export function foldLabel(proposed, existing = []) {
     const n = norm(e);
     if (!n) continue;
     if (n === p) return e;
-    // One is the other plus a qualifying word: "Refresh" / "Refresh rate".
-    if ((p.startsWith(n) || n.startsWith(p)) && Math.abs(p.length - n.length) <= 6) return e;
+    // One is the other plus a qualifying word, at either end: "Refresh" /
+    // "Refresh rate", and "Size" / "Screen size". The length cap keeps it to
+    // about one word, and the floor keeps two-letter labels from matching
+    // everything — so "Ports" still never swallows "Port power".
+    const close = Math.abs(p.length - n.length) <= 6 && Math.min(p.length, n.length) >= 3;
+    if (close && (p.startsWith(n) || n.startsWith(p) || p.endsWith(n) || n.endsWith(p))) return e;
   }
   return proposed;
 }
@@ -151,3 +155,127 @@ export function labelsInUse(picks = [], exceptIndex = -1) {
   });
   return [...count.entries()].sort((a, b) => b[1] - a[1]).map(([l]) => l);
 }
+
+/* ─────────────────────────────── spec tables ─────────────────────────────── */
+
+// Amazon wraps table cells in bidi control marks (U+200E, U+200F) that are
+// invisible on screen and survive a copy — "Screen Size : 27 Inches". Left in,
+// they make "27 Inches" and "27 Inches" two different strings.
+const INVISIBLE = /[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g;
+
+/**
+ * Rows that appear in a retailer's spec table but are not a specification.
+ *
+ * The rating and sales-rank rows matter most: this site does not reprint a
+ * retailer's star rating or popularity rank, and a spec paste must not become
+ * the back door that puts them on the page. The rest are catalogue plumbing,
+ * or already have their own field on the pick (brand, model).
+ */
+const NOT_A_SPEC = /^(customer reviews?|best ?sellers? rank|amazon best ?sellers? rank|asin|isbn|upc|ean|gtin|global trade identification number|date first available|release date|is discontinued( by manufacturer)?|item model number|model( name| number)?|manufacturer|brand( name)?|country of origin|batteries( required| included)?|units|warranty( description)?|package (dimensions|weight)|number of items|included components|customer ratings?)$/i;
+const LOOKS_LIKE_A_RATING = /out of 5 stars|\bratings?\b|#\s?\d[\d,]* in /i;
+
+const tidyLabel = (s) => {
+  const t = String(s).replace(/[:：\s]+$/, "").replace(/\s+/g, " ").trim().slice(0, 60);
+  return t ? t[0].toUpperCase() + t.slice(1) : "";
+};
+const tidyValue = (s) => String(s).replace(/\s+/g, " ").trim().slice(0, 160);
+const normLabel = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/**
+ * Turn a pasted specification table into label/value rows.
+ *
+ * Handles the shapes a spec table actually arrives in when copied out of a
+ * browser:
+ *
+ *   Screen Size<TAB>27 Inches           a table, copied from Amazon or a maker
+ *   Brand  :  ASUS                      Amazon's "Product details" list
+ *   • Refresh rate: 165Hz               a bulleted spec sheet
+ *   Resolution                          label and value on alternate lines,
+ *   2560 x 1440                         which some browsers produce from tables
+ *
+ * Labels are folded onto the ones this guide already uses, so a paste lines up
+ * in the comparison table instead of adding "Refresh Rate" beside "Refresh".
+ * Nothing is invented: a line that cannot be read as a label and a value is
+ * skipped and counted, never guessed at.
+ *
+ * @returns {{ rows: {label:string,value:string}[], skipped: number }}
+ */
+export function parseSpecTable(text = "", knownLabels = []) {
+  const lines = String(text)
+    .replace(INVISIBLE, "")
+    .replace(/\u00A0/g, " ")
+    .split(/\r?\n/)
+    .map((l) => l.replace(/^[•·▪◦\-*]\s+/, "").trim())
+    .filter(Boolean);
+
+  const pairs = [];
+  let structured = 0;
+  for (const line of lines) {
+    if (line.includes("\t")) {
+      const [a, ...rest] = line.split(/\t+/);
+      if (a && rest.length) { pairs.push([a, rest.join(" ")]); structured++; continue; }
+    }
+    // A label starts with a letter, so "16:9" or "12:30" is never split.
+    const m = line.match(/^([A-Za-z][^:：\t]{0,59}?)\s*[:：]\s*(.+)$/);
+    if (m) { pairs.push([m[1], m[2]]); structured++; }
+  }
+
+  // Nothing had a separator: read it as label, value, label, value.
+  if (!structured && lines.length >= 2) {
+    for (let n = 0; n + 1 < lines.length; n += 2) pairs.push([lines[n], lines[n + 1]]);
+  }
+
+  const seen = new Set();
+  const rows = [];
+  let skipped = Math.max(0, lines.length - (structured || pairs.length * 2));
+  for (const [a, b] of pairs) {
+    let label = tidyLabel(a);
+    const value = tidyValue(b);
+    if (!label || !value || NOT_A_SPEC.test(label) || LOOKS_LIKE_A_RATING.test(value)) { skipped++; continue; }
+    label = foldLabel(label, knownLabels);
+    const key = normLabel(label);
+    if (seen.has(key)) { skipped++; continue; }
+    seen.add(key);
+    rows.push({ label, value });
+  }
+  return { rows, skipped };
+}
+
+/**
+ * Merge incoming rows into a pick's specs without destroying anything typed.
+ *
+ *   same label, empty value  → filled from the incoming row
+ *   same label, has a value  → left exactly as the editor wrote it
+ *   new label                → appended
+ *
+ * @returns {{ specs, added: number, filled: number, kept: number }}
+ */
+export function mergeSpecs(existing = [], incoming = []) {
+  const specs = (existing || []).filter((s) => s && (s.label || s.value)).map((s) => ({ ...s }));
+  let added = 0, filled = 0, kept = 0;
+  for (const row of incoming) {
+    const at = specs.findIndex((s) => normLabel(s.label) === normLabel(row.label));
+    if (at === -1) { specs.push({ label: row.label, value: row.value || "" }); added++; }
+    else if (!specs[at].value && row.value) { specs[at].value = row.value; filled++; }
+    else kept++;
+  }
+  return { specs, added, filled, kept };
+}
+
+/**
+ * Starting label sets, one per kind of product.
+ *
+ * The labels a comparison is worth having are the same for every monitor, so
+ * a guide starts from the right ones rather than from a blank row. They are a
+ * starting point, not a schema: every label can be renamed or removed.
+ */
+export const SPEC_TEMPLATES = {
+  Monitor: ["Size", "Resolution", "Refresh rate", "Panel", "Response time", "Brightness", "Ports", "Stand", "VESA mount"],
+  Webcam: ["Resolution", "Frame rate", "Field of view", "Focus", "Microphone", "Connection", "Mount", "Privacy cover"],
+  Laptop: ["Processor", "Memory", "Storage", "Display", "Graphics", "Battery", "Weight", "Ports", "Operating system"],
+  Keyboard: ["Layout", "Switches", "Connection", "Backlight", "Battery", "Keycaps", "Weight"],
+  Mouse: ["Sensor", "DPI", "Buttons", "Connection", "Battery", "Weight"],
+  Headset: ["Type", "Connection", "Noise cancelling", "Microphone", "Battery", "Driver size", "Weight"],
+  Microphone: ["Type", "Polar pattern", "Connection", "Sample rate", "Mount", "Headphone jack"],
+  "Docking station": ["Connection", "Displays supported", "Power delivery", "Ports", "Ethernet", "Compatibility"],
+};

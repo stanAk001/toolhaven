@@ -43,6 +43,9 @@ export const updateGuide = (id, body, token) => api.patch(`/admin/guides/${id}`,
 export const deleteGuide = (id, token) => api.delete(`/admin/guides/${id}`, adminHeaders(token)).then((r) => r.data);
 export const saveGuidePicks = (id, picks, token) => api.put(`/admin/guides/${id}/picks`, { picks }, adminHeaders(token)).then((r) => r.data);
 export const saveGuideFaqs = (id, faqs, token) => api.put(`/admin/guides/${id}/faqs`, { faqs }, adminHeaders(token)).then((r) => r.data);
+// Recent images that are not attached to any pick, for putting a photo back
+// without uploading it again.
+export const recentGuideUploads = (token) => api.get("/admin/guides/uploads/recent", adminHeaders(token)).then((r) => r.data);
 
 export const getBestLists = () => api.get("/best").then((r) => r.data);
 export const getBestList = (slug) => api.get(`/best/${slug}`).then((r) => r.data);

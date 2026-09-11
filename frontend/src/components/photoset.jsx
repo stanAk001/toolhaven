@@ -17,7 +17,7 @@
  *     operating system handed over the files in.
  */
 import { useState, useRef, useCallback, useId } from "react";
-import { UploadCloud, X, AlertTriangle, ArrowLeft, ArrowRight, Star, Loader2 } from "lucide-react";
+import { UploadCloud, X, AlertTriangle, ArrowLeft, ArrowRight, Star, Loader2, History } from "lucide-react";
 import { uploadImage } from "../api/client.js";
 import { ACCEPT, checkImage, readableSize } from "../lib/imagefile.js";
 
@@ -30,8 +30,20 @@ const MAX_PHOTOS = 8;
  * @param {{url,id,alt,byteSize,width,height}[]} value  photos, in display order
  * @param {(next) => void} onChange
  */
-export function PhotoSet({ value = [], onChange, label = "Product photos", hint }) {
+export function PhotoSet({ value = [], onChange, label = "Product photos", hint, loadRecent }) {
   const photos = Array.isArray(value) ? value : [];
+  // Recent uploads that are not on any pick. Loaded on demand, not on mount —
+  // eight picks each fetching the same list the moment the page opens would be
+  // eight requests for a tray nobody has asked to see.
+  const [recent, setRecent] = useState(null);     // null = not opened yet
+  const [recentBusy, setRecentBusy] = useState(false);
+  const openRecent = async () => {
+    if (recent) { setRecent(null); return; }
+    setRecentBusy(true);
+    try { setRecent((await loadRecent()).items || []); }
+    catch { setRecent([]); }
+    finally { setRecentBusy(false); }
+  };
   const [busy, setBusy] = useState(0);          // how many are in flight
   const [errors, setErrors] = useState([]);     // one line per rejected file
   const [dragging, setDragging] = useState(false);
@@ -204,6 +216,54 @@ export function PhotoSet({ value = [], onChange, label = "Product photos", hint 
             </>
           )}
         </button>
+      )}
+
+      {/* Put back a photo that was already uploaded. Every upload is kept even
+          when nothing points at it, so a photo that fell off a pick is still
+          there — this is where it can be found again, without the file. */}
+      {loadRecent && room > 0 && (
+        <div className="mt-2">
+          <button type="button" onClick={openRecent} disabled={recentBusy}
+            className="inline-flex items-center gap-1.5 min-h-touch font-mono text-nano uppercase tracking-wide
+              border border-rule rounded-ui px-3 hover:bg-paper2 transition-colors disabled:opacity-60">
+            <History size={12} aria-hidden="true" />
+            {recentBusy ? "Loading\u2026" : recent ? "Hide recent uploads" : "Reuse a recent upload"}
+          </button>
+
+          {recent && (
+            recent.length === 0 ? (
+              <p className="font-mono text-nano text-ink2 mt-2">
+                No unattached photos from the last 30 days.
+              </p>
+            ) : (
+              <>
+                <p className="font-mono text-nano text-ink2 mt-2 mb-1.5">
+                  Photos uploaded recently that are not on any pick. Click one to add it here.
+                </p>
+                <ul className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+                  {recent
+                    .filter((r) => !photos.some((ph) => (ph.uploadId ?? ph.id) === r.id))
+                    .map((r) => (
+                      <li key={r.id}>
+                        <button type="button"
+                          onClick={() => {
+                            if (photos.length >= MAX_PHOTOS) return;
+                            onChange?.([...photos, { ...r, alt: "" }]);
+                            setRecent((list) => (list || []).filter((x) => x.id !== r.id));
+                          }}
+                          title={`${r.width}\u00d7${r.height} \u00b7 uploaded ${new Date(r.createdAt).toLocaleString()}`}
+                          className="block w-full aspect-[4/3] rounded-tight border border-rule bg-paper2/40 overflow-hidden
+                            hover:border-accent focus-visible:border-accent transition-colors">
+                          <img src={apiOrigin() + r.url} alt="" loading="lazy" decoding="async"
+                            className="w-full h-full object-contain p-1" />
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              </>
+            )
+          )}
+        </div>
       )}
 
       <input ref={inputRef} type="file" accept={ACCEPT} multiple className="sr-only" tabIndex={-1}
