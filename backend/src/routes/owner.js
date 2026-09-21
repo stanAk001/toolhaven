@@ -382,7 +382,18 @@ router.post("/campaigns/:slug/checkout", ah(async (req, res, next) => {
     email: req.owner.email,
     amountMinor, currency: currency.code, reference,
     callbackUrl: `${SITE()}/promote/dashboard?campaign=${encodeURIComponent(c.slug)}&reference=${encodeURIComponent(reference)}`,
-    meta: { campaign: c.slug, tool: c.tool?.name || "", plan: c.plan.slug },
+    // `source` marks which of the businesses on this Paystack account the
+    // charge belongs to. The reference prefix (thp_) is what actually routes
+    // the webhook, because a prefix is present on every Paystack object
+    // including ones where metadata is not; this is the readable second
+    // signal, for the dashboard and for anyone reading a transaction later.
+    meta: {
+      source: "toolhaven",
+      product: "promotion_campaign",
+      campaign: c.slug,
+      tool: c.tool?.name || "",
+      plan: c.plan.slug,
+    },
   });
 
   if (canMove(c.status, STATUS.PENDING_PAYMENT)) {
