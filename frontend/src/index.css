@@ -27,8 +27,19 @@
   --ink: 14 17 22;            /* #0E1116 — near-black, faintly blue */
   --ink2: 98 107 121;         /* #626B79 — secondary text */
   --rule: 228 231 236;        /* #E4E7EC — every border on the site */
-  --accent: 31 94 255;        /* #1F5EFF — the one signal */
-  --accent-deep: 23 71 199;   /* #1747C7 — the same signal as text */
+  /* The signal.
+   *
+   * This was #1F5EFF — a fully saturated primary blue, which is the default
+   * accent of roughly every framework, template and starter kit, and reads as
+   * "nobody chose this" no matter how carefully the rest of the page is set.
+   * Pulled towards ink and desaturated: still unmistakably the one signal on
+   * the page, but it now looks decided rather than defaulted, and it sits
+   * beside the near-black ink instead of shouting over it.
+   *
+   * Measured on #FCFCFD: accent 7.35:1, accent-deep 10.35:1, and white on an
+   * accent fill 7.54:1 — all clear of WCAG AA for body text. */
+  --accent: 29 78 178;        /* #1D4EB2 — the one signal */
+  --accent-deep: 22 58 133;   /* #163A85 — the same signal as text */
   /* Kept so nothing referencing it breaks; the Instrument casts no shadows. */
   --shadow-cast: transparent;
   --flap-bg: 14 17 22;
@@ -45,8 +56,11 @@
   --ink: 232 234 237;         /* #E8EAED */
   --ink2: 138 147 160;        /* #8A93A0 */
   --rule: 38 43 51;           /* #262B33 */
-  --accent: 91 138 255;       /* #5B8AFF — lifted to carry on dark */
-  --accent-deep: 138 172 255; /* #8AACFF */
+  /* The same decision at night. A desaturated blue goes muddy on a dark
+   * ground, so this lifts in value while keeping the ink lean. Measured on
+   * #101317: accent 6.94:1, accent-deep 10.11:1. */
+  --accent: 124 158 224;      /* #7C9EE0 — lifted to carry on dark */
+  --accent-deep: 166 192 238; /* #A6C0EE */
   --shadow-cast: transparent;
   --flap-bg: 8 10 13;
   --flap-fg: 232 234 237;
@@ -653,3 +667,79 @@ h1, h2 { letter-spacing: -.02em; }
 @keyframes reveal-up { to { opacity: 1; transform: none; filter: blur(0); } }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ===== Guide motion =====
+   The drawn loop behind a buying guide. Everything here moves transform and
+   opacity only, so it composites on the GPU and never causes layout — a
+   backdrop that costs a reflow is a backdrop that costs a scroll.
+
+   Two intensities. Behind a card it sits at 6% and must never compete with the
+   heading in front of it; across a page header it can come forward a little,
+   because there is no body copy on top of it. */
+.gm { color: rgb(var(--ink2)); }
+.gm svg { opacity: .09; }
+.gm-hero svg { opacity: .16; }
+
+/* Across a page header the drawing is anchored to the right and faded out of
+   the left, so the headline never has an object sitting underneath its first
+   words. On a card it stays centred — the area is small enough that anchoring
+   it would just push it out of frame. */
+.gm-hero svg {
+  -webkit-mask-image: linear-gradient(to right, transparent 12%, #000 58%);
+  mask-image: linear-gradient(to right, transparent 12%, #000 58%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .gm svg { opacity: .18; transition: opacity .3s ease; }
+}
+
+/* The lid turns on its hinge, which is a point in the viewBox rather than in
+   the element's own box — transform-box: view-box is what makes that possible
+   without wrapping every shape in its own <svg>. */
+.gm-lid { transform-box: view-box; transform-origin: 18px 58px; animation: gm-lid-open 7s cubic-bezier(.4,0,.2,1) infinite; }
+.gm-screen { opacity: .5; }
+@keyframes gm-lid-open {
+  0%, 8%   { transform: rotate(-82deg); }
+  38%, 72% { transform: rotate(0deg); }
+  100%     { transform: rotate(-82deg); }
+}
+
+/* Chips rise past the object and fade at both ends, so none of them pops. */
+.gm-chip { fill: currentColor; stroke: none; opacity: 0; animation: gm-chip-drift 4.6s linear infinite; }
+@keyframes gm-chip-drift {
+  0%        { transform: translateY(16px); opacity: 0; }
+  18%, 62%  { opacity: .85; }
+  100%      { transform: translateY(-30px); opacity: 0; }
+}
+
+/* Keys light along the row, so it reads as typing rather than blinking. */
+.gm-key { fill: currentColor; stroke: none; opacity: .18; animation: gm-key-press 2.6s ease-in-out infinite; }
+@keyframes gm-key-press {
+  0%, 70%, 100% { opacity: .18; transform: translateY(0); }
+  12%           { opacity: .9;  transform: translateY(1px); }
+}
+
+.gm-iris { animation: gm-iris 3.4s ease-in-out infinite; transform-box: view-box; transform-origin: 46px 44px; }
+@keyframes gm-iris { 0%, 100% { transform: scale(1); } 50% { transform: scale(.82); opacity: .6; } }
+
+.gm-scan { fill: currentColor; stroke: none; opacity: .5; animation: gm-scan 3s ease-in-out infinite; }
+@keyframes gm-scan { 0%, 100% { transform: translateY(-20px); opacity: 0; } 50% { transform: translateY(20px); opacity: .6; } }
+
+.gm-sweep { fill: currentColor; stroke: none; opacity: .12; animation: gm-sweep 4s linear infinite; }
+@keyframes gm-sweep { 0% { transform: translateX(0); } 100% { transform: translateX(64px); } }
+
+.gm-hover { animation: gm-hover 5s ease-in-out infinite; }
+@keyframes gm-hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+.gm-level { fill: currentColor; stroke: none; opacity: .35; transform-box: fill-box; transform-origin: 50% 100%; animation: gm-level 1.6s ease-in-out infinite; }
+@keyframes gm-level { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+
+.gm-rise { animation: gm-rise 6s ease-in-out infinite; }
+@keyframes gm-rise { 0%, 100% { transform: translateY(6px); } 50% { transform: translateY(-6px); } }
+
+/* Held still for anyone who asked for that. Each loop is drawn so its resting
+   frame still looks deliberate — a laptop mid-open, a meter part-raised. */
+@media (prefers-reduced-motion: reduce) {
+  .gm * { animation: none !important; }
+  .gm-lid { transform: rotate(-28deg); }
+  .gm-chip { opacity: .5; }
+}

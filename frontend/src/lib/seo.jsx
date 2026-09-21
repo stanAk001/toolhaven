@@ -38,9 +38,13 @@ const SERVED = typeof window !== "undefined" ? window.location.origin : "";
 export const SITE_URL = resolveOrigin(CONFIGURED, SERVED);
 
 export const SITE_NAME = "Toolhaven";
-const DEFAULT_TITLE = "Toolhaven — Discover software worth using";
+// The site covers two things now — the software you work in, and the hardware
+// you work on — so the default title and description say both. A visitor who
+// arrives on a monitor guide from a search should not find a site that appears
+// to be about software only.
+const DEFAULT_TITLE = "Toolhaven — Honest software reviews and buying guides";
 const DEFAULT_DESCRIPTION =
-  "Explore, compare and evaluate useful software and digital tools. Independent reviews that list the downsides, not just the features.";
+  "Independent reviews of the software you work in and buying guides for the kit you work on. Every recommendation lists the downsides, not just the features.";
 
 const absolute = (path = "") =>
   /^https?:\/\//.test(path) ? path : `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;

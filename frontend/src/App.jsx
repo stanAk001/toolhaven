@@ -23,6 +23,11 @@ const Privacy = lazy(() => import("./pages/Privacy.jsx"));
 const Disclosure = lazy(() => import("./pages/Disclosure.jsx"));
 const Terms = lazy(() => import("./pages/Terms.jsx"));
 const Submit = lazy(() => import("./pages/Submit.jsx"));
+// Toolhaven Promote. Split out like the rest of the non-reading surfaces — a
+// reader looking at a tool page should not download the vendor dashboard.
+const Promote = lazy(() => import("./pages/Promote.jsx"));
+const PromoteSignIn = lazy(() => import("./pages/PromoteSignIn.jsx"));
+const PromoteDashboard = lazy(() => import("./pages/PromoteDashboard.jsx"));
 const SubmissionStatus = lazy(() => import("./pages/SubmissionStatus.jsx"));
 const Stacks = lazy(() => import("./pages/Stacks.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
@@ -59,6 +64,38 @@ function NotFound() {
   );
 }
 
+/**
+ * The site's furniture, minus the parts a private screen has no business
+ * wearing.
+ *
+ * The editor's desk was rendering inside the full public shell: the marketing
+ * footer, the newsletter sign-up, the category list, "no paid rankings, ever".
+ * None of that is for the person moderating submissions, and carrying it made
+ * an internal tool look like a page that had wandered in from the site. The
+ * navigation stays — it is how you get back out.
+ */
+function Shell({ children }) {
+  const { pathname } = useLocation();
+  const isDesk = pathname === "/admin" || pathname.startsWith("/admin/");
+  return (
+    <div className="min-h-dvh flex flex-col">
+      <Navbar />
+      <main className="flex-1">{children}</main>
+      {isDesk ? (
+        <footer className="border-t border-rule mt-16">
+          <div className="max-w-4xl mx-auto px-5 sm:px-6 py-6">
+            <p className="font-mono text-nano uppercase tracking-[.12em] text-ink2">
+              Editor's desk · private
+            </p>
+          </div>
+        </footer>
+      ) : (
+        <Footer />
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -67,9 +104,7 @@ export default function App() {
       <BackToTop />
       <CommandPalette />
       <RouteSweep />
-      <div className="min-h-dvh flex flex-col">
-        <Navbar />
-        <main className="flex-1">
+      <Shell>
           {/* The fallback is a held page, not a spinner. A split chunk on a
               warm connection arrives in a few dozen milliseconds, and flashing
               a loader for that long reads as slower than showing nothing at
@@ -113,6 +148,9 @@ export default function App() {
             <Route path="/disclosure" element={<Disclosure />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/submit" element={<Submit />} />
+            <Route path="/promote" element={<Promote />} />
+            <Route path="/promote/signin" element={<PromoteSignIn />} />
+            <Route path="/promote/dashboard" element={<PromoteDashboard />} />
             {/* Reached by the token in the confirmation email. Private by
                 obscurity of the token, and marked noindex on the page. */}
             <Route path="/submission/:token" element={<SubmissionStatus />} />
@@ -121,9 +159,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
-        </main>
-        <Footer />
-      </div>
+      </Shell>
     </BrowserRouter>
   );
 }

@@ -187,7 +187,8 @@ const normLabel = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
  * Handles the shapes a spec table actually arrives in when copied out of a
  * browser:
  *
- *   Screen Size<TAB>27 Inches           a table, copied from Amazon or a maker
+ *   Screen Size →  27 Inches           a table, copied from Amazon or a maker
+ *                                      (the arrow is a tab character)
  *   Brand  :  ASUS                      Amazon's "Product details" list
  *   • Refresh rate: 165Hz               a bulleted spec sheet
  *   Resolution                          label and value on alternate lines,

@@ -1,24 +1,32 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowUpRight, Search } from "lucide-react";
-import { getCategories, getTools, getTestimonials, getToolRails } from "../api/client.js";
+import { getCategories, getTools, getTestimonials, getToolRails, getGuides } from "../api/client.js";
 import { useData } from "../lib/helpers.jsx";
 import { CategoryCard, ToolCard, SkeletonGrid } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { LedgerBoard, SectionHead, VerdictSeal } from "../components/editorial.jsx";
+import { FeaturedRow } from "../components/featured.jsx";
 import { Seo, orgSchema, siteSchema } from "../lib/seo.jsx";
 import { TestimonialWall } from "../components/testimonials.jsx";
 import { ToolRail } from "../components/rails.jsx";
 
 
-// The promises that scroll past in the ticker band — the opener's plain-talk
-// pitch, broken into chants.
-const TICKER = [
-  "We read the fine print",
-  "We list the downsides",
-  "No sales theatre",
-  "The right pick in ten minutes",
-  "Every review, honest",
+// The band under the cover.
+//
+// It used to carry five slogans — "We read the fine print", "No sales
+// theatre", "Every review, honest" — which is a strip of self-praise, and a
+// site that has to announce it is honest reads less honest for saying so. One
+// of the five was literally "no sales theatre", printed in a band of sales
+// theatre.
+//
+// What replaced them is the same length and holds the same position, but each
+// line is a fact a reader can go and check in about ten seconds, which is the
+// only version of this that earns anything.
+const STANDING = [
+  ["Every review lists what the tool is bad at", "/how-we-review"],
+  ["Paid placements are labelled and sit apart from rankings", "/disclosure"],
+  ["Prices are read from the vendor's own page", "/how-we-review"],
 ];
 
 /**
@@ -89,6 +97,7 @@ export default function Home() {
   const toolStats = useData(() => getTools({ limit: 1 }), []);
   const praise = useData(() => getTestimonials({ limit: 7 }), []);
   const rails = useData(getToolRails, []);
+  const guides = useData(getGuides, []);
   // three real tools for the compare band, so it shows what it's asking for
   const headToHead = (featured.data?.items || []).slice(0, 3);
 
@@ -105,10 +114,12 @@ export default function Home() {
       {/* ===== The cover ===== */}
       <section className="relative border-b border-rule overflow-hidden">
         <div className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
-          {/* the four figures the cover opens on, printed on one ruled line */}
+          {/* What the index actually holds, printed on one ruled line. Every
+              figure is a count of rows that exist; none is a claim. */}
           <LedgerBoard
             tools={toolStats.data?.total ?? null}
-            categories={(cats.data || []).length || null} />
+            categories={(cats.data || []).length || null}
+            guides={(guides.data?.items || []).length || null} />
 
           <Reveal stagger className="grid lg:grid-cols-12 gap-10 mt-10 sm:mt-12 lg:mt-16">
             {/* cover headline */}
@@ -135,7 +146,7 @@ export default function Home() {
               <p className="text-base sm:text-lg leading-relaxed mb-4 text-pretty">
                 There are thousands of tools out there, and almost every "review" you find is quietly an ad.
                 This is the opposite — we read the fine print, try the things ourselves, and tell you plainly
-                what's worth your money.
+                what's worth your money. Software you work in, and the kit you work on.
               </p>
               <p className="font-mono text-micro uppercase tracking-wide text-ink2 mb-6">
                 Ten minutes, not ten tabs. Downsides listed every time.
@@ -153,17 +164,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* the standing promises — stated once, not scrolled past */}
+      {/* Three checkable facts, each linking to the page that proves it.
+          Sentence case rather than the uppercase mono the rest of the site
+          leans on: this is a line to read, not a label to scan. */}
       <div className="border-b border-rule bg-ink text-paper">
-        <ul className="max-w-6xl mx-auto px-5 sm:px-6 py-3 flex flex-wrap items-center gap-x-6 gap-y-1.5
-          font-mono text-nano sm:text-micro uppercase tracking-[.16em] text-paper/80">
-          {TICKER.map((t) => <li key={t}>{t}</li>)}
+        <ul className="max-w-6xl mx-auto px-5 sm:px-6 py-3.5 grid gap-y-2 sm:grid-cols-3 sm:gap-x-8 text-sm">
+          {STANDING.map(([text, href]) => (
+            <li key={text} className="flex gap-2.5 leading-snug">
+              <span aria-hidden="true" className="mt-[7px] w-1 h-1 shrink-0 bg-paper/50" />
+              <Link to={href} className="text-paper/75 hover:text-paper transition-colors text-pretty">
+                {text}
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
 
       {/* categories */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
-        <SectionHead folio="01" kicker="The index" title="Browse by category"
+        <SectionHead kicker="The index" title="Browse by category"
           action={<Link to="/tools" className="inline-flex items-center min-h-touch md:min-h-[28px] font-mono text-xs uppercase hover:text-accentDeep whitespace-nowrap">All tools →</Link>} />
         {cats.loading ? <SkeletonGrid count={6} /> : (
           <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -174,7 +193,7 @@ export default function Home() {
 
       {/* featured tools */}
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
-        <SectionHead folio="02" kicker="Hand-picked" title="Featured right now" />
+        <SectionHead kicker="Hand-picked" title="Featured right now" />
         {featured.loading ? <SkeletonGrid count={6} /> : (
           <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {(featured.data?.items || []).map((t) => <ToolCard key={t.slug} tool={t} />)}
@@ -217,10 +236,65 @@ export default function Home() {
         />
       </section>
 
+      {/* Paid placements, in their own block above the organic rows and
+          labelled as such. It renders nothing at all when no campaign is
+          running, so the homepage never carries an empty advertising slot. */}
+      <div className="max-w-6xl mx-auto px-5 sm:px-6">
+        <FeaturedRow placement="HOMEPAGE_FEATURED" limit={3} className="py-12 sm:py-16 lg:py-20" />
+      </div>
+
+      {/* ===== The buying guides =====
+           The site is about the software you work in and the hardware you work
+           on, and until now the homepage only said the first half. Someone who
+           landed here would never learn the guides existed unless they read the
+           nav. It renders only when a guide is actually published: a section
+           promising buying guides that leads to an empty page is worse than no
+           section, and this is the half of the site with the fewest pages. */}
+      {(guides.data?.items || []).length > 0 && (
+        <section className="max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
+          <SectionHead kicker="The other half" title="Buying guides"
+            action={<Link to="/guides" className="inline-flex items-center min-h-touch md:min-h-[28px] font-mono text-xs uppercase hover:text-accentDeep whitespace-nowrap">All guides →</Link>} />
+          <p className="text-ink2 max-w-measure text-pretty -mt-2 mb-6">
+            We spend most of our time on what runs on the machine. These are about the machine —
+            chosen the same way, with the drawbacks written down.
+          </p>
+          <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {(guides.data.items || []).slice(0, 3).map((g) => (
+              <Link key={g.slug} to={`/guides/${g.slug}`}
+                className="group relative flex flex-col h-full rounded-card bg-surface border border-rule
+                  shadow-press transition-[transform,box-shadow] duration-200 ease-out
+                  hover:-translate-y-0.5 hover:shadow-press-lg focus-visible:-translate-y-0.5 p-4 sm:p-5">
+                {g.category && (
+                  <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] rounded-t-card"
+                    style={{ background: g.category.colorPrimary }} />
+                )}
+                {/* Only when there is one. A guide with no category was showing
+                    the kicker "Buying guide" directly beneath a heading that
+                    already says Buying guides. */}
+                {g.category && (
+                  <p className="font-mono text-nano uppercase tracking-[.16em] text-ink2 mb-2">
+                    {g.category.name}
+                  </p>
+                )}
+                <h3 className="font-display text-lg sm:text-xl font-semibold leading-tight tracking-tight text-balance mb-2">
+                  {g.title}
+                </h3>
+                {g.standfirst && (
+                  <p className="text-sm text-ink2 leading-snug line-clamp-3 text-pretty">{g.standfirst}</p>
+                )}
+                <p className="mt-auto pt-3 border-t border-rule font-mono text-nano uppercase tracking-[.12em] text-ink2 tabular-nums">
+                  {g.pickCount} pick{g.pickCount === 1 ? "" : "s"}
+                </p>
+              </Link>
+            ))}
+          </Reveal>
+        </section>
+      )}
+
       {(praise.loading || (praise.data || []).length > 0) && (
         <section className="relative border-y border-rule bg-paper2/30 overflow-hidden">
           <div className="relative max-w-6xl mx-auto px-5 sm:px-6 py-12 sm:py-16 lg:py-20">
-            <SectionHead folio="03" kicker="Letters to the editor" title="What readers tell us"
+            <SectionHead kicker="Letters to the editor" title="What readers tell us"
               action={<span className="font-mono text-xs uppercase text-accentDeep whitespace-nowrap">Unedited &amp; unpaid</span>} />
             {praise.loading ? <SkeletonGrid count={6} /> : <TestimonialWall items={praise.data || []} />}
           </div>

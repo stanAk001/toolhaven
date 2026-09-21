@@ -16,6 +16,9 @@ export default function About() {
       <Reveal stagger className="space-y-5 text-lg leading-relaxed">
         <p>Toolhaven started from a simple frustration: every "best tools" list online reads like a press release. Glowing scores, no real cons, and a suspicious habit of ranking whoever pays the most at the top.</p>
         <p>We do it the other way round. We try the tools, we read the pricing fine print, and we write up what we actually found — including the parts that might make you walk away. If a tool isn't right for you, the most useful thing we can do is say so.</p>
+        <h2 className="font-display text-2xl font-semibold pt-4">What we cover</h2>
+        <p>Two things. <strong className="font-semibold">Software</strong> — the apps you work in, reviewed one at a time and compared head to head. And <strong className="font-semibold">buying guides</strong> for the hardware you work on: monitors, webcams, the desk kit you spend all day with.</p>
+        <p className="text-ink2">They are the same job. You are still choosing between a dozen options that all claim to be the best one, and you still want to know what the catch is before you spend the money. The <Link to="/guides" className="underline underline-offset-4 text-accentDeep">buying guides</Link> are newer than the software reviews, so there are fewer of them — we would rather publish one we stand behind than ten we don't.</p>
         <h2 className="font-display text-2xl font-semibold pt-4">How we pick</h2>
         <p>We look at what a tool does, who it's genuinely for, what it really costs once the trial ends, and how it stacks up against the obvious alternatives. Then we explain it in plain English, no jargon.</p>
         <h2 className="font-display text-2xl font-semibold pt-4">A note on links</h2>

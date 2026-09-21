@@ -47,10 +47,18 @@ function sweep() {
  * Skips anything that is not a plain public GET: an authenticated request gets
  * its own live answer, because an editor checking their own change must never
  * be shown the version a reader is being served.
+ *
+ * That applies to *every* credential, not only the admin token. The cache key
+ * is the URL, so a per-account response like /api/owner/me cached under one
+ * vendor's request would be handed to the next vendor who asked for the same
+ * path — their tools, their campaigns, their revenue. Any request carrying an
+ * identity is therefore never cached and never served from cache.
  */
+const CREDENTIALS = ["x-admin-token", "x-owner-token", "authorization", "cookie"];
+
 export function cached(seconds = 60) {
   return function cacheMiddleware(req, res, next) {
-    if (req.method !== "GET" || req.get("x-admin-token")) {
+    if (req.method !== "GET" || CREDENTIALS.some((h) => req.get(h))) {
       res.set("Cache-Control", "no-store");
       return next();
     }

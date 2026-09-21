@@ -12,6 +12,7 @@ import { ToolsAdmin, ClicksAdmin } from "../components/toolsadmin.jsx";
 import { PricingAdmin } from "../components/pricingadmin.jsx";
 import { SubmissionsAdmin } from "../components/submissionsadmin.jsx";
 import { GuidesAdmin } from "../components/guidesadmin.jsx";
+import { PromotionsAdmin } from "../components/promotionsadmin.jsx";
 import { Seo } from "../lib/seo.jsx";
 
 // The editor's desk — private, token-gated. Two views: tool submissions and
@@ -115,19 +116,51 @@ export default function Admin() {
       <Seo title="Editor's desk" description="Private." path="/admin" noIndex />
       <PageHead kicker="Editor's desk" title="Moderation" />
 
-      {/* view switch */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div className="flex gap-2">
-          {[["submissions", `Submissions · ${items.length}`], ["reviews", `Reviews · ${reviews.length}`], ["stacks", `Stacks · ${stacks.length}`], ["best", "Best-of"], ["tools", "Tools"], ["guides", "Guides"], ["pricing", "Pricing"], ["clicks", "Clicks"]].map(([v, label]) => (
-            <button key={v} onClick={() => setView(v)}
-              className={`font-mono text-label uppercase tracking-wide px-3.5 py-2 rounded-ui border border-rule transition-colors ${view === v ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-4">
-          <button onClick={() => load(token)} className="font-mono text-xs uppercase tracking-wide hover:text-accentDeep">Refresh</button>
-          <button onClick={lock} className="font-mono text-xs uppercase tracking-wide hover:text-accentDeep">Lock</button>
+      {/* The desk's own navigation.
+          It was nine separately-bordered boxes of unequal width on one line and
+          six identical-looking ones on the next, so nothing said which row
+          chose the section and which chose the filter, and "Best-of" wrapped
+          inside its own box. One continuous bar, one border, even heights: it
+          reads as a single control rather than nine competing ones, and the
+          counts sit inside it as quiet numbers rather than as part of a label. */}
+      {/* No wrapping: the section bar scrolls sideways instead, so Refresh and
+          Lock stay on the same line rather than dropping underneath and
+          reading as a second, unrelated row of controls. */}
+      <div className="flex items-center justify-between gap-x-4 mb-6 pb-4 border-b border-rule">
+        <nav aria-label="Desk sections"
+          className="flex items-stretch min-w-0 overflow-x-auto border border-rule rounded-ui divide-x divide-rule">
+          {[
+            ["submissions", "Submissions", items.length],
+            ["reviews", "Reviews", reviews.length],
+            ["stacks", "Stacks", stacks.length],
+            ["best", "Best-of", null],
+            ["tools", "Tools", null],
+            ["guides", "Guides", null],
+            ["promotions", "Promote", null],
+            ["pricing", "Pricing", null],
+            ["clicks", "Clicks", null],
+          ].map(([v, label, n]) => {
+            const on = view === v;
+            return (
+              <button key={v} type="button" onClick={() => setView(v)} aria-current={on ? "page" : undefined}
+                className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 min-h-[38px]
+                  font-mono text-label uppercase tracking-[.04em] transition-colors
+                  ${on ? "bg-ink text-paper" : "hover:bg-paper2"}`}>
+                {label}
+                {n > 0 && (
+                  <span className={`tabular-nums text-nano ${on ? "text-paper/70" : "text-ink2"}`}>{n}</span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button type="button" onClick={() => load(token)} disabled={loading}
+            className="stamp-paper text-xs disabled:opacity-50">
+            {loading ? "Refreshing…" : "Refresh"}
+          </button>
+          <button type="button" onClick={lock} className="stamp-paper text-xs">Lock</button>
         </div>
       </div>
 
@@ -177,6 +210,7 @@ export default function Admin() {
       {view === "best" && <BestAdmin token={token} />}
       {view === "tools" && <ToolsAdmin token={token} />}
       {view === "guides" && <GuidesAdmin token={token} />}
+      {view === "promotions" && <PromotionsAdmin token={token} />}
       {view === "pricing" && <PricingAdmin token={token} />}
       {view === "clicks" && <ClicksAdmin token={token} />}
 

@@ -290,7 +290,7 @@ export function Footer() {
 
           {/* the way around — navigation opposite */}
           <div className="grid grid-cols-2 gap-8">
-            <FooterCol title="Browse" links={[...NAV, ["/submit", "Submit a tool"]]} />
+            <FooterCol title="Browse" links={[...NAV, ["/submit", "Submit a tool"], ["/promote", "Promote a tool"]]} />
             <div>
               <h4 className="font-mono text-label uppercase tracking-[.2em] text-accentDeep mb-4">Categories</h4>
               <div className="flex flex-wrap gap-2">
@@ -347,7 +347,7 @@ export function Footer() {
             font-mono text-micro uppercase tracking-[.2em] text-paper/55">
             <p className="inline-flex items-center gap-2">
               <span aria-hidden="true" className="w-1.5 h-1.5 bg-accent" />
-              © {new Date().getFullYear()} Toolhaven — The honest tools guide
+              © {new Date().getFullYear()} Toolhaven — Software reviews and buying guides
             </p>
             <p className="text-paper">No paid rankings. Ever.</p>
           </div>

@@ -15,6 +15,8 @@ import { useData } from "../lib/helpers.jsx";
 import { GuidePick, GuideComparison } from "../components/guidepick.jsx";
 import { Breadcrumbs } from "../components/breadcrumbs.jsx";
 import { NotFoundBlock } from "../components/editorial.jsx";
+import { GuideMotion, subjectOf } from "../components/guidemotion.jsx";
+import { FeaturedRow } from "../components/featured.jsx";
 import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
 const when = (iso) => (iso
@@ -87,34 +89,50 @@ export default function BuyingGuide() {
       />
       <Breadcrumbs trail={trail} />
 
-      <header className="mb-8">
-        <div className="rule-2 mb-4 sm:mb-5" />
-        <p className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-3">
-          Buying guide{g.category ? ` / ${g.category.name}` : ""}
-        </p>
-        <h1 className="font-display text-display font-semibold text-balance">{g.title}</h1>
-        {g.standfirst && (
-          <p className="text-base sm:text-lg text-ink2 mt-4 max-w-measure text-pretty">{g.standfirst}</p>
-        )}
+      {/* The subject, drawn and moving, behind the masthead. It runs a little
+          stronger here than on a card because nothing but the title sits on
+          top of it, and it stops at the standfirst so no body copy is ever
+          read against a moving ground. */}
+      <header className="relative mb-8 pt-4 sm:pt-6">
+        <GuideMotion subject={subjectOf(`${g.title} ${g.category?.name || ""}`)}
+          intensity="hero" tint={g.category?.colorPrimary} />
+        <div className="relative">
+          <div className="rule-2 mb-4 sm:mb-5" />
+          <p className="font-mono text-micro uppercase tracking-[.2em] text-accentDeep mb-3">
+            Buying guide{g.category ? ` / ${g.category.name}` : ""}
+          </p>
+          <h1 className="font-display text-display font-semibold text-balance">{g.title}</h1>
+          {g.standfirst && (
+            <p className="text-base sm:text-lg text-ink2 mt-4 max-w-measure text-pretty">{g.standfirst}</p>
+          )}
 
-        {/* The provenance line: when, and how many were in the running. Only
-            the parts we actually know are printed. */}
-        <p className="font-mono text-nano uppercase tracking-[.14em] text-ink2 mt-5">
-          {g.updatedAt ? `Updated ${when(g.updatedAt)}` : `Published ${when(g.publishedAt)}`}
-          {g.productsConsidered ? ` · ${g.productsConsidered} considered` : ""}
-          {` · ${g.picks.length} recommended`}
-        </p>
+          {/* The provenance line: when, and how many were in the running. Only
+              the parts we actually know are printed. */}
+          <p className="font-mono text-nano uppercase tracking-[.14em] text-ink2 mt-5">
+            {g.updatedAt ? `Updated ${when(g.updatedAt)}` : `Published ${when(g.publishedAt)}`}
+            {g.productsConsidered ? ` · ${g.productsConsidered} considered` : ""}
+            {` · ${g.picks.length} recommended`}
+          </p>
+        </div>
       </header>
 
-      {/* Near the top, not buried in the footer. */}
-      <aside className="border-y border-rule py-4 mb-9">
-        <p className="text-sm leading-relaxed text-pretty">
-          <strong className="font-semibold">How we're paid.</strong>{" "}
-          Some links on this page go to Amazon, and Toolhaven earns a commission on qualifying
-          purchases at no extra cost to you. As an Amazon Associate we earn from qualifying
-          purchases. It doesn't change what we recommend — no brand pays to be here, and every
-          pick lists what's wrong with it.{" "}
-          <Link to="/disclosure" className="underline underline-offset-4 text-accentDeep">Full disclosure</Link>.
+      {/* The disclosure, as one line.
+          It ran to five lines of legal copy above the first recommendation,
+          which is a wall of text between a reader and the thing they came for.
+          It cannot simply go, though: Amazon's Associates agreement requires
+          that exact "As an Amazon Associate" sentence on any page carrying
+          their links, and the FTC wants the disclosure near the links rather
+          than only on a policy page. So it is compressed, not removed — the
+          required sentence, what it costs the reader (nothing), what it changes
+          about the recommendations (nothing), and a link to the full version.
+          Each pick carries its own "affiliate link" note at its button too. */}
+      <aside className="border-y border-rule py-3 mb-9">
+        <p className="font-mono text-nano sm:text-micro uppercase tracking-[.12em] text-ink2 text-pretty">
+          As an Amazon Associate we earn from qualifying purchases — at no extra cost to you, and
+          it never changes what we recommend.{" "}
+          <Link to="/disclosure" className="underline underline-offset-4 hover:text-ink transition-colors">
+            How we&rsquo;re paid
+          </Link>
         </p>
       </aside>
 
@@ -150,6 +168,21 @@ export default function BuyingGuide() {
       </section>
 
       <GuideComparison picks={g.picks} />
+
+      {/* GUIDE_PROMOTION, sold in the full promotion package.
+          Deliberately placed after every editorial element — the picks and the
+          comparison table — so that nothing paid for can be mistaken for a
+          recommendation, and labelled "Sponsored" rather than "Featured"
+          because on a guide page that distinction is the whole point. */}
+      <FeaturedRow
+        placement="GUIDE_PROMOTION"
+        categorySlug={g.category?.slug || null}
+        limit={2}
+        label="Sponsored"
+        title="Sponsored"
+        blurb="These vendors paid to appear on this guide. They are not part of the picks above."
+        className="mb-12 pt-8 border-t border-rule"
+      />
 
       {g.faqs.length > 0 && (
         <section aria-labelledby="faq" className="mb-12">

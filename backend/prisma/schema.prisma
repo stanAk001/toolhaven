@@ -25,7 +25,7 @@ model Category {
   subcategories Subcategory[]
   blogPosts     BlogPost[]
   bestLists     BestList[]
-  clicks        AffiliateClick[]
+  clicks        AffiliateClick[]
   buyingGuides BuyingGuide[]
 }
 
@@ -40,6 +40,8 @@ model Subcategory {
 }
 
 model Tool {
+  promotionCampaigns PromotionCampaign[]
+  promotionEvents    PromotionEvent[]
   id              Int      @id @default(autoincrement())
   slug            String   @unique
   name            String
@@ -120,6 +122,29 @@ model ToolReview {
   status     String   @default("approved") // approved | pending — reader reviews come in pending
   isFeatured Boolean  @default(false)
   createdAt  DateTime @default(now())
+
+  helpfulVotes ReviewHelpfulVote[]
+}
+
+/// One "was this helpful?" per reader per review.
+///
+/// The tally is shown to readers as a reason to trust a review, and the only
+/// thing stopping it being invented was a note in the voter's own browser —
+/// which is to say nothing at all, since the endpoint is public and takes a
+/// plain POST. A number anyone can inflate is not evidence, and this site does
+/// not print numbers it cannot stand behind.
+///
+/// The address is stored only as a salted hash: enough to recognise a repeat
+/// vote, not enough to identify anybody or to be worth stealing.
+model ReviewHelpfulVote {
+  id        Int        @id @default(autoincrement())
+  reviewId  Int
+  review    ToolReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  ipHash    String
+  createdAt DateTime   @default(now())
+
+  @@unique([reviewId, ipHash])
+  @@index([reviewId])
 }
 
 model Testimonial {
@@ -294,6 +319,7 @@ model BestListFaq {
 // a queue of links needing research. All of them are optional — a thin
 // submission is still a submission, it just waits longer.
 model ToolSubmission {
+  promotionCampaigns PromotionCampaign[]
   id               Int      @id @default(autoincrement())
   toolName         String
   websiteUrl       String
@@ -374,6 +400,7 @@ model ToolSubmission {
 /// headers. If this ever outgrows Postgres, the serving URL stays the same and
 /// only the storage behind it changes.
 model Upload {
+  promotionImages PromotionCampaign[] @relation("PromotionImage")
   id        Int      @id @default(autoincrement())
   data      Bytes
   mimeType  String
@@ -839,4 +866,248 @@ model GuideFaq {
   orderIndex Int    @default(0)
 
   @@index([guideId, orderIndex])
+}
+
+
+// ═══════════════════ Toolhaven Promote ═══════════════════
+// Paid visibility, kept structurally separate from editorial judgement. No
+// model here can alter a Tool's score, rating or organic position — a campaign
+// is its own record with its own lifecycle, and the surfaces that render it are
+// distinct from the ones that rank tools. That separation is the product.
+// Money is stored in minor units (cents, kobo) as integers. A float is the
+// wrong type for money, and every provider here settles in minor units anyway.
+
+/// A purchasable promotion package. Prices live here, not in the frontend, so
+/// changing one is an admin action rather than a deployment.
+model PromotionPlan {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  description String?
+  /// Sold per currency, each set explicitly by an editor. No exchange rate is
+  /// applied anywhere: an invented rate is an invented number, and it would
+  /// move a published price without anyone deciding to.
+  priceUsdCents Int?
+  priceNgnKobo  Int?
+  /// A plan with no price is quoted by hand — the "Full promotion" case, where
+  /// the audience does not yet justify a fixed figure.
+  quoteOnly   Boolean  @default(false)
+  durationDays Int
+  /// Placement keys this plan may buy, e.g. ["HOMEPAGE_FEATURED"].
+  placements  String[]
+  /// Plain-language benefit lines shown on the pricing card.
+  features    String[]
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+
+  campaigns   PromotionCampaign[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, sortOrder])
+}
+
+/// Where a campaign can appear, and how many may appear there at once.
+/// Inventory is a real count taken from live campaigns, never a decorative
+/// "only 2 spots left".
+model PromotionPlacement {
+  key         String   @id
+  label       String
+  description String?
+  /// How many campaigns may hold this placement simultaneously. Per category
+  /// for CATEGORY_FEATURED; site-wide for the rest.
+  maxActive   Int      @default(3)
+  perCategory Boolean  @default(false)
+  /// Fulfilled by hand rather than rendered by the site — a newsletter slot or
+  /// a social post. Shown honestly as such rather than implied to be automatic.
+  manual      Boolean  @default(false)
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+
+  /// What this placement costs per day when bought on its own through the
+  /// custom builder. Null means it is not sold individually — the by-hand
+  /// placements are quoted, because an editor's time is not a day rate.
+  dailyRateUsdCents Int?
+  dailyRateNgnKobo  Int?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// One promotional campaign for one already-published tool.
+model PromotionCampaign {
+  id     Int    @id @default(autoincrement())
+  /// Public handle: used in URLs and as the utm_campaign value, so no internal
+  /// id is ever exposed.
+  slug   String @unique
+
+  toolId Int
+  tool   Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  /// Ownership. Toolhaven has no accounts; the submission is what proves this
+  /// tool belongs to this person, and its token is how they reach it.
+  submissionId Int
+  submission   ToolSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  /// Copied from the submission at creation so a campaign can be found by the
+  /// address that bought it even if the submission record changes.
+  ownerEmail   String
+
+  planId Int
+  plan   PromotionPlan @relation(fields: [planId], references: [id])
+
+  status String @default("DRAFT")
+
+  /// Vendor copy. Sanitised on the way in; no HTML is ever accepted.
+  headline       String?
+  message        String?
+  ctaText        String?
+  targetAudience String?
+
+  imageId Int?
+  image   Upload? @relation("PromotionImage", fields: [imageId], references: [id])
+
+  /// Where the outbound link goes. Defaults to the tool's own site and must
+  /// stay on that host, so a campaign cannot redirect traffic elsewhere.
+  destinationUrl String?
+
+  placements String[]
+
+  /// Set only on a campaign the buyer assembled themselves rather than taking
+  /// a package: the run length they chose, and the price that was quoted for
+  /// it in both currencies at that moment. Stored rather than recomputed so a
+  /// later change to the daily rates cannot silently reprice a campaign that
+  /// someone has already been shown a figure for.
+  customDays     Int?
+  customUsdCents Int?
+  customNgnKobo  Int?
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+  /// Sent to the vendor verbatim when changes are requested or it is rejected.
+  reviewNote  String?
+
+  payments PromotionPayment[]
+  events   PromotionEvent[]
+  audit    PromotionAudit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The query every promotional surface makes: live campaigns, by window.
+  @@index([status, startDate, endDate])
+  @@index([toolId])
+  @@index([ownerEmail])
+  @@index([submissionId])
+}
+
+/// A payment attempt against a campaign.
+model PromotionPayment {
+  id Int @id @default(autoincrement())
+
+  campaignId Int
+  campaign   PromotionCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  provider  String
+  /// The provider's own reference. Unique per provider, which is what makes a
+  /// replayed webhook a no-op rather than a second campaign.
+  reference String
+
+  /// What we asked the provider to charge, decided server-side from the plan.
+  /// A price that arrives from a browser is a suggestion, not a price.
+  amountMinor Int
+  currency    String
+
+  status     String    @default("PENDING")
+  /// The provider's own words, kept for support and reconciliation.
+  providerStatus String?
+  paidAt     DateTime?
+  verifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, reference])
+  @@index([campaignId])
+  @@index([status])
+}
+
+/// One recorded thing that happened on a promotional surface.
+///
+/// Every figure the vendor is shown is a count of these rows. There is no
+/// column anywhere that a number can be typed into.
+model PromotionEvent {
+  id Int @id @default(autoincrement())
+
+  campaignId Int
+  campaign   PromotionCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  toolId Int?
+  tool   Tool? @relation(fields: [toolId], references: [id], onDelete: SetNull)
+
+  /// impression | tool_view | cta_click | outbound_click
+  type      String
+  placement String?
+
+  /// Enough to spot a bot, and nothing more. No identifiers are kept.
+  userAgent String?
+  ipHash    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([campaignId, type])
+  @@index([campaignId, createdAt])
+  @@index([campaignId, placement, type])
+}
+
+/// Who changed what. Approvals, rejections, price changes, date changes.
+model PromotionAudit {
+  id Int @id @default(autoincrement())
+
+  campaignId Int?
+  campaign   PromotionCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  planId     Int?
+
+  /// admin | vendor | system
+  actor  String
+  action String
+  detail String?
+
+  createdAt DateTime @default(now())
+
+  @@index([campaignId, createdAt])
+  @@index([action])
+}
+
+/// A signed-in tool owner.
+///
+/// Created when someone proves control of the email address a tool was
+/// submitted with, by following a link sent to it. There are no passwords to
+/// store, leak or reset, and the link is single-use and short-lived.
+model OwnerLoginToken {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+/// The session that link produces. Held in the browser and sent as a header,
+/// the same shape as the admin token, so the client has one idea of auth.
+model OwnerSession {
+  id         Int      @id @default(autoincrement())
+  email      String
+  token      String   @unique
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
 }

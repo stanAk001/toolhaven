@@ -5,7 +5,14 @@ import { ah } from "../middleware/error.js";
 const r = Router();
 
 // Public origin of the *site*, not the API. Set SITE_URL in production.
-const SITE = (process.env.SITE_URL || "https://toolhaven.net").replace(/\/$/, "");
+//
+// The www matters. This file defaulted to the apex while every other fallback
+// in the codebase uses www, so with SITE_URL unset the sitemap advertised
+// https://toolhaven.net/... while the pages themselves declared
+// https://www.toolhaven.net/... as canonical. Telling Google about one URL and
+// then telling it the real one is somewhere else is what left 125 pages
+// unindexed before; this is the same mistake waiting in a second place.
+const SITE = (process.env.SITE_URL || "https://www.toolhaven.net").replace(/\/$/, "");
 
 const esc = (s = "") =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")

@@ -88,13 +88,25 @@ export function SubmissionsAdmin({ token }) {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2 mb-5">
-        {TABS.map(([key, text, n]) => (
-          <button key={key} type="button" onClick={() => setFilter(key)}
-            className={`inline-flex items-center gap-2 min-h-touch font-mono text-label uppercase tracking-wide border border-rule rounded-ui px-4 transition-colors ${filter === key ? "bg-ink text-paper" : "bg-paper hover:bg-paper2"}`}>
-            {text}<span className="tabular-nums opacity-60">{n}</span>
-          </button>
-        ))}
+      {/* Filters, deliberately quieter than the section bar above them.
+          Both rows used to be bordered boxes of the same weight, so nothing
+          told you which one chose the screen and which one narrowed the list.
+          These are underlined text with the count beside them: still obvious,
+          no longer competing. A filter holding nothing is dimmed rather than
+          hidden, because "no declined submissions" is worth knowing. */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-5" role="group" aria-label="Filter submissions">
+        {TABS.map(([key, text, n]) => {
+          const on = filter === key;
+          return (
+            <button key={key} type="button" onClick={() => setFilter(key)} aria-pressed={on}
+              className={`inline-flex items-baseline gap-1.5 min-h-touch font-mono text-label uppercase tracking-wide
+                border-b-2 transition-colors
+                ${on ? "border-ink text-ink" : "border-transparent hover:border-rule " + (n ? "text-ink2 hover:text-ink" : "text-ink2/45 hover:text-ink2")}`}>
+              {text}
+              <span className="tabular-nums text-nano">{n}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex items-center gap-3 border border-rule rounded-ui px-4 mb-5 bg-paper">

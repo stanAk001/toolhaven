@@ -155,8 +155,14 @@ export function ToolCard({ tool, showCategory = true }) {
             <h3 className="font-display text-base sm:text-2xl font-semibold leading-tight sm:leading-none tracking-tight text-balance">
               {tool.name}
             </h3>
+            {/* The category, set as a caption rather than a label. This line
+                repeats on every card on the site — sixty-odd times on the
+                cover alone — so whatever it is set in becomes the page's
+                texture. Wide-tracked uppercase mono made all of it read as
+                machine output; sentence case reads as a person captioning a
+                picture, which is what it is. */}
             {showCategory && (
-              <span className="block font-mono text-nano uppercase tracking-[.12em] sm:tracking-[.16em] mt-1 sm:mt-1.5 truncate text-ink2">
+              <span className="block text-xs sm:text-sm mt-0.5 sm:mt-1 truncate text-ink2">
                 {c.name}
               </span>
             )}
@@ -173,14 +179,14 @@ export function ToolCard({ tool, showCategory = true }) {
           <dl className="hidden sm:block border-t border-rule pt-3 mb-4 space-y-1.5">
             {tool.bestFor && (
               <div className="text-sm leading-snug line-clamp-2">
-                <dt className="inline font-mono text-nano uppercase tracking-[.12em] text-accentDeep whitespace-nowrap">Best for</dt>
+                <dt className="inline text-sm font-semibold text-accentDeep whitespace-nowrap">Best for</dt>
                 <span aria-hidden="true" className="text-ink2/40"> &mdash; </span>
                 <dd className="inline">{tool.bestFor}</dd>
               </div>
             )}
             {tool.caveat && (
               <div className="text-sm text-ink2 leading-snug line-clamp-2">
-                <dt className="inline font-mono text-nano uppercase tracking-[.12em] text-ink2 whitespace-nowrap">Watch for</dt>
+                <dt className="inline text-sm font-semibold text-ink2 whitespace-nowrap">Watch for</dt>
                 <span aria-hidden="true" className="text-ink2/40"> &mdash; </span>
                 <dd className="inline">{tool.caveat}</dd>
               </div>

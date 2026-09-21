@@ -18,6 +18,7 @@ import { ToolCard, SkeletonGrid } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { PageHead } from "../components/editorial.jsx";
 import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { FeaturedRow } from "../components/featured.jsx";
 import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
 const SORTS = [
@@ -199,6 +200,19 @@ export default function ToolsDirectory() {
           </section>
         ))
       )}
+
+      {/* The discovery placement, sold in both Boost plans.
+          Below the index rather than above it, and outside the grouped
+          sections, because these cards do not answer the reader's filter and
+          must never read as though they did. The heading says so in words. */}
+      <FeaturedRow
+        placement="PROMOTIONAL_DISCOVERY"
+        limit={3}
+        label="Promoted"
+        title="Promoted on Toolhaven"
+        blurb="These are not search results and are not ranked against the index above."
+        className="pt-8 border-t border-rule"
+      />
     </div>
   );
 }

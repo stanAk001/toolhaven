@@ -14,6 +14,7 @@ import { useData } from "../lib/helpers.jsx";
 import { PageHead } from "../components/editorial.jsx";
 import { Breadcrumbs } from "../components/breadcrumbs.jsx";
 import { Reveal } from "../components/motion.jsx";
+import { GuideMotion, subjectOf } from "../components/guidemotion.jsx";
 import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
 const when = (iso) => (iso
@@ -34,10 +35,21 @@ export default function GuidesIndex() {
         schema={breadcrumbSchema(trail)}
       />
       <Breadcrumbs trail={trail} />
-      <PageHead kicker="Buying guides" title="The kit, not just the software">
-        We spend most of our time on what runs on the machine. These are about the machine — chosen
-        the same way, with the drawbacks written down.
-      </PageHead>
+
+      {/* The masthead carries the motion of whatever the newest guide is about,
+          so the page opens on the subject rather than on a rule and a heading.
+          It falls back to the abstract loop when nothing is published yet. */}
+      <div className="relative">
+        <GuideMotion intensity="hero"
+          subject={subjectOf(`${items[0]?.title || ""} ${items[0]?.category?.name || ""}`)}
+          tint={items[0]?.category?.colorPrimary} />
+        <div className="relative">
+          <PageHead kicker="Buying guides" title="The kit, not just the software">
+            We spend most of our time on what runs on the machine. These are about the machine — chosen
+            the same way, with the drawbacks written down.
+          </PageHead>
+        </div>
+      </div>
 
       {loading && <p className="text-ink2">Loading…</p>}
 
@@ -55,34 +67,56 @@ export default function GuidesIndex() {
       )}
 
       {items.length > 0 && (
-        <Reveal stagger className="grid sm:grid-cols-2 gap-4">
-          {items.map((g) => (
-            <Link key={g.slug} to={`/guides/${g.slug}`}
-              className="group relative flex flex-col h-full rounded-card bg-paper border border-rule shadow-press
-                transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-press-lg p-5">
-              {g.category && (
-                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] rounded-t-card"
-                  style={{ background: g.category.colorPrimary }} />
-              )}
-              {g.category && (
-                <p className="font-mono text-nano uppercase tracking-[.16em] mb-2 text-ink2">{g.category.name}</p>
-              )}
-              <h2 className="font-display text-xl sm:text-2xl font-semibold leading-tight tracking-tight mb-2 text-balance">
-                {g.title}
-              </h2>
-              {g.standfirst && (
-                <p className="text-sm text-ink2 leading-snug line-clamp-3 mb-4 text-pretty">{g.standfirst}</p>
-              )}
-              <p className="mt-auto pt-3 border-t border-rule flex items-center justify-between gap-3 font-mono text-nano uppercase tracking-[.12em] text-ink2">
-                <span className="tabular-nums">
-                  {g.pickCount} pick{g.pickCount === 1 ? "" : "s"}
-                  {g.updatedAt ? ` · ${when(g.updatedAt)}` : ""}
-                </span>
-                <ArrowUpRight size={14} aria-hidden="true"
-                  className="shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </p>
-            </Link>
-          ))}
+        /* Two across at every width. One per row on a phone made each card a
+           wide slab of text and pushed the third guide off the screen, so the
+           page read as a list of paragraphs rather than a set of choices. What
+           makes two columns work at 375px is not shrinking everything equally:
+           the title stays readable, the standfirst gives up a line, and the
+           date — the least useful thing on the card — leaves entirely until
+           there is room for it. */
+        <Reveal stagger className="grid grid-cols-2 gap-2.5 sm:gap-4">
+          {items.map((g) => {
+            const subject = subjectOf(`${g.title} ${g.category?.name || ""}`);
+            return (
+              <Link key={g.slug} to={`/guides/${g.slug}`}
+                className="group relative overflow-hidden flex flex-col h-full rounded-card bg-surface border border-rule
+                  shadow-press transition-[transform,box-shadow] duration-200 ease-out
+                  hover:-translate-y-0.5 hover:shadow-press-lg focus-visible:-translate-y-0.5
+                  p-3.5 sm:p-5">
+                {/* The subject, moving, behind the words. */}
+                <GuideMotion subject={subject} tint={g.category?.colorPrimary} />
+
+                {g.category && (
+                  <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] rounded-t-card"
+                    style={{ background: g.category.colorPrimary }} />
+                )}
+
+                <div className="relative flex flex-col h-full">
+                  {g.category && (
+                    <p className="font-mono text-nano uppercase tracking-[.16em] mb-1.5 sm:mb-2 text-ink2 truncate">
+                      {g.category.name}
+                    </p>
+                  )}
+                  <h2 className="font-display text-base sm:text-xl lg:text-2xl font-semibold leading-tight tracking-tight mb-1.5 sm:mb-2 text-balance">
+                    {g.title}
+                  </h2>
+                  {g.standfirst && (
+                    <p className="text-xs sm:text-sm text-ink2 leading-snug line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-4 text-pretty">
+                      {g.standfirst}
+                    </p>
+                  )}
+                  <p className="mt-auto pt-2.5 sm:pt-3 border-t border-rule flex items-center justify-between gap-2 font-mono text-nano uppercase tracking-[.12em] text-ink2">
+                    <span className="tabular-nums truncate">
+                      {g.pickCount} pick{g.pickCount === 1 ? "" : "s"}
+                      {g.updatedAt && <span className="hidden sm:inline"> · {when(g.updatedAt)}</span>}
+                    </span>
+                    <ArrowUpRight size={14} aria-hidden="true"
+                      className="shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </Reveal>
       )}
 

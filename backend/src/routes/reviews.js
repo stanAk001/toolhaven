@@ -2,6 +2,9 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { ah } from "../middleware/error.js";
 import { requireAdmin } from "../middleware/auth.js";
+// The same one-way address hash the promotion events use: enough to recognise
+// a repeat, never enough to identify anyone.
+import { hashIp } from "../lib/promotion/owner.js";
 
 const router = Router();
 
@@ -36,14 +39,51 @@ router.post("/", ah(async (req, res) => {
   res.status(201).json({ ok: true, pending: true });
 }));
 
-// POST /api/reviews/:id/helpful — public: bump the helpful tally by one
-router.post("/:id/helpful", ah(async (req, res) => {
-  const updated = await prisma.toolReview.update({
-    where: { id: Number(req.params.id) },
-    data: { helpful: { increment: 1 } },
-    select: { id: true, helpful: true },
-  });
-  res.json(updated);
+/**
+ * POST /api/reviews/:id/helpful — one vote per reader, counted once.
+ *
+ * This used to be an unconditional increment on a public endpoint. The browser
+ * remembered whether you had already voted, which stops an honest reader
+ * clicking twice and stops nobody else: a loop against this URL could put any
+ * number under any review, and that number is shown to readers as a reason to
+ * believe the review.
+ *
+ * A tally anyone can invent is worth less than no tally, and this site does not
+ * print figures it cannot stand behind. The vote is now recorded against a
+ * salted hash of the address, with a unique constraint doing the real work —
+ * two requests racing produce one row and one increment, which a read-then-write
+ * check would not guarantee.
+ *
+ * Voting twice is not an error. It answers with the current count and changes
+ * nothing, because a reader who clicks again has not done anything wrong.
+ */
+router.post("/:id/helpful", ah(async (req, res, next) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) { const e = new Error("Not found"); e.status = 404; return next(e); }
+
+  const review = await prisma.toolReview.findUnique({ where: { id }, select: { id: true, helpful: true } });
+  if (!review) { const e = new Error("Not found"); e.status = 404; return next(e); }
+
+  const ipHash = hashIp(req.ip);
+  if (!ipHash) return res.json({ id: review.id, helpful: review.helpful, counted: false });
+
+  try {
+    const updated = await prisma.$transaction(async (tx) => {
+      // Throws on the unique constraint if this reader has already voted.
+      await tx.reviewHelpfulVote.create({ data: { reviewId: id, ipHash } });
+      return tx.toolReview.update({
+        where: { id },
+        data: { helpful: { increment: 1 } },
+        select: { id: true, helpful: true },
+      });
+    });
+    res.json({ ...updated, counted: true });
+  } catch (err) {
+    if (err?.code === "P2002") {
+      return res.json({ id: review.id, helpful: review.helpful, counted: false });
+    }
+    throw err;
+  }
 }));
 
 // ---- editor-only moderation ----

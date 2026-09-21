@@ -47,6 +47,55 @@ export const saveGuideFaqs = (id, faqs, token) => api.put(`/admin/guides/${id}/f
 // without uploading it again.
 export const recentGuideUploads = (token) => api.get("/admin/guides/uploads/recent", adminHeaders(token)).then((r) => r.data);
 
+/* ───────────────────────── Toolhaven Promote ─────────────────────────
+   Three audiences, three header regimes: the public surfaces need nothing, a
+   tool owner sends x-owner-token, and the desk sends x-admin-token. */
+
+const ownerHeaders = (token) => ({ headers: { "x-owner-token": token } });
+
+// public
+// No currency argument by design: the server resolves the buyer's country and
+// prices everything from that, so the client cannot ask to be charged on a
+// different rail than the one it was quoted on.
+export const getPromotionPlans = () => api.get("/promote/plans").then((r) => r.data);
+export const getFeaturedCampaigns = (params) => api.get("/promote/featured", { params }).then((r) => r.data);
+// Building a campaign by hand. The quote is always asked of the server — the
+// browser never computes a price it might then be charged.
+export const getBuildablePlacements = () => api.get("/promote/buildable").then((r) => r.data);
+export const quoteCustomCampaign = (placements, days) =>
+  api.post("/promote/quote", { placements, days }).then((r) => r.data);
+export const sendPromotionEvents = (events) => api.post("/promote/events", { events }).then((r) => r.data);
+
+// tool owner
+export const requestOwnerLink = (email) => api.post("/owner/login", { email }).then((r) => r.data);
+export const exchangeOwnerToken = (token) => api.post("/owner/session", { token }).then((r) => r.data);
+export const getOwnerMe = (token) => api.get("/owner/me", ownerHeaders(token)).then((r) => r.data);
+export const listOwnerCampaigns = (token) => api.get("/owner/campaigns", ownerHeaders(token)).then((r) => r.data);
+export const getOwnerCampaign = (slug, token) => api.get(`/owner/campaigns/${slug}`, ownerHeaders(token)).then((r) => r.data);
+export const createOwnerCampaign = (body, token) => api.post("/owner/campaigns", body, ownerHeaders(token)).then((r) => r.data);
+export const updateOwnerCampaign = (slug, body, token) => api.patch(`/owner/campaigns/${slug}`, body, ownerHeaders(token)).then((r) => r.data);
+export const checkoutCampaign = (slug, body, token) => api.post(`/owner/campaigns/${slug}/checkout`, body, ownerHeaders(token)).then((r) => r.data);
+// Run a finished campaign again: the server clones the copy into a new draft
+// and re-prices it at today's rates.
+export const renewCampaign = (slug, token) => api.post(`/owner/campaigns/${slug}/renew`, {}, ownerHeaders(token)).then((r) => r.data);
+export const settleCampaign = (slug, reference, token) => api.post(`/owner/campaigns/${slug}/settle`, { reference }, ownerHeaders(token)).then((r) => r.data);
+export const cancelOwnerCampaign = (slug, token) => api.post(`/owner/campaigns/${slug}/cancel`, {}, ownerHeaders(token)).then((r) => r.data);
+
+// the desk
+export const promotionOverview = (token) => api.get("/admin/promotions/overview", adminHeaders(token)).then((r) => r.data);
+export const listPromotionCampaigns = (params, token) =>
+  api.get("/admin/promotions/campaigns", { ...adminHeaders(token), params }).then((r) => r.data);
+export const getPromotionCampaign = (slug, token) => api.get(`/admin/promotions/campaigns/${slug}`, adminHeaders(token)).then((r) => r.data);
+export const campaignAction = (slug, action, body, token) =>
+  api.post(`/admin/promotions/campaigns/${slug}/${action}`, body || {}, adminHeaders(token)).then((r) => r.data);
+export const setCampaignDates = (slug, body, token) =>
+  api.patch(`/admin/promotions/campaigns/${slug}/dates`, body, adminHeaders(token)).then((r) => r.data);
+export const listPromotionPlans = (token) => api.get("/admin/promotions/plans", adminHeaders(token)).then((r) => r.data);
+export const createPromotionPlan = (body, token) => api.post("/admin/promotions/plans", body, adminHeaders(token)).then((r) => r.data);
+export const updatePromotionPlan = (slug, body, token) => api.patch(`/admin/promotions/plans/${slug}`, body, adminHeaders(token)).then((r) => r.data);
+export const listPromotionPlacements = (token) => api.get("/admin/promotions/placements", adminHeaders(token)).then((r) => r.data);
+export const updatePromotionPlacement = (key, body, token) => api.patch(`/admin/promotions/placements/${key}`, body, adminHeaders(token)).then((r) => r.data);
+
 export const getBestLists = () => api.get("/best").then((r) => r.data);
 export const getBestList = (slug) => api.get(`/best/${slug}`).then((r) => r.data);
 

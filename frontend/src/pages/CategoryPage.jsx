@@ -5,6 +5,7 @@ import { ToolCard, PostCard, Loader } from "../components/ui.jsx";
 import { Reveal } from "../components/motion.jsx";
 import { NotFoundBlock } from "../components/editorial.jsx";
 import { Breadcrumbs } from "../components/breadcrumbs.jsx";
+import { FeaturedRow } from "../components/featured.jsx";
 import { Seo, breadcrumbSchema } from "../lib/seo.jsx";
 
 export default function CategoryPage() {
@@ -51,7 +52,24 @@ export default function CategoryPage() {
         </div>
       </section>
 
+      {/* Paid placements sit above the listing in their own labelled block.
+          The organic grid below is untouched — nothing sponsored is mixed into
+          it, and the ranking it uses knows nothing about campaigns. */}
+      <div className="max-w-6xl mx-auto px-5 sm:px-6">
+        <FeaturedRow
+          placement="CATEGORY_FEATURED"
+          categorySlug={cat.slug}
+          limit={2}
+          title={`Featured in ${cat.name}`}
+          blurb="Tools currently receiving additional exposure in this category."
+          className="pt-10 sm:pt-12"
+        />
+      </div>
+
       <section className="max-w-6xl mx-auto px-5 sm:px-6 py-10 sm:py-12">
+        <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight mb-4">
+          All {cat.name.toLowerCase()} tools
+        </h2>
         <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {(cat.tools || []).map((t) => <ToolCard key={t.slug} tool={{ ...t, category: cat }} showCategory={false} />)}
         </Reveal>

@@ -86,17 +86,25 @@ function Figure({ value, suffix = "", label, chip = false }) {
  * is now printed at once on one ruled line: no timer, no pause control, nothing
  * to wait for, and the zero always visible.
  */
-export function LedgerBoard({ tools = null, categories = null }) {
+export function LedgerBoard({ tools = null, categories = null, guides = null }) {
   // A count we do not have yet is not a count of zero. Printing "0 tools
   // reviewed" while the request is in flight reads as an empty directory for
   // the moment it is on screen. Figures wait until their number is real.
+  //
+  // Everything on this line is a count of something that exists in the
+  // database. It used to also carry "100% Independent" and "0 Paid rankings",
+  // which are not measurements — they are claims wearing a number's clothes,
+  // sitting beside two real counts and borrowing their credibility. A reader
+  // who notices that is right to wonder which of the other figures were also
+  // decided rather than counted. The independence claim belongs in a sentence,
+  // where it can be read as the promise it is, and it is made in words on the
+  // cover and in the footer.
   return (
     <div className="border-y border-rule">
       <dl className="flex flex-wrap items-baseline gap-x-6 sm:gap-x-10 gap-y-3 py-3.5 sm:py-4">
-        {tools ? <Figure value={tools} label="Tools reviewed" /> : null}
-        {categories ? <Figure value={categories} label="Categories" /> : null}
-        <Figure value={100} suffix="%" label="Independent" />
-        <Figure value={0} label="Paid rankings" chip />
+        {tools ? <Figure value={tools} label={tools === 1 ? "Tool reviewed" : "Tools reviewed"} /> : null}
+        {categories ? <Figure value={categories} label={categories === 1 ? "Category" : "Categories"} /> : null}
+        {guides ? <Figure value={guides} label={guides === 1 ? "Buying guide" : "Buying guides"} /> : null}
       </dl>
     </div>
   );
