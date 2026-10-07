@@ -9,6 +9,7 @@ import { PageHead } from "../components/editorial.jsx";
 import { Stars } from "../components/ui.jsx";
 import { BestAdmin } from "../components/bestadmin.jsx";
 import { ToolsAdmin, ClicksAdmin } from "../components/toolsadmin.jsx";
+import { BroadcastAdmin } from "../components/broadcastadmin.jsx";
 import { PricingAdmin } from "../components/pricingadmin.jsx";
 import { SubmissionsAdmin } from "../components/submissionsadmin.jsx";
 import { GuidesAdmin } from "../components/guidesadmin.jsx";
@@ -139,12 +140,13 @@ export default function Admin() {
             ["promotions", "Promote", null],
             ["pricing", "Pricing", null],
             ["clicks", "Clicks", null],
+            ["vendors", "Vendors", null],
           ].map(([v, label, n]) => {
             const on = view === v;
             return (
               <button key={v} type="button" onClick={() => setView(v)} aria-current={on ? "page" : undefined}
-                className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 min-h-[38px]
-                  font-mono text-label uppercase tracking-[.04em] transition-colors
+                className={`inline-flex items-center gap-1 whitespace-nowrap px-2 min-h-[38px]
+                  font-mono text-nano uppercase tracking-[.02em] transition-colors
                   ${on ? "bg-ink text-paper" : "hover:bg-paper2"}`}>
                 {label}
                 {n > 0 && (
@@ -213,6 +215,7 @@ export default function Admin() {
       {view === "promotions" && <PromotionsAdmin token={token} />}
       {view === "pricing" && <PricingAdmin token={token} />}
       {view === "clicks" && <ClicksAdmin token={token} />}
+      {view === "vendors" && <BroadcastAdmin token={token} />}
 
       {view === "stacks" && (
         <>

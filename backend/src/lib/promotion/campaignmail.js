@@ -15,10 +15,12 @@
  */
 import { prisma } from "../prisma.js";
 import { sendMail } from "../mailer.js";
-import { shell, p, facts, button, esc } from "../emailtemplate.js";
+import { shell, p, facts, button, esc, COLOURS } from "../emailtemplate.js";
 import { formatMinor } from "./money.js";
 
-const SITE = () => (process.env.SITE_URL || "https://www.toolhaven.net").replace(/\/+$/, "");
+// The public origin, not SITE_URL. These are emails: a localhost address in
+// one is a dead link in somebody else's inbox. See emailtemplate.js.
+const SITE = () => COLOURS.SITE;
 const dash = (slug) => `${SITE()}/promote/dashboard${slug ? `?campaign=${encodeURIComponent(slug)}` : ""}`;
 const when = (d) => (d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—");
 

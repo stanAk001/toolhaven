@@ -12,6 +12,7 @@
  * rating, a review count or a score: a new tool arrives with no figures and
  * earns them exactly as every other tool does.
  */
+import { mediaUrl } from "../lib/mediaurl.js";
 import { useState } from "react";
 import { Plus, X, Link2 } from "lucide-react";
 import { createTool } from "../api/client.js";
@@ -131,7 +132,7 @@ export function AddTool({ token, categories = [], onAdded }) {
             <span aria-hidden="true"
               className="grid place-items-center shrink-0 w-14 h-14 rounded-ui border border-rule overflow-hidden bg-paper">
               {f.logoUrl
-                ? <img src={f.logoUrl} alt="" className="w-full h-full object-contain p-1.5"
+                ? <img src={mediaUrl(f.logoUrl)} alt="" className="w-full h-full object-contain p-1.5"
                     onError={(e) => { e.currentTarget.style.display = "none"; }} />
                 : <span className="font-display font-bold text-lg text-ink2">
                     {(f.logoMono || f.name.slice(0, 2) || "?").toUpperCase()}

@@ -25,6 +25,7 @@ import promoteAdmin from "./routes/promoteadmin.js";
 import owner from "./routes/owner.js";
 import pricing from "./routes/pricing.js";
 import pricingAdmin from "./routes/pricingadmin.js";
+import broadcast from "./routes/broadcast.js";
 import { notFound, errorHandler } from "./middleware/error.js";
 import { warmUp } from "./lib/prisma.js";
 import { invalidateOnWrite } from "./lib/cache.js";
@@ -149,6 +150,8 @@ app.use("/api/admin/promotions", promoteAdmin);
 // tool slug does not need a second identifier.
 app.use("/api/tools", pricing);
 app.use("/api/admin/pricing", pricingAdmin);
+// Writing to the people who have submitted a tool.
+app.use("/api/admin/broadcast", broadcast);
 app.use("/api/newsletter", newsletter);
 app.use("/api/contact", contact);
 app.use("/api/submissions", submissions);

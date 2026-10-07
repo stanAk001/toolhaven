@@ -15,7 +15,43 @@
  */
 import { prisma } from "./prisma.js";
 import { sendMail } from "./mailer.js";
-import { shell, p, facts, button, esc, COLOURS } from "./emailtemplate.js";
+import { shell, p, facts, button, buttonGhost, panel, esc, COLOURS } from "./emailtemplate.js";
+
+const promoteLink = `${COLOURS.SITE}/promote`;
+
+/**
+ * The offer to pay for more exposure, made only where it is honest to make it.
+ *
+ * Not on "received" and not on "approved": nothing is live yet, so there is
+ * nothing to promote and asking would read as a toll on the queue. It belongs
+ * on the message that says the listing is up, which is the first moment the
+ * vendor has something to put in front of people — and in the standing
+ * announcement to vendors who were already published before any of this
+ * existed.
+ *
+ * The wording states the limit as plainly as the offer. A vendor who buys
+ * expecting it to improve their review has been mis-sold, and would be right
+ * to say so.
+ */
+const promotePanel = () => panel({
+  kicker: "Optional",
+  heading: "Want more people to see it?",
+  body: [
+    p("Your listing is on Toolhaven for good, free. If you want it in front of more of our readers, you can pay to put it on the homepage, on its category page, and across our discovery surfaces for a set number of days."),
+    p("It buys placement and nothing else. It cannot change your review, your score, your rating or where you rank — those are ours, and they stay ours."),
+    buttonGhost(promoteLink, "See how promotion works"),
+  ].join(""),
+});
+
+/** The same offer in the plain-text alternative. */
+const promoteText = [
+  "",
+  "— — —",
+  "Optional: you can now pay to put your listing in front of more readers —",
+  "homepage, category page and discovery surfaces, for a set number of days.",
+  "It buys placement only. It cannot change your review, score or ranking.",
+  `See how it works: ${promoteLink}`,
+].join("\n");
 
 /** How each state is described to the person waiting on it. */
 const STATE = {
@@ -32,7 +68,7 @@ function chip(status) {
   const s = STATE[status] || STATE.pending;
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;">
     <tr><td style="border:1px solid ${s.tone};border-radius:4px;padding:6px 12px;">
-      <span style="font-family:'Courier New',Courier,monospace;font-size:11px;font-weight:700;
+      <span style="font-family:${COLOURS.MONO};font-size:11px;font-weight:700;
         letter-spacing:.14em;text-transform:uppercase;color:${s.tone};">${esc(s.label)}</span>
     </td></tr></table>`;
 }
@@ -86,9 +122,14 @@ async function once(submission, eventType, build) {
 
 /* ── 1. Received ─────────────────────────────────────────────────────────── */
 
-export function sendSubmissionReceived(s) {
-  return once(s, "received", () => ({
-    to: s.email,
+/*
+ * Each message is a pure function of a submission, and the send wrapper is
+ * separate. They used to be closures inside `once()`, which meant the only way
+ * to see what one looked like was to send it to somebody — so the templates
+ * were edited blind and reviewed in a real inbox, or not at all.
+ */
+export const buildReceived = (s) => ({
+  to: s.email,
     subject: `We've received your Toolhaven submission`,
     text: [
       `Hi ${firstName(s.contactName)},`, "",
@@ -111,14 +152,16 @@ export function sendSubmissionReceived(s) {
       ].join(""),
       footnote: "The Toolhaven desk &middot; no pay-to-play, ever",
     }),
-  }));
+});
+
+export function sendSubmissionReceived(s) {
+  return once(s, "received", () => buildReceived(s));
 }
 
 /* ── 2. Under review ─────────────────────────────────────────────────────── */
 
-export function sendUnderReview(s) {
-  return once(s, "under-review", () => ({
-    to: s.email,
+export const buildUnderReview = (s) => ({
+  to: s.email,
     subject: `Your Toolhaven submission is now under review`,
     text: [
       `Hi ${firstName(s.contactName)},`, "",
@@ -139,14 +182,16 @@ export function sendUnderReview(s) {
       ].join(""),
       footnote: "The Toolhaven desk",
     }),
-  }));
+});
+
+export function sendUnderReview(s) {
+  return once(s, "under-review", () => buildUnderReview(s));
 }
 
 /* ── 3. Approved ─────────────────────────────────────────────────────────── */
 
-export function sendApproved(s) {
-  return once(s, "approved", () => ({
-    to: s.email,
+export const buildApproved = (s) => ({
+  to: s.email,
     subject: `Your tool has been approved on Toolhaven`,
     text: [
       `Hi ${firstName(s.contactName)},`, "",
@@ -167,14 +212,17 @@ export function sendApproved(s) {
       ].join(""),
       footnote: "The Toolhaven desk",
     }),
-  }));
+});
+
+export function sendApproved(s) {
+  return once(s, "approved", () => buildApproved(s));
 }
 
 /* ── 4. Published ────────────────────────────────────────────────────────── */
 
-export function sendPublished(s, toolSlug) {
+export const buildPublished = (s, toolSlug) => {
   const live = toolSlug ? `${COLOURS.SITE}/tools/${toolSlug}` : COLOURS.SITE;
-  return once(s, "published", () => ({
+  return ({
     to: s.email,
     subject: `${s.toolName} is now live on Toolhaven`,
     text: [
@@ -182,6 +230,7 @@ export function sendPublished(s, toolSlug) {
       `${s.toolName} is now live on Toolhaven.`,
       "", `View the listing: ${live}`,
       "", "If anything about the product changes — pricing, positioning, a feature we got wrong — tell us and we'll update it.",
+      promoteText,
       "", "— The Toolhaven desk",
     ].join("\n"),
     html: shell({
@@ -194,17 +243,22 @@ export function sendPublished(s, toolSlug) {
         button(live, "View the listing"),
         p("The write-up names a catch, as every entry on Toolhaven does. That isn't a criticism of the product — a listing with nothing but praise is one nobody believes."),
         p("If anything changes — pricing, positioning, or something we got wrong — reply to this and we'll update it.", true),
+        promotePanel(),
       ].join(""),
       footnote: "The Toolhaven desk",
     }),
-  }));
+  });
+};
+
+export function sendPublished(s, toolSlug) {
+  return once(s, "published", () => buildPublished(s, toolSlug));
 }
 
 /* ── 5. Changes requested ────────────────────────────────────────────────── */
 
-export function sendChangesRequested(s) {
+export const buildChangesRequested = (s) => {
   const note = String(s.submitterMessage || "").trim();
-  return once(s, "changes-requested", () => ({
+  return ({
     to: s.email,
     subject: `Action needed: update your Toolhaven submission`,
     text: [
@@ -225,9 +279,9 @@ export function sendChangesRequested(s) {
         // which part is a person talking and which is the system.
         note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;">
           <tr><td style="border-left:3px solid ${COLOURS.ACCENT};padding:2px 0 2px 16px;">
-            <p style="margin:0 0 6px;font-family:'Courier New',Courier,monospace;font-size:11px;
+            <p style="margin:0 0 6px;font-family:${COLOURS.MONO};font-size:11px;
               letter-spacing:.14em;text-transform:uppercase;color:${COLOURS.INK_2};">From the reviewer</p>
-            <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+            <p style="margin:0;font-family:${COLOURS.SANS};
               font-size:15px;line-height:1.6;color:${COLOURS.INK};white-space:pre-line;">${esc(note)}</p>
           </td></tr></table>` : "",
         button(statusLink(s), "Update your submission"),
@@ -235,14 +289,18 @@ export function sendChangesRequested(s) {
       ].join(""),
       footnote: "The Toolhaven desk",
     }),
-  }));
+  });
+};
+
+export function sendChangesRequested(s) {
+  return once(s, "changes-requested", () => buildChangesRequested(s));
 }
 
 /* ── 6. Declined ─────────────────────────────────────────────────────────── */
 
-export function sendDeclined(s) {
+export const buildDeclined = (s) => {
   const note = String(s.submitterMessage || "").trim();
-  return once(s, "declined", () => ({
+  return ({
     to: s.email,
     subject: `Update regarding your Toolhaven submission`,
     text: [
@@ -263,16 +321,20 @@ export function sendDeclined(s) {
         p("After reviewing it we aren't able to list it at the moment."),
         note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;">
           <tr><td style="border-left:3px solid ${COLOURS.INK_2};padding:2px 0 2px 16px;">
-            <p style="margin:0 0 6px;font-family:'Courier New',Courier,monospace;font-size:11px;
+            <p style="margin:0 0 6px;font-family:${COLOURS.MONO};font-size:11px;
               letter-spacing:.14em;text-transform:uppercase;color:${COLOURS.INK_2};">Why</p>
-            <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+            <p style="margin:0;font-family:${COLOURS.SANS};
               font-size:15px;line-height:1.6;color:${COLOURS.INK};white-space:pre-line;">${esc(note)}</p>
           </td></tr></table>` : "",
         p("More often than not this means the tool sits outside what Toolhaven covers rather than anything being wrong with it. If that changes, or if we've misread what it does, reply and tell us.", true),
       ].join(""),
       footnote: "The Toolhaven desk",
     }),
-  }));
+  });
+};
+
+export function sendDeclined(s) {
+  return once(s, "declined", () => buildDeclined(s));
 }
 
 /* ── The desk's own alert ────────────────────────────────────────────────── */

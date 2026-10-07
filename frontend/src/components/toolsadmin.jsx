@@ -5,6 +5,7 @@
 // earning anything. The tools list leads with monetisation state for exactly
 // that reason — a tool with clicks and no affiliate link is money on the floor,
 // so it's flagged rather than left for you to notice.
+import { mediaUrl } from "../lib/mediaurl.js";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, ExternalLink, AlertTriangle, X, Plus } from "lucide-react";
@@ -279,7 +280,7 @@ function ToolRow({ tool, token, allTools, open, onToggle, onSaved }) {
             <span aria-hidden="true"
               className="grid place-items-center shrink-0 w-14 h-14 rounded-ui border border-rule overflow-hidden bg-paper">
               {form.logoUrl
-                ? <img src={form.logoUrl} alt="" className="w-full h-full object-contain p-1.5" />
+                ? <img src={mediaUrl(form.logoUrl)} alt="" className="w-full h-full object-contain p-1.5" />
                 : <span className="font-display font-bold text-lg text-ink2">
                     {(form.logoMono || tool.name.slice(0, 2)).toUpperCase()}
                   </span>}

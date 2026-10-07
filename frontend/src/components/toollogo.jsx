@@ -11,6 +11,7 @@
 // 3. It is decorative when it sits beside the tool's name (the name already
 //    says which tool it is) and needs a real alt only when it stands alone.
 import { useState } from "react";
+import { mediaUrl } from "../lib/mediaurl.js";
 
 /**
  * @param {object}  tool      needs { name, logoUrl, logoAlt, logoMono, category }
@@ -22,7 +23,12 @@ export function ToolLogo({ tool, size = 48, className = "", labelled = false }) 
   const [failed, setFailed] = useState(false);
   const color = tool?.category?.colorPrimary || "#0E1116";
   const mono = tool?.logoMono || tool?.name?.[0] || "?";
-  const showImage = tool?.logoUrl && !failed;
+  // Logos are stored as paths relative to the API ("/api/uploads/149.png"),
+  // which the browser would otherwise resolve against the site's own origin
+  // and fail to find. Without this every card fell back to its monogram and
+  // the logos looked missing when they were only mis-addressed.
+  const src = mediaUrl(tool?.logoUrl);
+  const showImage = src && !failed;
 
   const box = {
     width: size, height: size,
@@ -39,7 +45,7 @@ export function ToolLogo({ tool, size = 48, className = "", labelled = false }) 
     >
       {showImage ? (
         <img
-          src={tool.logoUrl}
+          src={src}
           alt={labelled ? (tool.logoAlt || `${tool.name} logo`) : ""}
           width={size} height={size}
           loading="lazy" decoding="async"

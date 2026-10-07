@@ -35,6 +35,16 @@ export const getToolRails = () => api.get("/tools/rails").then((r) => r.data);
 export const getGuides = () => api.get("/guides").then((r) => r.data);
 export const getGuide = (slug) => api.get(`/guides/${slug}`).then((r) => r.data);
 
+// Writing to the people who have submitted a tool.
+export const broadcastAudiences = (token) =>
+  api.get("/admin/broadcast/audiences", adminHeaders(token)).then((r) => r.data);
+export const broadcastRecipients = (audience, subject, token) =>
+  api.get("/admin/broadcast/recipients", { params: { audience, subject }, ...adminHeaders(token) }).then((r) => r.data);
+export const broadcastHistory = (token) =>
+  api.get("/admin/broadcast/history", adminHeaders(token)).then((r) => r.data);
+export const sendBroadcast = (body, token) =>
+  api.post("/admin/broadcast", body, adminHeaders(token)).then((r) => r.data);
+
 // buying guides — the editor's desk
 export const listGuidesAdmin = (token) => api.get("/admin/guides", adminHeaders(token)).then((r) => r.data);
 export const getGuideAdmin = (id, token) => api.get(`/admin/guides/${id}`, adminHeaders(token)).then((r) => r.data);
